@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/public/discord/oauth/callback")({
         if (!clientId || !clientSecret) return fail("Discord login is not configured");
 
         const reqUrl = new URL(request.url);
-        const origin = process.env.PUBLIC_BASE_URL || reqUrl.origin;
+        let origin = process.env.PUBLIC_BASE_URL || reqUrl.origin;
+        if (!/^https?:\/\//i.test(origin)) origin = `https://${origin}`;
+        origin = origin.replace(/\/+$/, "");
         const code = reqUrl.searchParams.get("code");
         if (!code) return fail("Discord did not return an authorization code");
 
