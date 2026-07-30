@@ -20,11 +20,19 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
 
         const { data: script, error } = await supabaseAdmin
           .from("scripts")
-          .select("id, user_id, name, code, ffa, public_id")
+          .select("id, user_id, name, code, ffa, public_id, is_active, run_count")
           .eq("public_id", params.publicId)
           .maybeSingle();
         if (error || !script) return luaError("Script not found");
+        if (!script.is_active) return luaError("Script is disabled");
         if (!script.code) return luaError("Script has no code yet");
+
+        const bumpRuns = () =>
+          supabaseAdmin
+            .from("scripts")
+            .update({ run_count: (script.run_count ?? 0) + 1, last_run_at: new Date().toISOString() })
+            .eq("id", script.id);
+
 
         if (script.ffa) {
           return lua(script.code);
