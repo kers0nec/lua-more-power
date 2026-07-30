@@ -236,7 +236,7 @@ for ${I}=1,#${CT} do
   ${SUM}=(_lo+_hi)%4294967296
 end
 if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
-print("[trace] integrity ok, unpermuting")
+-- unpermute (xorshift32 seeded)
 local ${PERM}=${num(permSeed)}
 local ${NXT}=function()
   ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)  -- s ^= s << 13
