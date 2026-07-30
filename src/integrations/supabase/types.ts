@@ -14,16 +14,451 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          label: string
+          last_used_at: string | null
+          prefix: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          label: string
+          last_used_at?: string | null
+          prefix: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          label?: string
+          last_used_at?: string | null
+          prefix?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hwid_bans: {
+        Row: {
+          created_at: string
+          hwid: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hwid: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hwid?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      key_batches: {
+        Row: {
+          created_at: string
+          hours_valid: number | null
+          id: string
+          note: string | null
+          panel_id: string | null
+          script_id: string | null
+          size: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hours_valid?: number | null
+          id?: string
+          note?: string | null
+          panel_id?: string | null
+          script_id?: string | null
+          size: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hours_valid?: number | null
+          id?: string
+          note?: string | null
+          panel_id?: string | null
+          script_id?: string | null
+          size?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_batches_panel_id_fkey"
+            columns: ["panel_id"]
+            isOneToOne: false
+            referencedRelation: "panels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "key_batches_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_keys: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          discord_id: string | null
+          expires_at: string | null
+          hours_valid: number | null
+          hwid: string | null
+          id: string
+          key: string
+          note: string | null
+          panel_id: string | null
+          revoked: boolean
+          script_id: string | null
+          user_id: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          discord_id?: string | null
+          expires_at?: string | null
+          hours_valid?: number | null
+          hwid?: string | null
+          id?: string
+          key: string
+          note?: string | null
+          panel_id?: string | null
+          revoked?: boolean
+          script_id?: string | null
+          user_id: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          discord_id?: string | null
+          expires_at?: string | null
+          hours_valid?: number | null
+          hwid?: string | null
+          id?: string
+          key?: string
+          note?: string | null
+          panel_id?: string | null
+          revoked?: boolean
+          script_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_keys_panel_id_fkey"
+            columns: ["panel_id"]
+            isOneToOne: false
+            referencedRelation: "panels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_keys_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      panels: {
+        Row: {
+          created_at: string
+          description: string | null
+          discord_role_id: string | null
+          id: string
+          name: string
+          script_id: string | null
+          user_id: string
+          webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discord_role_id?: string | null
+          id?: string
+          name: string
+          script_id?: string | null
+          user_id: string
+          webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discord_role_id?: string | null
+          id?: string
+          name?: string
+          script_id?: string | null
+          user_id?: string
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panels_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          discord_id: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          is_banned: boolean
+          max_panels: number
+          max_scripts: number
+          plan: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          is_banned?: boolean
+          max_panels?: number
+          max_scripts?: number
+          plan?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_banned?: boolean
+          max_panels?: number
+          max_scripts?: number
+          plan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      script_releases: {
+        Row: {
+          created_at: string
+          id: string
+          is_beta: boolean
+          is_protected: boolean
+          larph_hash: string | null
+          note: string | null
+          obfuscated_code: string
+          obfuscator: string | null
+          script_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_beta?: boolean
+          is_protected?: boolean
+          larph_hash?: string | null
+          note?: string | null
+          obfuscated_code: string
+          obfuscator?: string | null
+          script_id: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_beta?: boolean
+          is_protected?: boolean
+          larph_hash?: string | null
+          note?: string | null
+          obfuscated_code?: string
+          obfuscator?: string | null
+          script_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_releases_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scripts: {
+        Row: {
+          code: string
+          created_at: string
+          ffa: boolean
+          id: string
+          is_protected: boolean
+          larph_hash: string | null
+          name: string
+          obfuscated_code: string | null
+          obfuscator: string | null
+          public_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          ffa?: boolean
+          id?: string
+          is_protected?: boolean
+          larph_hash?: string | null
+          name: string
+          obfuscated_code?: string | null
+          obfuscator?: string | null
+          public_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          ffa?: boolean
+          id?: string
+          is_protected?: boolean
+          larph_hash?: string | null
+          name?: string
+          obfuscated_code?: string | null
+          obfuscator?: string | null
+          public_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_bans: {
+        Row: {
+          created_at: string
+          discord_id: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whitelists: {
+        Row: {
+          created_at: string
+          discord_id: string
+          expires_at: string | null
+          id: string
+          license_key_id: string | null
+          script_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id: string
+          expires_at?: string | null
+          id?: string
+          license_key_id?: string | null
+          script_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string
+          expires_at?: string | null
+          id?: string
+          license_key_id?: string | null
+          script_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whitelists_license_key_id_fkey"
+            columns: ["license_key_id"]
+            isOneToOne: false
+            referencedRelation: "license_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whitelists_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +585,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "admin", "user"],
+    },
   },
 } as const
