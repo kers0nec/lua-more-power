@@ -16,55 +16,24 @@ export const Route = createFileRoute("/commands")({
   component: Commands,
 });
 
-const GROUPS: { title: string; cmds: [string, string][] }[] = [
-  {
-    title: "Getting started",
-    cmds: [
-      ["/help", "List all available commands"],
-      ["/setup", "Set up the LuaMore panel"],
-      ["/login <api_key>", "Link your Discord account with a LuaMore API key"],
-      ["/limits", "Check your script and panel limits"],
-    ],
-  },
-  {
-    title: "Scripts",
-    cmds: [
-      ["/create-script <name> <code> [ffa]", "Create a new script via Discord"],
-      ["/loader <script_id>", "Get the loader for a script"],
-    ],
-  },
-  {
-    title: "Keys & panels",
-    cmds: [
-      ["/panel <panel_id>", "Send a panel to the current Discord channel"],
-      ["/generatekey <panel_id> <hours> [note] [user]", "Generate a license key"],
-      ["/keys [panel_id]", "List your recent license keys"],
-      ["/deletekey <key>", "Delete a license key"],
-    ],
-  },
-  {
-    title: "Access control",
-    cmds: [
-      ["/whitelist <script_id> <user> [duration]", "Whitelist a user and auto-generate a key"],
-      ["/blacklist <script_id> <user>", "Blacklist a user from a script"],
-      ["/banuser <discord_id> [reason]", "Blacklist from website access"],
-      ["/unbanuser <discord_id>", "Remove website blacklist"],
-    ],
-  },
-  {
-    title: "Hardware",
-    cmds: [
-      ["/resethwid <script_id>", "Reset your linked HWID"],
-      ["/forceresethwid <script_id> <user>", "Force reset HWID for a user"],
-      ["/banhwid <hwid> [reason]", "Ban a hardware ID"],
-      ["/unbanhwid <hwid>", "Remove a hardware ID ban"],
-    ],
-  },
+const STEPS: [string, string][] = [
+  ["1", "Invite the LuaMore bot to your Discord server."],
+  ["2", "Enable Key system on your script."],
+  ["3", "Run /setup in a channel and pick the script."],
+  ["4", "Configure the Buyer role and Admin roles for that panel above."],
+  ["5", "Use /whitelist user duration — duration like 20s, 35m, 2h, 1d, 7d, 30d (omit for forever)."],
+  ["6", "Admins can use /resethwid user with no cooldown."],
+];
+
+const COMMANDS: [string, string][] = [
+  ["/setup [script_id]", "Create the control panel in this channel for a script"],
+  ["/whitelist <user> [duration]", "Whitelist a user — 20s, 35m, 2h, 1d, 7d, 30d, or omit for forever"],
+  ["/resethwid [user]", "Reset your HWID; admins can reset for anyone, no cooldown"],
+  ["/login <api_key>", "Link your Discord account to LuaMore"],
+  ["/help", "Show the how-to-use guide in Discord"],
 ];
 
 function Commands() {
-  const total = GROUPS.reduce((n, g) => n + g.cmds.length, 0);
-
   return (
     <div className="flex min-h-screen flex-col">
       <SiteNav />
@@ -85,40 +54,41 @@ function Commands() {
               >
                 /api/public/discord/interactions
               </code>{" "}
-              and all {total} commands become available in your server.
+              and every command become available in your server.
             </p>
           </div>
         </section>
 
         <div className="mx-auto w-full max-w-5xl space-y-12 px-6 py-14">
-          {GROUPS.map((g) => (
-            <section key={g.title}>
-              <div className="flex items-center gap-4">
-                <h2 className="eyebrow shrink-0">{g.title}</h2>
-                <div className="hairline" />
-              </div>
+          <section>
+            <div className="flex items-center gap-4">
+              <h2 className="eyebrow shrink-0">How to use</h2>
+              <div className="hairline" />
+            </div>
+            <ol className="mt-5 grid gap-px overflow-hidden rounded-lg border" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
+              {STEPS.map(([n, text]) => (
+                <li key={n} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 p-4" style={{ background: "var(--card)" }}>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-xs" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{n}</span>
+                  <span className="min-w-0 text-sm" style={{ color: "var(--foreground)" }}>{text}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-              <div
-                className="mt-5 grid gap-px overflow-hidden rounded-lg border"
-                style={{ borderColor: "var(--border)", background: "var(--border)" }}
-              >
-                {g.cmds.map(([cmd, desc]) => (
-                  <div
-                    key={cmd}
-                    className="grid gap-2 p-4 transition-colors md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-6"
-                    style={{ background: "var(--card)" }}
-                  >
-                    <code className="min-w-0 font-mono text-sm break-words" style={{ color: "var(--foreground)" }}>
-                      {cmd}
-                    </code>
-                    <div className="min-w-0 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                      {desc}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
+          <section>
+            <div className="flex items-center gap-4">
+              <h2 className="eyebrow shrink-0">Commands</h2>
+              <div className="hairline" />
+            </div>
+            <div className="mt-5 grid gap-px overflow-hidden rounded-lg border" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
+              {COMMANDS.map(([cmd, desc]) => (
+                <div key={cmd} className="grid gap-2 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-6" style={{ background: "var(--card)" }}>
+                  <code className="min-w-0 font-mono text-sm break-words" style={{ color: "var(--foreground)" }}>{cmd}</code>
+                  <div className="min-w-0 text-sm" style={{ color: "var(--muted-foreground)" }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
 

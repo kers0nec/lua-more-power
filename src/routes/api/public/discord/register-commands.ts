@@ -17,98 +17,32 @@ const OPT = {
 } as const;
 
 const commands = [
-  { name: "help", description: "List all LuaMore commands" },
-  { name: "setup", description: "Set up the LuaMore panel" },
+  { name: "help", description: "How to use LuaMore" },
   {
     name: "login",
     description: "Link your Discord to a LuaMore account",
     options: [{ type: OPT.STRING, name: "api_key", description: "Your LuaMore API key", required: true }],
   },
-  { name: "limits", description: "Check your script and panel limits" },
   {
-    name: "create-script",
-    description: "Create a new script",
+    name: "setup",
+    description: "Set up the LuaMore panel in this channel",
+    options: [{ type: OPT.STRING, name: "script_id", description: "Script public ID (optional — otherwise pick from a menu)", required: false }],
+  },
+  {
+    name: "whitelist",
+    description: "Whitelist a user for this channel's script",
     options: [
-      { type: OPT.STRING, name: "name", description: "Script name", required: true },
-      { type: OPT.STRING, name: "code", description: "Luau code", required: true },
-      { type: OPT.BOOLEAN, name: "ffa", description: "FFA / public", required: false },
+      { type: OPT.USER, name: "user", description: "User to whitelist", required: true },
+      { type: OPT.STRING, name: "duration", description: "20s, 35m, 2h, 1d, 7d, 30d — omit for forever", required: false },
     ],
   },
   {
-    name: "generatekey",
-    description: "Generate a license key",
-    options: [
-      { type: OPT.STRING, name: "panel_id", description: "Panel UUID", required: true },
-      { type: OPT.INTEGER, name: "hours", description: "Valid hours", required: true },
-      { type: OPT.STRING, name: "note", description: "Note", required: false },
-      { type: OPT.STRING, name: "user", description: "Discord user id", required: false },
-    ],
-  },
-  {
-    name: "deletekey", description: "Delete a license key",
-    options: [{ type: OPT.STRING, name: "key", description: "Key value", required: true }],
-  },
-  {
-    name: "keys", description: "List your recent keys",
-    options: [{ type: OPT.STRING, name: "panel_id", description: "Filter by panel", required: false }],
-  },
-  {
-    name: "whitelist", description: "Whitelist a user and auto-generate a key",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public id", required: true },
-      { type: OPT.STRING, name: "user", description: "Discord user id", required: true },
-      { type: OPT.INTEGER, name: "duration", description: "Hours", required: false },
-    ],
-  },
-  {
-    name: "blacklist", description: "Blacklist a user from a script",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public id", required: true },
-      { type: OPT.STRING, name: "user", description: "Discord user id", required: true },
-    ],
-  },
-  {
-    name: "loader", description: "Get the loader for a script",
-    options: [{ type: OPT.STRING, name: "script_id", description: "Script public id", required: true }],
-  },
-  {
-    name: "resethwid", description: "Reset your linked HWID",
-    options: [{ type: OPT.STRING, name: "script_id", description: "Script public id", required: false }],
-  },
-  {
-    name: "forceresethwid", description: "Force reset HWID for a user",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public id", required: true },
-      { type: OPT.STRING, name: "user", description: "Discord user id", required: true },
-    ],
-  },
-  {
-    name: "banhwid", description: "Ban a hardware ID",
-    options: [
-      { type: OPT.STRING, name: "hwid", description: "HWID", required: true },
-      { type: OPT.STRING, name: "reason", description: "Reason", required: false },
-    ],
-  },
-  { name: "unbanhwid", description: "Unban a hardware ID", options: [{ type: OPT.STRING, name: "hwid", description: "HWID", required: true }] },
-  {
-    name: "banuser", description: "Blacklist a Discord user from website access",
-    options: [
-      { type: OPT.STRING, name: "discord_id", description: "Discord user id", required: true },
-      { type: OPT.STRING, name: "reason", description: "Reason", required: false },
-    ],
-  },
-  { name: "unbanuser", description: "Remove website blacklist", options: [{ type: OPT.STRING, name: "discord_id", description: "Discord user id", required: true }] },
-  {
-    name: "panel", description: "Send a control panel to this channel",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public ID (creates/uses that script's panel)", required: false },
-      { type: OPT.STRING, name: "panel_id", description: "Existing panel UUID", required: false },
-      { type: OPT.STRING, name: "name", description: "Panel title override", required: false },
-      { type: OPT.STRING, name: "description", description: "Panel description override", required: false },
-    ],
-
+    name: "resethwid",
+    description: "Reset a HWID (admins can reset for others, no cooldown)",
+    options: [{ type: OPT.USER, name: "user", description: "User to reset (admins only)", required: false }],
   },
 ];
+
 
 export const Route = createFileRoute("/api/public/discord/register-commands")({
   server: {

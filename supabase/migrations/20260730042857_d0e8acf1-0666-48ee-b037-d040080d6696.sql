@@ -1,0 +1,1 @@
+ALTER TABLE public.panels ADD COLUMN IF NOT EXISTS admin_role_ids text[] NOT NULL DEFAULT '{}'::text[];

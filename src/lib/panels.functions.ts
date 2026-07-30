@@ -26,6 +26,7 @@ export const createPanel = createServerFn({ method: "POST" })
       roleId?: string;
       channelId?: string;
       whitelistChannelId?: string;
+      adminRoleIds?: string[];
     }) =>
       z
         .object({
@@ -36,6 +37,7 @@ export const createPanel = createServerFn({ method: "POST" })
           roleId: z.string().max(64).optional(),
           channelId: z.string().regex(/^\d{5,25}$/).optional(),
           whitelistChannelId: z.string().regex(/^\d{5,25}$/).optional(),
+          adminRoleIds: z.array(z.string().regex(/^\d{5,25}$/)).max(20).optional(),
         })
         .parse(input),
   )
@@ -51,6 +53,7 @@ export const createPanel = createServerFn({ method: "POST" })
         discord_role_id: data.roleId ?? null,
         channel_id: data.channelId ?? null,
         whitelist_channel_id: data.whitelistChannelId ?? null,
+        admin_role_ids: data.adminRoleIds ?? [],
       })
       .select("*")
       .maybeSingle();
@@ -65,6 +68,32 @@ export const deletePanel = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("panels")
       .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// Update the roles / channels of an existing panel (also used for panels
+// created from Discord via /setup).
+export const updatePanel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; roleId?: string | null; adminRoleIds?: string[] }) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        roleId: z.string().regex(/^\d{5,25}$/).nullable().optional(),
+        adminRoleIds: z.array(z.string().regex(/^\d{5,25}$/)).max(20).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const patch: { discord_role_id?: string | null; admin_role_ids?: string[] } = {};
+    if (data.roleId !== undefined) patch.discord_role_id = data.roleId || null;
+    if (data.adminRoleIds !== undefined) patch.admin_role_ids = data.adminRoleIds;
+    const { error } = await context.supabase
+      .from("panels")
+      .update(patch)
       .eq("id", data.id)
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
