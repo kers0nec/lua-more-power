@@ -99,8 +99,14 @@ const commands = [
   },
   { name: "unbanuser", description: "Remove website blacklist", options: [{ type: OPT.STRING, name: "discord_id", description: "Discord user id", required: true }] },
   {
-    name: "panel", description: "Send a panel to the current channel",
-    options: [{ type: OPT.STRING, name: "panel_id", description: "Panel UUID", required: true }],
+    name: "panel", description: "Send a control panel to this channel",
+    options: [
+      { type: OPT.STRING, name: "script_id", description: "Script public ID (creates/uses that script's panel)", required: false },
+      { type: OPT.STRING, name: "panel_id", description: "Existing panel UUID", required: false },
+      { type: OPT.STRING, name: "name", description: "Panel title override", required: false },
+      { type: OPT.STRING, name: "description", description: "Panel description override", required: false },
+    ],
+
   },
 ];
 
