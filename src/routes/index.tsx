@@ -230,7 +230,7 @@ function Home() {
                 className="card-blue flex flex-col p-8"
                 style={
                   p.highlight
-                    ? { borderColor: "var(--foreground)", boxShadow: "0 0 0 1px var(--foreground), 0 24px 60px rgba(255,255,255,0.06)" }
+                    ? { borderColor: "var(--primary)", boxShadow: "0 0 0 1px var(--primary), 0 24px 60px rgba(26,109,255,0.12)" }
                     : undefined
                 }
               >

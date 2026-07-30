@@ -20,7 +20,7 @@ export function SiteNav() {
   return (
     <header
       className="sticky top-0 z-40 border-b backdrop-blur-xl"
-      style={{ background: "rgba(5,6,8,0.72)", borderColor: "var(--border)" }}
+      style={{ background: "rgba(255,255,255,0.78)", borderColor: "var(--border)" }}
     >
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-6 py-3 md:flex md:justify-between">
         <Link to="/" className="min-w-0">
