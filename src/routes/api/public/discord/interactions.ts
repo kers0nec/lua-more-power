@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { buildPanelComponents, buildPanelEmbed, buildWhitelistMessage } from "@/lib/discord-panel";
+
 
 // Discord HTTP Interactions endpoint.
 // Configure in the Discord developer portal:
