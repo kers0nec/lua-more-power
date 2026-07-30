@@ -88,7 +88,7 @@ export const updatePanel = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: { discord_role_id?: string | null; admin_role_ids?: string[] } = {};
     if (data.roleId !== undefined) patch.discord_role_id = data.roleId || null;
     if (data.adminRoleIds !== undefined) patch.admin_role_ids = data.adminRoleIds;
     const { error } = await context.supabase
