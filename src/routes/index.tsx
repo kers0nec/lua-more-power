@@ -18,9 +18,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LuaMore — More Power, More Security, More Lua" },
-      { name: "description", content: "Advanced Luau obfuscation, license keys, HWID protection, and Discord panels — all in one platform." },
-      { property: "og:title", content: "LuaMore — Advanced Luau Obfuscation Platform" },
-      { property: "og:description", content: "Obfuscate, host, and protect your Lua scripts with license keys, HWID locking, and Discord integration." },
+      { name: "description", content: "Luau script hosting, license keys, HWID protection, and Discord panels — all in one platform." },
+      { property: "og:title", content: "LuaMore — Luau Script Hosting & Protection" },
+      { property: "og:description", content: "Host and protect your Lua scripts with license keys, HWID locking, and Discord integration." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -29,41 +29,40 @@ export const Route = createFileRoute("/")({
 });
 
 const features: { icon: LucideIcon; title: string; desc: string; tag: string }[] = [
-  { icon: Shield, tag: "01", title: "Larph Obfuscation", desc: "Control-flow scrambling, variable renaming, and server-side skid protection powered by the Larph engine." },
+  { icon: Shield, tag: "01", title: "Secure Loaders", desc: "Serve your scripts through key-gated loader endpoints instead of exposing raw links." },
   { icon: KeyRound, tag: "02", title: "License Management", desc: "Generate single or bulk keys with expiry windows, notes, and per-script scoping." },
   { icon: Cpu, tag: "03", title: "HWID Protection", desc: "Lock scripts to hardware, ban abusers, and reset devices in a single click." },
   { icon: MessageSquare, tag: "04", title: "Panel System", desc: "Interactive Discord panels with redeem, script, role, and HWID buttons." },
   { icon: CheckCircle2, tag: "05", title: "Whitelist System", desc: "Auto-generate keys the moment you whitelist a user by Discord ID." },
-  { icon: Package, tag: "06", title: "Script Hosting", desc: "Version, release, and serve obfuscated builds through secure loaders." },
+  { icon: Package, tag: "06", title: "Script Hosting", desc: "Version, release, and serve your builds from a single dashboard." },
 ];
 
 const steps = [
-  { n: "01", title: "Upload your Luau script", desc: "Paste code or import from Discord — syntax validated on the fly." },
-  { n: "02", title: "Obfuscate with Larph", desc: "Light, Standard, or Advanced. Server-side protection available." },
+  { n: "01", title: "Upload your Luau script", desc: "Paste code or import it straight from Discord." },
+  { n: "02", title: "Lock it down", desc: "License keys, HWID locking, and whitelists in a click." },
   { n: "03", title: "Deploy with Discord", desc: "Panels, license keys, and HWID checks wired to your server." },
 ];
 
 const plans = [
-  { name: "Free", price: "$0", features: ["5 scripts", "Basic obfuscation", "Discord panel", "Community support"], cta: "Start free" },
-  { name: "Pro", price: "$9", highlight: true, features: ["50 scripts", "Advanced obfuscation", "Bulk key generation", "Priority Larph queue"], cta: "Go Pro" },
-  { name: "Enterprise", price: "Custom", features: ["Unlimited scripts", "Skid protection tier", "Dedicated support", "Custom Discord bot"], cta: "Contact us" },
+  { name: "Free", price: "$0", features: ["5 scripts", "Secure loaders", "Discord panel", "Community support"], cta: "Start free" },
+  { name: "Pro", price: "$9", highlight: true, features: ["50 scripts", "HWID protection", "Bulk key generation", "Priority delivery"], cta: "Go Pro" },
+  { name: "Enterprise", price: "Custom", features: ["Unlimited scripts", "Whitelist automation", "Dedicated support", "Custom Discord bot"], cta: "Contact us" },
 ];
 
 const marquee = [
-  "CONTROL-FLOW SCRAMBLING",
+  "SECURE LOADERS",
   "HWID LOCKING",
   "LICENSE KEYS",
   "DISCORD PANELS",
-  "SECURE LOADERS",
   "VERSIONED RELEASES",
-  "SKID PROTECTION",
+  "WHITELIST SYSTEM",
 ];
 
 
 
 function Home() {
   const stats = useQuery({ queryKey: ["public-stats"], queryFn: () => getPublicStats() });
-  const s = stats.data ?? { scriptsObfuscated: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
+  const s = stats.data ?? { releasesPublished: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
 
   return (
     <div className="min-h-screen">
@@ -79,7 +78,7 @@ function Home() {
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ background: "var(--foreground)" }}
               />
-              Powered by the Larph engine
+              Built for Luau developers
             </span>
           </div>
 
@@ -101,7 +100,7 @@ function Home() {
             className="rise mx-auto mt-7 max-w-2xl text-base leading-relaxed md:text-lg"
             style={{ color: "var(--muted-foreground)", animationDelay: "180ms" }}
           >
-            Obfuscate Luau scripts, generate license keys, lock hardware, and ship everything
+            Host Luau scripts, generate license keys, lock hardware, and ship everything
             through a Discord panel — one dashboard, zero setup.
           </p>
 
@@ -151,7 +150,7 @@ function Home() {
             Everything you need to ship Lua
           </h2>
           <p className="mt-4 text-base" style={{ color: "var(--muted-foreground)" }}>
-            One platform for obfuscation, delivery, and protection — no glue code, no extra services.
+            One platform for hosting, delivery, and protection — no glue code, no extra services.
           </p>
         </div>
 
@@ -203,7 +202,7 @@ function Home() {
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border md:grid-cols-4" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
           {[
-            { label: "Scripts obfuscated", value: s.scriptsObfuscated },
+            { label: "Releases published", value: s.releasesPublished },
             { label: "Active users", value: s.activeUsers },
             { label: "Keys generated", value: s.keysGenerated },
             { label: "Scripts hosted", value: s.scriptsHosted },
@@ -272,7 +271,7 @@ function Home() {
             Ship your script. Keep your source.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base" style={{ color: "var(--muted-foreground)" }}>
-            Set up obfuscation, keys, and a Discord panel in under five minutes.
+            Set up hosting, keys, and a Discord panel in under five minutes.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/auth" className="btn-primary w-full sm:w-auto">

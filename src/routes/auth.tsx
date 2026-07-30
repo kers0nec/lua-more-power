@@ -7,9 +7,9 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — LuaMore" },
-      { name: "description", content: "Sign in or create your LuaMore account to obfuscate, host, and protect Luau scripts." },
+      { name: "description", content: "Sign in or create your LuaMore account to host and protect Luau scripts." },
       { property: "og:title", content: "Sign in — LuaMore" },
-      { property: "og:description", content: "Access your LuaMore dashboard: obfuscation, license keys, HWID protection." },
+      { property: "og:description", content: "Access your LuaMore dashboard: script hosting, license keys, HWID protection." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
