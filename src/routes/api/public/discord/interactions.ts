@@ -224,32 +224,58 @@ async function handleCommand(body: any) {
         const profile = await getProfileByDiscord(userId);
         if (!profile) return errorReply("Account not linked");
         const panelId = String(opts.get("panel_id") ?? "");
+        const scriptPublicId = String(opts.get("script_id") ?? "");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: panel } = await supabaseAdmin.from("panels").select("*").eq("id", panelId).eq("user_id", profile.id).maybeSingle();
+
+        let panel: any = null;
+
+        if (panelId) {
+          const { data } = await supabaseAdmin.from("panels").select("*").eq("id", panelId).eq("user_id", profile.id).maybeSingle();
+          panel = data;
+        } else if (scriptPublicId) {
+          const { data: script } = await supabaseAdmin
+            .from("scripts").select("id, name, description")
+            .eq("public_id", scriptPublicId).eq("user_id", profile.id).maybeSingle();
+          if (!script) return errorReply("Script not found — pass its public ID");
+          const { data: existing } = await supabaseAdmin
+            .from("panels").select("*").eq("user_id", profile.id).eq("script_id", script.id).maybeSingle();
+          if (existing) {
+            panel = existing;
+          } else {
+            const { data: created, error: createErr } = await supabaseAdmin.from("panels").insert({
+              user_id: profile.id,
+              script_id: script.id,
+              name: String(opts.get("name") ?? "") || script.name,
+              description: String(opts.get("description") ?? "") || script.description || null,
+              channel_id: body.channel_id ?? null,
+              whitelist_channel_id: body.channel_id ?? null,
+            }).select("*").maybeSingle();
+            if (createErr || !created) return errorReply(createErr?.message ?? "Could not create panel");
+            panel = created;
+          }
+        } else {
+          return errorReply("Provide `script_id` (script public ID) or `panel_id`");
+        }
+
         if (!panel) return errorReply("Panel not found");
+
+        // Remember the channel this panel lives in (used by whitelist messages).
+        if (body.channel_id && panel.channel_id !== body.channel_id) {
+          await supabaseAdmin.from("panels")
+            .update({ channel_id: body.channel_id, whitelist_channel_id: panel.whitelist_channel_id ?? body.channel_id })
+            .eq("id", panel.id);
+        }
+
+        const sentBy = body.member?.user?.global_name || body.member?.user?.username || null;
         return {
           type: 4,
           data: {
-            embeds: [{
-              title: `LuaMore · ${panel.name}`,
-              description: panel.description || "More Power, More Security, More Lua",
-              color: COLOR_SUCCESS,
-              footer: { text: "LuaMore · Script Delivery" },
-            }],
-            components: [
-              { type: 1, components: [
-                { type: 2, style: 1, label: "🔑 Redeem Key", custom_id: `lm:redeem:${panel.id}` },
-                { type: 2, style: 1, label: "📜 Get Script", custom_id: `lm:script:${panel.id}` },
-                { type: 2, style: 1, label: "👤 Get Role", custom_id: `lm:role:${panel.id}` },
-              ]},
-              { type: 1, components: [
-                { type: 2, style: 1, label: "⚙️ Reset HWID", custom_id: `lm:hwid:${panel.id}` },
-                { type: 2, style: 2, label: "📊 Stats", custom_id: `lm:stats:${panel.id}` },
-              ]},
-            ],
+            embeds: [buildPanelEmbed({ id: panel.id, name: panel.name, description: panel.description, sentBy })],
+            components: buildPanelComponents(panel.id),
           },
         };
       }
+
       default: return errorReply(`Unknown command: ${name}`);
     }
   } catch (e) {
