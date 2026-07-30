@@ -102,6 +102,7 @@ export const updateScript = createServerFn({ method: "POST" })
       category?: string;
       tags?: string[];
       is_active?: boolean;
+      is_protected?: boolean;
     }) =>
       z
         .object({
@@ -109,18 +110,50 @@ export const updateScript = createServerFn({ method: "POST" })
           ...metaShape,
           name: metaShape.name.optional(),
           code: z.string().max(1_000_000_000).optional(),
+          is_protected: z.boolean().optional(),
         })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
+    const patch: Record<string, unknown> = { ...rest };
+    // Auto-obfuscate on save when protection is enabled and code changed.
+    if (rest.is_protected && typeof rest.code === "string" && rest.code.length > 0) {
+      const { obfuscateLua } = await import("@/lib/obfuscator.server");
+      patch.obfuscated_code = obfuscateLua(rest.code);
+      patch.obfuscator = "luamore-vm-v2";
+    }
     const { error } = await context.supabase
       .from("scripts")
-      .update(rest)
+      .update(patch)
       .eq("id", id)
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const obfuscateScriptNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
+      .from("scripts")
+      .select("id, code")
+      .eq("id", data.id)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Not found");
+    if (!row.code) throw new Error("No source code to obfuscate");
+    const { obfuscateLua } = await import("@/lib/obfuscator.server");
+    const obfuscated_code = obfuscateLua(row.code);
+    const { error: upErr } = await context.supabase
+      .from("scripts")
+      .update({ obfuscated_code, obfuscator: "luamore-vm-v2" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (upErr) throw new Error(upErr.message);
+    return { ok: true, size: obfuscated_code.length };
   });
 
 export const deleteScript = createServerFn({ method: "POST" })
