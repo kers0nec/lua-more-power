@@ -21,31 +21,23 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     };
   });
 
-// Public site counters — cached brief numbers for the homepage.
+// Public site counters — aggregated counts only, safe to expose.
 export const getPublicStats = createServerFn({ method: "GET" }).handler(async () => {
-  const { createClient } = await import("@supabase/supabase-js");
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  const supabase = createClient(process.env.SUPABASE_URL!, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-  const [scripts, releases, keys, users] = await Promise.all([
-    supabase.from("scripts").select("id", { count: "exact", head: true }),
-    supabase.from("script_releases").select("id", { count: "exact", head: true }),
-    supabase.from("license_keys").select("id", { count: "exact", head: true }),
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-  ]);
-  return {
-    scriptsObfuscated: releases.count ?? 0,
-    scriptsHosted: scripts.count ?? 0,
-    keysGenerated: keys.count ?? 0,
-    activeUsers: users.count ?? 0,
-  };
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [scripts, releases, keys, users] = await Promise.all([
+      supabaseAdmin.from("scripts").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("script_releases").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("license_keys").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+    ]);
+    return {
+      scriptsObfuscated: releases.count ?? 0,
+      scriptsHosted: scripts.count ?? 0,
+      keysGenerated: keys.count ?? 0,
+      activeUsers: users.count ?? 0,
+    };
+  } catch {
+    return { scriptsObfuscated: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
+  }
 });
