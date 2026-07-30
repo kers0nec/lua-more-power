@@ -15,7 +15,7 @@ function prettyError(e: unknown) {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
       return parsed
-        .map((i: { message?: string; path?: (string | number)[] }) =>
+        .map((i: { code?: string; message?: string; path?: (string | number)[] }) =>
           i.code === "too_big" && i.path?.[0] === "code"
             ? "Script is too large to save"
             : `${i.path?.join(".") ?? "input"}: ${i.message ?? "invalid"}`,
