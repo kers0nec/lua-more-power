@@ -1,5 +1,21 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import {
+  LayoutGrid,
+  FileCode2,
+  Shield,
+  CheckCircle2,
+  KeyRound,
+  Layers,
+  Ban,
+  PanelsTopLeft,
+  Terminal,
+  Settings,
+  Menu,
+  X,
+  LogOut,
+  type LucideIcon,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
@@ -13,32 +29,32 @@ export const Route = createFileRoute("/_authenticated")({
   component: Layout,
 });
 
-type NavItem = { to: string; label: string; icon: string };
+type NavItem = { to: string; label: string; icon: LucideIcon };
 
 const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Workspace",
     items: [
-      { to: "/dashboard", label: "Overview", icon: "◈" },
-      { to: "/dashboard/scripts", label: "Scripts", icon: "❯" },
-      { to: "/dashboard/obfuscate", label: "Obfuscate", icon: "✦" },
-      { to: "/dashboard/validate", label: "Validate", icon: "✓" },
+      { to: "/dashboard", label: "Overview", icon: LayoutGrid },
+      { to: "/dashboard/scripts", label: "Scripts", icon: FileCode2 },
+      { to: "/dashboard/obfuscate", label: "Obfuscate", icon: Shield },
+      { to: "/dashboard/validate", label: "Validate", icon: CheckCircle2 },
     ],
   },
   {
     label: "Protection",
     items: [
-      { to: "/dashboard/keys", label: "Keys", icon: "⚿" },
-      { to: "/dashboard/batches", label: "Key Batches", icon: "▦" },
-      { to: "/dashboard/hwid", label: "HWID Bans", icon: "⊘" },
+      { to: "/dashboard/keys", label: "Keys", icon: KeyRound },
+      { to: "/dashboard/batches", label: "Key Batches", icon: Layers },
+      { to: "/dashboard/hwid", label: "HWID Bans", icon: Ban },
     ],
   },
   {
     label: "Integrations",
     items: [
-      { to: "/dashboard/panels", label: "Panels", icon: "◧" },
-      { to: "/dashboard/api-keys", label: "API Keys", icon: "⌘" },
-      { to: "/dashboard/settings", label: "Settings", icon: "⚙" },
+      { to: "/dashboard/panels", label: "Panels", icon: PanelsTopLeft },
+      { to: "/dashboard/api-keys", label: "API Keys", icon: Terminal },
+      { to: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },
 ];
@@ -61,26 +77,25 @@ function Layout() {
 
   const SidebarBody = (
     <>
-      <div className="px-5 py-5 flex items-center justify-between">
-        <Link to="/"><Logo size={28} /></Link>
+      <div
+        className="flex items-center justify-between border-b px-5 py-4"
+        style={{ borderColor: "var(--border)" }}
+      >
+        <Link to="/"><Logo size={26} /></Link>
         <button
           onClick={() => setOpen(false)}
           aria-label="Close menu"
-          className="md:hidden btn-ghost px-2 py-1 text-lg"
+          className="btn-ghost px-2 py-1 md:hidden"
         >
-          ✕
+          <X size={18} />
         </button>
       </div>
-      <nav className="flex-1 px-3 pb-3 space-y-6 overflow-y-auto">
+
+      <nav className="flex-1 space-y-7 overflow-y-auto px-3 py-5">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
-            <div
-              className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: "#71717a" }}
-            >
-              {group.label}
-            </div>
-            <div className="space-y-0.5">
+            <div className="eyebrow px-3 pb-3">{group.label}</div>
+            <div className="space-y-1">
               {group.items.map((item) => {
                 const active =
                   loc.pathname === item.to || (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
@@ -88,20 +103,20 @@ function Layout() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors"
                     style={{
                       background: active ? "var(--accent-light)" : "transparent",
                       color: active ? "var(--foreground)" : "var(--muted-foreground)",
-                      boxShadow: active ? "inset 0 0 0 1px var(--border)" : "none",
+                      fontWeight: active ? 600 : 400,
                     }}
                   >
                     <span
-                      className="w-5 text-center text-xs"
-                      style={{ color: active ? "var(--foreground)" : "#71717a" }}
-                    >
-                      {item.icon}
-                    </span>
-                    {item.label}
+                      aria-hidden
+                      className="absolute top-1.5 bottom-1.5 left-0 w-[2px] rounded-full"
+                      style={{ background: active ? "var(--foreground)" : "transparent" }}
+                    />
+                    <item.icon size={16} strokeWidth={1.7} className="shrink-0" />
+                    <span className="truncate">{item.label}</span>
                   </Link>
                 );
               })}
@@ -109,8 +124,11 @@ function Layout() {
           </div>
         ))}
       </nav>
-      <div className="p-3 border-t" style={{ borderColor: "var(--border)" }}>
-        <button onClick={signOut} className="btn-ghost w-full text-sm justify-start">Sign out</button>
+
+      <div className="border-t p-3" style={{ borderColor: "var(--border)" }}>
+        <button onClick={signOut} className="btn-ghost w-full justify-start text-sm">
+          <LogOut size={16} strokeWidth={1.7} /> Sign out
+        </button>
       </div>
     </>
   );
@@ -120,10 +138,10 @@ function Layout() {
     "Dashboard";
 
   return (
-    <div className="min-h-screen flex w-full" style={{ background: "var(--background)" }}>
+    <div className="flex min-h-screen w-full" style={{ background: "var(--background)" }}>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col w-64 shrink-0 border-r"
+        className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r md:flex"
         style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
       >
         {SidebarBody}
@@ -131,14 +149,14 @@ function Layout() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.65)" }}
+            className="absolute inset-0 backdrop-blur-sm"
+            style={{ background: "rgba(0,0,0,0.7)" }}
             onClick={() => setOpen(false)}
           />
           <aside
-            className="relative flex flex-col w-72 max-w-[85%] h-full border-r shadow-xl"
+            className="relative flex h-full w-72 max-w-[85%] flex-col border-r shadow-xl"
             style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
           >
             {SidebarBody}
@@ -146,19 +164,19 @@ function Layout() {
         </div>
       )}
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
         <header
-          className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3"
-          style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
+          className="sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl md:hidden"
+          style={{ borderColor: "var(--border)", background: "rgba(7,7,7,0.85)" }}
         >
-          <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost px-2 py-1 text-xl">
-            ☰
+          <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost shrink-0 px-2 py-1">
+            <Menu size={20} />
           </button>
-          <span className="font-semibold truncate">{currentLabel}</span>
+          <span className="truncate font-display font-bold">{currentLabel}</span>
         </header>
 
-        <main className="flex-1 min-w-0">
+        <main className="min-w-0 flex-1">
           <Outlet />
         </main>
       </div>
