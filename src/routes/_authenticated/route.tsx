@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import {
   LayoutGrid,
   FileCode2,
-  Shield,
-  CheckCircle2,
   KeyRound,
   Layers,
   Ban,
@@ -37,8 +35,6 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/dashboard", label: "Overview", icon: LayoutGrid },
       { to: "/dashboard/scripts", label: "Scripts", icon: FileCode2 },
-      { to: "/dashboard/obfuscate", label: "Obfuscate", icon: Shield },
-      { to: "/dashboard/validate", label: "Validate", icon: CheckCircle2 },
     ],
   },
   {

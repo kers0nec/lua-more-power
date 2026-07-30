@@ -62,7 +62,6 @@ function Scripts() {
                   <span className="badge-blue">{s.public_id}</span>
                   {s.ffa && <span className="badge-blue">FFA</span>}
                   {s.is_protected && <span className="badge-solid">Protected</span>}
-                  {s.obfuscator && <span className="badge-blue">{s.obfuscator}</span>}
                 </div>
               </div>
               <button

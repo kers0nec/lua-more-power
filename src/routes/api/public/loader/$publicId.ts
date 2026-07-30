@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Public loader endpoint. Returns the latest obfuscated code for a public_id.
+// Public loader endpoint. Returns the hosted script source for a public_id.
 // If a `key` query param is supplied it is validated against license_keys and
 // the calling HWID (query `hwid`) is locked on first use.
 //
 //   GET /api/public/loader/<public_id>
 //   GET /api/public/loader/<public_id>?key=LM-...&hwid=abc123
 //
-// Scripts marked FFA return the obfuscated code without a key.
+// Scripts marked FFA return the code without a key.
 
 export const Route = createFileRoute("/api/public/loader/$publicId")({
   server: {
@@ -20,14 +20,14 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
 
         const { data: script, error } = await supabaseAdmin
           .from("scripts")
-          .select("id, user_id, name, obfuscated_code, ffa, public_id")
+          .select("id, user_id, name, code, ffa, public_id")
           .eq("public_id", params.publicId)
           .maybeSingle();
         if (error || !script) return luaError("Script not found");
-        if (!script.obfuscated_code) return luaError("Script has no build yet");
+        if (!script.code) return luaError("Script has no code yet");
 
         if (script.ffa) {
-          return lua(script.obfuscated_code);
+          return lua(script.code);
         }
 
         if (!key) return luaError("License key required");
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
           }
         }
 
-        return lua(script.obfuscated_code);
+        return lua(script.code);
       },
     },
   },

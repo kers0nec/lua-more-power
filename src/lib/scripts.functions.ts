@@ -7,7 +7,7 @@ export const listScripts = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("scripts")
-      .select("id, name, public_id, ffa, is_protected, obfuscator, larph_hash, updated_at, created_at")
+      .select("id, name, public_id, ffa, updated_at, created_at")
       .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);

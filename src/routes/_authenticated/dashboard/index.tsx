@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FileCode2, KeyRound, PanelsTopLeft, Package, Shield, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { FileCode2, KeyRound, PanelsTopLeft, Package, ArrowUpRight, Ban } from "lucide-react";
 import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
@@ -25,10 +25,10 @@ function Dashboard() {
   ];
 
   const actions = [
-    { to: "/dashboard/scripts", icon: FileCode2, title: "Create a script", desc: "Upload Luau code and obfuscate it with Larph." },
-    { to: "/dashboard/obfuscate", icon: Shield, title: "Quick obfuscate", desc: "One-off obfuscation without saving a script." },
+    { to: "/dashboard/scripts", icon: FileCode2, title: "Create a script", desc: "Upload Luau code and host it behind a secure loader." },
     { to: "/dashboard/keys", icon: KeyRound, title: "Generate keys", desc: "Issue single or bulk license keys with expiry." },
-    { to: "/dashboard/validate", icon: CheckCircle2, title: "Validate syntax", desc: "Check Luau syntax before you ship it." },
+    { to: "/dashboard/panels", icon: PanelsTopLeft, title: "Build a panel", desc: "Ship redeem and HWID buttons straight to Discord." },
+    { to: "/dashboard/hwid", icon: Ban, title: "Manage HWIDs", desc: "Ban abusers or reset locked devices." },
   ];
 
   return (

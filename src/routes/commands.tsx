@@ -6,7 +6,7 @@ export const Route = createFileRoute("/commands")({
   head: () => ({
     meta: [
       { title: "Discord Commands — LuaMore" },
-      { name: "description", content: "All LuaMore Discord slash commands, including /create-script, /generatekey, /whitelist, /validate." },
+      { name: "description", content: "All LuaMore Discord slash commands, including /create-script, /generatekey, /whitelist, /loader." },
       { property: "og:title", content: "LuaMore Commands" },
       { property: "og:description", content: "Every LuaMore Discord slash command explained." },
       { property: "og:type", content: "website" },
@@ -29,8 +29,7 @@ const GROUPS: { title: string; cmds: [string, string][] }[] = [
   {
     title: "Scripts",
     cmds: [
-      ["/create-script <name> [code] [ffa] [obfuscate] [mode]", "Create a new script via Discord"],
-      ["/validate <code>", "Validate Lua syntax using the Larph API"],
+      ["/create-script <name> <code> [ffa]", "Create a new script via Discord"],
       ["/loader <script_id>", "Get the loader for a script"],
     ],
   },

@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { obfuscateWithLarph, validateWithLarph, type LarphMode } from "@/lib/larph.server";
 
 // Discord HTTP Interactions endpoint.
 // Configure in the Discord developer portal:
@@ -49,12 +48,6 @@ async function handleCommand(body: any) {
     switch (name) {
       case "help": return embedReply({ title: "LuaMore Commands", description: HELP_TEXT, color: COLOR_INFO });
       case "setup": return embedReply({ title: "LuaMore Setup", description: "Visit the dashboard → Panels to create a panel with the interactive redeem/script/HWID buttons, then run `/panel <panel_id>` in the target channel.", color: COLOR_INFO });
-      case "validate": {
-        const code = String(opts.get("code") ?? "");
-        if (!code) return errorReply("Missing code");
-        const r = await validateWithLarph(code);
-        return embedReply(r.valid ? { title: "✅ Syntax OK", color: COLOR_SUCCESS } : { title: "❌ Syntax Error", description: r.error ?? "Invalid syntax", color: COLOR_ERROR });
-      }
       case "login": {
         const key = String(opts.get("api_key") ?? "");
         if (!key || !userId) return errorReply("Missing api_key");
@@ -77,8 +70,6 @@ async function handleCommand(body: any) {
         const scriptName = String(opts.get("name") ?? "").trim();
         const code = String(opts.get("code") ?? "");
         const ffa = Boolean(opts.get("ffa") ?? false);
-        const obfuscate = Boolean(opts.get("obfuscate") ?? false);
-        const mode = (String(opts.get("mode") ?? "standard") as LarphMode);
         if (!scriptName) return errorReply("Missing name");
         if (!code) return errorReply("Missing code");
 
@@ -86,23 +77,8 @@ async function handleCommand(body: any) {
         const { count } = await supabaseAdmin.from("scripts").select("id", { count: "exact", head: true }).eq("user_id", profile.id);
         if (count !== null && count >= profile.max_scripts) return errorReply(`Script limit reached (${profile.max_scripts})`);
 
-        let obfuscatedCode: string | null = null;
-        let hash: string | null = null;
-        let protectedFlag = false;
-        if (obfuscate) {
-          try {
-            const r = await obfuscateWithLarph(code, mode);
-            obfuscatedCode = r.output; hash = r.hash; protectedFlag = r.protected;
-          } catch (e) {
-            return errorReply(`Obfuscation failed: ${e instanceof Error ? e.message : "unknown"}`);
-          }
-        }
-
         const { data: script, error } = await supabaseAdmin.from("scripts").insert({
           user_id: profile.id, name: scriptName, code, ffa,
-          obfuscated_code: obfuscatedCode,
-          obfuscator: obfuscate ? `larph-${mode}` : null,
-          larph_hash: hash, is_protected: protectedFlag,
         }).select("id, public_id, name").maybeSingle();
         if (error || !script) return errorReply(`Insert failed: ${error?.message ?? "unknown"}`);
 
@@ -114,8 +90,6 @@ async function handleCommand(body: any) {
             { name: "Name", value: script.name, inline: true },
             { name: "Public ID", value: script.public_id, inline: true },
             { name: "FFA", value: ffa ? "yes" : "no", inline: true },
-            { name: "Obfuscated", value: obfuscate ? `yes · ${mode}` : "no", inline: true },
-            ...(hash ? [{ name: "Larph hash", value: hash.slice(0, 24), inline: false }] : []),
             { name: "Loader URL", value: loaderUrl, inline: false },
           ],
           footer: { text: "LuaMore · Script Management" },
@@ -372,6 +346,5 @@ const HELP_TEXT = [
   "`/resethwid` / `/forceresethwid`",
   "`/banhwid` / `/unbanhwid`",
   "`/banuser` / `/unbanuser`",
-  "`/validate <code>` · Larph syntax check",
   "`/setup` · panel setup guide",
 ].join("\n");
