@@ -81,10 +81,10 @@ function Page() {
               <button onClick={() => confirm("Delete panel?") && delMut.mutate(p.id)} className="text-xs text-[color:var(--destructive)] hover:underline">Delete</button>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-              <div className="text-center rounded-md py-2 text-white" style={{ background: "var(--gradient-primary)" }}>🔑 Redeem</div>
-              <div className="text-center rounded-md py-2 text-white" style={{ background: "var(--gradient-primary)" }}>📜 Script</div>
-              <div className="text-center rounded-md py-2 text-white" style={{ background: "var(--gradient-primary)" }}>👤 Role</div>
-              <div className="text-center rounded-md py-2 text-white" style={{ background: "var(--gradient-primary)" }}>⚙️ HWID</div>
+              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>🔑 Redeem</div>
+              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>📜 Script</div>
+              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>👤 Role</div>
+              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>⚙️ HWID</div>
               <div className="text-center rounded-md py-2 border-2 col-span-2" style={{ borderColor: "var(--primary)", color: "var(--primary)" }}>📊 Stats</div>
             </div>
             <button onClick={() => sendMut.mutate(p.id)} disabled={sendMut.isPending || !p.webhook_url} className="btn-primary w-full mt-4 text-sm">
