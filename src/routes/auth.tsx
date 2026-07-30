@@ -22,15 +22,27 @@ function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [remember, setRemember] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const nav = useNavigate();
 
   useEffect(() => {
+    const oauthErr = new URLSearchParams(window.location.search).get("error");
+    if (oauthErr) setErr(oauthErr);
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) nav({ to: "/dashboard" });
     });
   }, [nav]);
+
+  function persistRemember(value: boolean) {
+    try {
+      localStorage.setItem("lm_remember", value ? "1" : "0");
+      sessionStorage.setItem("lm_session_active", "1");
+    } catch {
+      /* storage unavailable */
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,11 +58,18 @@ function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
+      persistRemember(remember);
       nav({ to: "/dashboard" });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed");
     } finally { setBusy(false); }
   }
+
+  function discordLogin() {
+    persistRemember(remember);
+    window.location.href = "/api/public/discord/oauth/start";
+  }
+
 
   return (
     <div
