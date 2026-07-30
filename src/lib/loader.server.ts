@@ -5,6 +5,11 @@
 // user-facing loader:  loadstring(game:HttpGet(".../api/public/r/<token>"))()
 // On the first hit (no ?hwid=) we return a tiny stub that re-requests with
 // the client's HWID appended, so HWID locking still works.
+//
+// Every served script is passed through the LuaMore VM obfuscator so the
+// response body never contains plaintext source.
+import { obfuscateLua } from "@/lib/obfuscator.server";
+
 
 export async function handleLoaderRequest(params: { publicId: string }, request: Request) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -48,7 +53,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
 
   if (script.ffa) {
     await bumpRuns();
-    return lua(script.code);
+    return lua(obfuscateLua(script.code));
   }
 
   if (!key) return luaError("License key required");
@@ -86,7 +91,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   }
 
   await bumpRuns();
-  return lua(script.code);
+  return lua(obfuscateLua(script.code));
 }
 
 function lua(body: string) {
