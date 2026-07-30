@@ -84,12 +84,19 @@ function ScriptDetail() {
   return (
     <div className="p-8 max-w-6xl">
       <Link to="/dashboard/scripts" className="text-sm" style={{ color: "var(--primary)" }}>← All scripts</Link>
-      <div className="mt-2 flex items-center gap-3">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <input value={name} onChange={(e) => setName(e.target.value)} className="input-blue text-xl font-bold max-w-md" />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={ffa} onChange={(e) => setFfa(e.target.checked)} /> FFA
         </label>
+        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v2 every time you save">
+          <input type="checkbox" checked={autoObf} onChange={(e) => setAutoObf(e.target.checked)} />
+          Auto-obfuscate on save
+        </label>
         <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="btn-outline">Save</button>
+        <button onClick={() => obfMut.mutate()} disabled={obfMut.isPending} className="btn-primary">
+          {obfMut.isPending ? "Obfuscating…" : "Obfuscate now"}
+        </button>
       </div>
       {script && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
