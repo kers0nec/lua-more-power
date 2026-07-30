@@ -47,12 +47,17 @@ function randName(used: Set<string>): string {
   }
 }
 
-/** FNV-1a 32-bit checksum used for the anti-tamper guard. */
+/** FNV-1a 32-bit checksum used for the anti-tamper guard.
+ *  Multiplication is split so the Lua-side implementation stays within the
+ *  53-bit double precision limit (h*16777619 would otherwise overflow). */
 function fnv1a(bytes: Uint8Array | number[]): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < bytes.length; i++) {
     h ^= bytes[i];
-    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    // h * 16777619 mod 2^32, split as h*403 + (h%256)*2^24
+    const low = h * 403;
+    const high = (h % 256) * 16777216;
+    h = (low + high) >>> 0;
   }
   return h >>> 0;
 }
