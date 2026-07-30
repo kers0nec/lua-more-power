@@ -114,7 +114,7 @@
 
 
 @utility card-blue {
-  background: #ffffff;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
@@ -133,13 +133,13 @@
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-md);
   background: var(--gradient-primary);
-  color: #ffffff;
+  color: var(--primary-foreground);
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 170, 255, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-  &:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0, 170, 255, 0.45); }
+  &:hover { filter: brightness(0.95); transform: translateY(-1px); }
   &:active { transform: translateY(0); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 @utility btn-outline {
@@ -149,12 +149,12 @@
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-md);
-  background: #ffffff;
-  color: var(--primary);
-  border: 1.5px solid var(--primary);
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border-strong);
   font-weight: 600;
-  transition: background 0.15s ease, color 0.15s ease;
-  &:hover { background: var(--accent-light); }
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  &:hover { background: var(--accent-light); border-color: var(--foreground); }
 }
 
 @utility btn-ghost {
@@ -164,10 +164,10 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
-  color: var(--foreground);
+  color: var(--muted-foreground);
   font-weight: 500;
-  transition: background 0.15s ease;
-  &:hover { background: var(--accent-light); color: var(--primary-dark); }
+  transition: background 0.15s ease, color 0.15s ease;
+  &:hover { background: var(--accent-light); color: var(--foreground); }
 }
 
 @utility input-blue {
@@ -180,11 +180,11 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   &:focus {
     outline: none;
-    border-color: var(--primary);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15);
+    border-color: var(--border-strong);
+    background: #0b0b0d;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
   }
-  &::placeholder { color: var(--muted-foreground); }
+  &::placeholder { color: #71717a; }
 }
 
 @utility badge-blue {
@@ -193,7 +193,8 @@
   padding: 0.15rem 0.55rem;
   border-radius: 9999px;
   background: var(--accent-light);
-  color: var(--primary-dark);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -203,8 +204,9 @@
   align-items: center;
   padding: 0.15rem 0.55rem;
   border-radius: 9999px;
-  background: var(--gradient-primary);
-  color: #ffffff;
+  background: #ffffff;
+  color: #09090b;
   font-size: 0.75rem;
   font-weight: 600;
 }
+
