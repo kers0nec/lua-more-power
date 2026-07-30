@@ -55,3 +55,35 @@ export function buildWhitelistMessage(discordId: string, channelId?: string | nu
   const where = channelId ? `<#${channelId}>` : "the control panel channel";
   return `<@${discordId}> You have been whitelisted!\nYou can access the script via this message --> ${where}`;
 }
+
+// Loader snippet shown in two formats: a fenced block for PC, an inline
+// code span for mobile (mobile Discord can't copy from fenced blocks).
+export function buildLoaderMessage(loader: string) {
+  return [
+    "**PC**",
+    "```lua",
+    loader,
+    "```",
+    "**Mobile**",
+    `\`${loader}\``,
+  ].join("\n");
+}
+
+// "20s" | "35m" | "2h" | "1d" | "7d" | "30d" → milliseconds. Empty = forever.
+export function parseDuration(input?: string | null): number | null {
+  const s = String(input ?? "").trim().toLowerCase();
+  if (!s) return null;
+  const m = s.match(/^(\d+)\s*(s|m|h|d|w)?$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  const unit = m[2] ?? "h";
+  const mult = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000, w: 604_800_000 }[unit]!;
+  return n * mult;
+}
+
+export function formatDuration(ms: number | null) {
+  if (!ms) return "forever";
+  const units: [number, string][] = [[86_400_000, "d"], [3_600_000, "h"], [60_000, "m"], [1000, "s"]];
+  for (const [size, label] of units) if (ms >= size) return `${Math.round(ms / size)}${label}`;
+  return `${ms}ms`;
+}
