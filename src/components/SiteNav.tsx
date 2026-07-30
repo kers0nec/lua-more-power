@@ -4,7 +4,6 @@ import { Logo } from "./Logo";
 
 const LINKS = [
   { to: "/", label: "Home" },
-  { to: "/demo", label: "Demo" },
   { to: "/commands", label: "Commands" },
   { to: "/dashboard", label: "Dashboard" },
 ];
@@ -18,12 +17,15 @@ export function SiteNav() {
   }, [loc.pathname]);
 
   return (
-    <header className="sticky top-0 z-30 border-b backdrop-blur" style={{ background: "rgba(255,255,255,0.85)" }}>
+    <header
+      className="sticky top-0 z-30 border-b backdrop-blur"
+      style={{ background: "rgba(9,9,11,0.8)", borderColor: "var(--border)" }}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link to="/"><Logo /></Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
           {LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="hover:text-[color:var(--primary)]">{l.label}</Link>
+            <Link key={l.to} to={l.to} className="hover:text-[color:var(--foreground)]">{l.label}</Link>
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-3">
@@ -41,7 +43,7 @@ export function SiteNav() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t bg-white px-6 py-4" style={{ borderColor: "var(--border)" }}>
+        <div className="md:hidden border-t px-6 py-4" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
           <nav className="flex flex-col gap-1 text-sm font-medium">
             {LINKS.map((l) => (
               <Link key={l.to} to={l.to} className="rounded-md px-3 py-2 hover:bg-[color:var(--accent-light)]">
