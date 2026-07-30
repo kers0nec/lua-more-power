@@ -90,12 +90,16 @@ function Scripts() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="text-lg font-semibold truncate">{s.name}</h3>
+                <p className="text-sm line-clamp-2" style={{ color: "var(--muted-foreground)" }}>{s.description || "—"}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <span className="badge-blue">{s.public_id}</span>
+                  {s.category && <span className="badge-blue">{s.category}</span>}
                   {s.ffa && <span className="badge-blue">FFA</span>}
-                  
+                  {!s.is_active && <span className="badge-blue">Inactive</span>}
+                  {(s.tags ?? []).map((t: string) => <span key={t} className="badge-blue">#{t}</span>)}
                 </div>
               </div>
+
               <button
                 onClick={() => { if (confirm(`Delete "${s.name}"?`)) delMut.mutate(s.id); }}
                 className="text-xs text-[color:var(--destructive)] hover:underline"
