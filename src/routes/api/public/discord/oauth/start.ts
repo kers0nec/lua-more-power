@@ -9,7 +9,9 @@ export const Route = createFileRoute("/api/public/discord/oauth/start")({
         const clientId = process.env.DISCORD_CLIENT_ID;
         if (!clientId) return new Response("Discord login is not configured", { status: 500 });
 
-        const origin = process.env.PUBLIC_BASE_URL || new URL(request.url).origin;
+        let origin = process.env.PUBLIC_BASE_URL || new URL(request.url).origin;
+        if (!/^https?:\/\//i.test(origin)) origin = `https://${origin}`;
+        origin = origin.replace(/\/+$/, "");
         const redirectUri = `${origin}/api/public/discord/oauth/callback`;
 
         const url = new URL("https://discord.com/oauth2/authorize");
