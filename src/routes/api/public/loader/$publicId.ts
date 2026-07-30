@@ -69,7 +69,9 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
           }
         }
 
+        await bumpRuns();
         return lua(script.code);
+
       },
     },
   },
