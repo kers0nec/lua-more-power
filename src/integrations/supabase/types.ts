@@ -181,6 +181,7 @@ export type Database = {
       }
       panels: {
         Row: {
+          admin_role_ids: string[]
           channel_id: string | null
           created_at: string
           description: string | null
@@ -193,6 +194,7 @@ export type Database = {
           whitelist_channel_id: string | null
         }
         Insert: {
+          admin_role_ids?: string[]
           channel_id?: string | null
           created_at?: string
           description?: string | null
@@ -205,6 +207,7 @@ export type Database = {
           whitelist_channel_id?: string | null
         }
         Update: {
+          admin_role_ids?: string[]
           channel_id?: string | null
           created_at?: string
           description?: string | null
