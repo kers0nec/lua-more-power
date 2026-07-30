@@ -181,6 +181,7 @@ export type Database = {
       }
       panels: {
         Row: {
+          channel_id: string | null
           created_at: string
           description: string | null
           discord_role_id: string | null
@@ -189,8 +190,10 @@ export type Database = {
           script_id: string | null
           user_id: string
           webhook_url: string | null
+          whitelist_channel_id: string | null
         }
         Insert: {
+          channel_id?: string | null
           created_at?: string
           description?: string | null
           discord_role_id?: string | null
@@ -199,8 +202,10 @@ export type Database = {
           script_id?: string | null
           user_id: string
           webhook_url?: string | null
+          whitelist_channel_id?: string | null
         }
         Update: {
+          channel_id?: string | null
           created_at?: string
           description?: string | null
           discord_role_id?: string | null
@@ -209,6 +214,7 @@ export type Database = {
           script_id?: string | null
           user_id?: string
           webhook_url?: string | null
+          whitelist_channel_id?: string | null
         }
         Relationships: [
           {
@@ -311,44 +317,62 @@ export type Database = {
       }
       scripts: {
         Row: {
+          category: string | null
           code: string
           created_at: string
+          description: string | null
           ffa: boolean
           id: string
+          is_active: boolean
           is_protected: boolean
           larph_hash: string | null
+          last_run_at: string | null
           name: string
           obfuscated_code: string | null
           obfuscator: string | null
           public_id: string
+          run_count: number
+          tags: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string | null
           code?: string
           created_at?: string
+          description?: string | null
           ffa?: boolean
           id?: string
+          is_active?: boolean
           is_protected?: boolean
           larph_hash?: string | null
+          last_run_at?: string | null
           name: string
           obfuscated_code?: string | null
           obfuscator?: string | null
           public_id?: string
+          run_count?: number
+          tags?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string | null
           code?: string
           created_at?: string
+          description?: string | null
           ffa?: boolean
           id?: string
+          is_active?: boolean
           is_protected?: boolean
           larph_hash?: string | null
+          last_run_at?: string | null
           name?: string
           obfuscated_code?: string | null
           obfuscator?: string | null
           public_id?: string
+          run_count?: number
+          tags?: string[]
           updated_at?: string
           user_id?: string
         }
