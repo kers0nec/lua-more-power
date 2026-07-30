@@ -31,11 +31,23 @@ function ScriptDetail() {
   const saveMut = useMutation({
     mutationFn: () => upd({ data: { id, name, code, ffa } }),
     onSuccess: () => { setStatus("✓ Saved"); qc.invalidateQueries({ queryKey: ["script", id] }); },
-    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed"}`),
+    onError: (e) => setStatus(`✗ ${prettyError(e)}`),
   });
+
+  const onUpload = async (file: File | null | undefined) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      setCode(text);
+      setStatus(`✓ Loaded ${file.name} (${text.length.toLocaleString()} chars) — press Save`);
+    } catch {
+      setStatus("✗ Could not read that file");
+    }
+  };
 
   const script = q.data?.script;
   const releases = q.data?.releases ?? [];
+
 
   return (
     <div className="p-8 max-w-6xl">
