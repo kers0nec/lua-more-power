@@ -209,7 +209,7 @@ local ${K3}=${keyLua(k3)}
 local ${L1},${L2},${L3}=#${K1},#${K2},#${K3}
 local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
-  for _=1,8 do
+  for _=1,32 do
     local x,y=a%2,b%2
     if x~=y then r=r+p end
     a,b,p=(a-x)/2,(b-y)/2,p*2
