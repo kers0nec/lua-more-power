@@ -208,8 +208,28 @@ async function handleCommand(body: any) {
         await supabaseAdmin.from("whitelists").insert({
           user_id: profile.id, script_id: script.id, discord_id: target, license_key_id: lic?.id, expires_at: expires,
         });
-        return embedReply({ title: "✅ Whitelisted", description: `<@${target}> · key \`${key}\``, color: COLOR_SUCCESS });
+
+        // DM the key, announce publicly in the channel like the panel flow.
+        const { data: panel } = await supabaseAdmin
+          .from("panels").select("channel_id, whitelist_channel_id")
+          .eq("user_id", profile.id).eq("script_id", script.id).maybeSingle();
+        const announceChannel = panel?.whitelist_channel_id || panel?.channel_id || body.channel_id || null;
+
+        return {
+          type: 4,
+          data: {
+            content: buildWhitelistMessage(target, announceChannel),
+            allowed_mentions: { users: [target] },
+            embeds: [{
+              title: "✅ Whitelisted",
+              description: `Key: \`${key}\`${expires ? `\nExpires: <t:${Math.floor(new Date(expires).getTime() / 1000)}:R>` : "\nExpires: never"}`,
+              color: COLOR_SUCCESS,
+              footer: { text: "LuaMore" },
+            }],
+          },
+        };
       }
+
       case "blacklist": {
         const profile = await getProfileByDiscord(userId);
         if (!profile) return errorReply("Account not linked");
