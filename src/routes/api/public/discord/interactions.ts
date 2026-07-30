@@ -197,8 +197,12 @@ async function isPanelAdmin(panel: any, body: any, profileId?: string) {
 
 async function postPanelForScript(profileId: string, script: any, body: any) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Key panels by (owner, script, channel) so the same script can be posted
+  // in multiple servers/channels without stomping each other.
   const { data: existing } = await supabaseAdmin
-    .from("panels").select("*").eq("user_id", profileId).eq("script_id", script.id).maybeSingle();
+    .from("panels").select("*")
+    .eq("user_id", profileId).eq("script_id", script.id).eq("channel_id", body.channel_id ?? "")
+    .maybeSingle();
 
   let panel = existing;
   if (!panel) {
@@ -212,11 +216,8 @@ async function postPanelForScript(profileId: string, script: any, body: any) {
     }).select("*").maybeSingle();
     if (error || !created) return errorReply(error?.message ?? "Could not create panel");
     panel = created;
-  } else if (body.channel_id && panel.channel_id !== body.channel_id) {
-    await supabaseAdmin.from("panels")
-      .update({ channel_id: body.channel_id, whitelist_channel_id: panel.whitelist_channel_id ?? body.channel_id })
-      .eq("id", panel.id);
   }
+
 
   const sentBy = body.member?.user?.global_name || body.member?.user?.username || null;
   return {
