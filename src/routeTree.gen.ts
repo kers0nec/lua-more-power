@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_aut
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
 import { Route as AuthenticatedDashboardHwidRouteImport } from './routes/_authenticated/dashboard/hwid'
 import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authenticated/dashboard/keys'
+import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_authenticated/dashboard/obfuscate'
 import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
@@ -76,6 +77,12 @@ const AuthenticatedDashboardKeysRoute =
   AuthenticatedDashboardKeysRouteImport.update({
     id: '/dashboard/keys',
     path: '/dashboard/keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardObfuscateRoute =
+  AuthenticatedDashboardObfuscateRouteImport.update({
+    id: '/dashboard/obfuscate',
+    path: '/dashboard/obfuscate',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardPanelsRoute =
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -165,6 +173,7 @@ export interface FileRoutesByTo {
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
@@ -187,6 +196,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/_authenticated/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/_authenticated/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/dashboard/batches'
     | '/dashboard/hwid'
     | '/dashboard/keys'
+    | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/dashboard/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/dashboard/batches'
     | '/dashboard/hwid'
     | '/dashboard/keys'
+    | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/dashboard'
@@ -250,6 +262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
     | '/_authenticated/dashboard/keys'
+    | '/_authenticated/dashboard/obfuscate'
     | '/_authenticated/dashboard/panels'
     | '/_authenticated/dashboard/settings'
     | '/_authenticated/dashboard/'
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/obfuscate': {
+      id: '/_authenticated/dashboard/obfuscate'
+      path: '/dashboard/obfuscate'
+      fullPath: '/dashboard/obfuscate'
+      preLoaderRoute: typeof AuthenticatedDashboardObfuscateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/panels': {
       id: '/_authenticated/dashboard/panels'
       path: '/dashboard/panels'
@@ -419,6 +439,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardBatchesRoute: typeof AuthenticatedDashboardBatchesRoute
   AuthenticatedDashboardHwidRoute: typeof AuthenticatedDashboardHwidRoute
   AuthenticatedDashboardKeysRoute: typeof AuthenticatedDashboardKeysRoute
+  AuthenticatedDashboardObfuscateRoute: typeof AuthenticatedDashboardObfuscateRoute
   AuthenticatedDashboardPanelsRoute: typeof AuthenticatedDashboardPanelsRoute
   AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
@@ -431,6 +452,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardBatchesRoute: AuthenticatedDashboardBatchesRoute,
   AuthenticatedDashboardHwidRoute: AuthenticatedDashboardHwidRoute,
   AuthenticatedDashboardKeysRoute: AuthenticatedDashboardKeysRoute,
+  AuthenticatedDashboardObfuscateRoute: AuthenticatedDashboardObfuscateRoute,
   AuthenticatedDashboardPanelsRoute: AuthenticatedDashboardPanelsRoute,
   AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
