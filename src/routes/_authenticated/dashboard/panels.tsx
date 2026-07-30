@@ -23,12 +23,25 @@ function Page() {
   const [description, setDescription] = useState("");
   const [scriptId, setScriptId] = useState("");
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [channelId, setChannelId] = useState("");
+  const [whitelistChannelId, setWhitelistChannelId] = useState("");
   const [status, setStatus] = useState<string>("");
 
   const createMut = useMutation({
-    mutationFn: () => create({ data: { name, description: description || undefined, scriptId: scriptId || undefined, webhookUrl: webhookUrl || undefined } }),
-    onSuccess: () => { setName(""); setDescription(""); setScriptId(""); setWebhookUrl(""); qc.invalidateQueries({ queryKey: ["panels"] }); },
+    mutationFn: () => create({ data: {
+      name,
+      description: description || undefined,
+      scriptId: scriptId || undefined,
+      webhookUrl: webhookUrl || undefined,
+      channelId: channelId || undefined,
+      whitelistChannelId: whitelistChannelId || undefined,
+    } }),
+    onSuccess: () => {
+      setName(""); setDescription(""); setScriptId(""); setWebhookUrl(""); setChannelId(""); setWhitelistChannelId("");
+      qc.invalidateQueries({ queryKey: ["panels"] });
+    },
   });
+
   const delMut = useMutation({ mutationFn: (id: string) => del({ data: { id } }), onSuccess: () => qc.invalidateQueries({ queryKey: ["panels"] }) });
   const sendMut = useMutation({
     mutationFn: (id: string) => send({ data: { id } }),
