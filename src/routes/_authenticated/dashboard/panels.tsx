@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { createPanel, deletePanel, listPanels, sendPanel } from "@/lib/panels.functions";
+import { createPanel, deletePanel, listPanels, sendPanel, updatePanel } from "@/lib/panels.functions";
 import { listScripts } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
@@ -15,6 +15,7 @@ function Page() {
   const create = useServerFn(createPanel);
   const del = useServerFn(deletePanel);
   const send = useServerFn(sendPanel);
+  const upd = useServerFn(updatePanel);
   const scripts = useServerFn(listScripts);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["panels"], queryFn: () => list() });
@@ -40,6 +41,17 @@ function Page() {
       setName(""); setDescription(""); setScriptId(""); setWebhookUrl(""); setChannelId(""); setWhitelistChannelId("");
       qc.invalidateQueries({ queryKey: ["panels"] });
     },
+  });
+
+  const updMut = useMutation({
+    mutationFn: (v: { id: string; roleId: string; adminRoleIds: string }) =>
+      upd({ data: {
+        id: v.id,
+        roleId: v.roleId.trim() || null,
+        adminRoleIds: v.adminRoleIds.split(/[\s,]+/).filter(Boolean),
+      } }),
+    onSuccess: () => { setStatus("\u2713 Roles saved"); qc.invalidateQueries({ queryKey: ["panels"] }); },
+    onError: (e) => setStatus(`\u2717 ${e instanceof Error ? e.message : "Failed"}`),
   });
 
   const delMut = useMutation({ mutationFn: (id: string) => del({ data: { id } }), onSuccess: () => qc.invalidateQueries({ queryKey: ["panels"] }) });
@@ -112,6 +124,8 @@ function Page() {
               <div className="text-center rounded-md py-2" style={{ background: "var(--muted)", color: "var(--foreground)" }}>⚙️ Reset HWID</div>
               <div className="text-center rounded-md py-2 col-span-2" style={{ background: "var(--muted)", color: "var(--foreground)" }}>📊 Get Stats</div>
             </div>
+            <RoleConfig panel={p} onSave={(roleId, adminRoleIds) => updMut.mutate({ id: p.id, roleId, adminRoleIds })} saving={updMut.isPending} />
+
             <button onClick={() => sendMut.mutate(p.id)} disabled={sendMut.isPending || (!p.channel_id && !p.webhook_url)} className="btn-primary w-full mt-4 text-sm">
               {p.channel_id || p.webhook_url ? "Send to Discord" : "No channel or webhook set"}
             </button>
@@ -119,6 +133,25 @@ function Page() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function RoleConfig({ panel, onSave, saving }: { panel: any; onSave: (roleId: string, adminRoleIds: string) => void; saving: boolean }) {
+  const [buyer, setBuyer] = useState<string>(panel.discord_role_id ?? "");
+  const [admins, setAdmins] = useState<string>((panel.admin_role_ids ?? []).join(", "));
+
+  return (
+    <div className="mt-4 grid gap-3 rounded-md p-3" style={{ background: "var(--muted)" }}>
+      <div>
+        <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>BUYER ROLE ID</label>
+        <input value={buyer} onChange={(e) => setBuyer(e.target.value)} className="input-blue mt-1" placeholder="Given on redeem / whitelist" />
+      </div>
+      <div>
+        <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>ADMIN ROLE IDS</label>
+        <input value={admins} onChange={(e) => setAdmins(e.target.value)} className="input-blue mt-1" placeholder="Comma separated — can run /whitelist and /resethwid" />
+      </div>
+      <button onClick={() => onSave(buyer, admins)} disabled={saving} className="btn-outline text-sm">Save roles</button>
     </div>
   );
 }
