@@ -34,7 +34,7 @@ export function SiteFooter() {
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
-            More Power, More Security, More Lua. Obfuscation, licensing, and delivery
+            More Power, More Security, More Lua. Script hosting, licensing, and delivery
             in a single monochrome control room.
           </p>
         </div>

@@ -20,11 +20,6 @@ const commands = [
   { name: "help", description: "List all LuaMore commands" },
   { name: "setup", description: "Set up the LuaMore panel" },
   {
-    name: "validate",
-    description: "Validate Lua syntax with Larph",
-    options: [{ type: OPT.STRING, name: "code", description: "Luau code", required: true }],
-  },
-  {
     name: "login",
     description: "Link your Discord to a LuaMore account",
     options: [{ type: OPT.STRING, name: "api_key", description: "Your LuaMore API key", required: true }],
@@ -37,9 +32,6 @@ const commands = [
       { type: OPT.STRING, name: "name", description: "Script name", required: true },
       { type: OPT.STRING, name: "code", description: "Luau code", required: true },
       { type: OPT.BOOLEAN, name: "ffa", description: "FFA / public", required: false },
-      { type: OPT.BOOLEAN, name: "obfuscate", description: "Obfuscate on create", required: false },
-      { type: OPT.STRING, name: "mode", description: "light / standard / advanced", required: false,
-        choices: [{ name: "light", value: "light" }, { name: "standard", value: "standard" }, { name: "advanced", value: "advanced" }] },
     ],
   },
   {

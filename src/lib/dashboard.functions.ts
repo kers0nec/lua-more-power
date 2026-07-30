@@ -32,12 +32,12 @@ export const getPublicStats = createServerFn({ method: "GET" }).handler(async ()
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
     ]);
     return {
-      scriptsObfuscated: releases.count ?? 0,
+      releasesPublished: releases.count ?? 0,
       scriptsHosted: scripts.count ?? 0,
       keysGenerated: keys.count ?? 0,
       activeUsers: users.count ?? 0,
     };
   } catch {
-    return { scriptsObfuscated: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
+    return { releasesPublished: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
   }
 });

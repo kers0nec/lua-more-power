@@ -18,10 +18,8 @@ import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_aut
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
 import { Route as AuthenticatedDashboardHwidRouteImport } from './routes/_authenticated/dashboard/hwid'
 import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authenticated/dashboard/keys'
-import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_authenticated/dashboard/obfuscate'
 import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
-import { Route as AuthenticatedDashboardValidateRouteImport } from './routes/_authenticated/dashboard/validate'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
 import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
 import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
@@ -77,12 +75,6 @@ const AuthenticatedDashboardKeysRoute =
     path: '/dashboard/keys',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedDashboardObfuscateRoute =
-  AuthenticatedDashboardObfuscateRouteImport.update({
-    id: '/dashboard/obfuscate',
-    path: '/dashboard/obfuscate',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedDashboardPanelsRoute =
   AuthenticatedDashboardPanelsRouteImport.update({
     id: '/dashboard/panels',
@@ -93,12 +85,6 @@ const AuthenticatedDashboardSettingsRoute =
   AuthenticatedDashboardSettingsRouteImport.update({
     id: '/dashboard/settings',
     path: '/dashboard/settings',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardValidateRoute =
-  AuthenticatedDashboardValidateRouteImport.update({
-    id: '/dashboard/validate',
-    path: '/dashboard/validate',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardScriptsIndexRoute =
@@ -139,10 +125,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
-  '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -158,10 +142,8 @@ export interface FileRoutesByTo {
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
-  '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -179,10 +161,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
   '/_authenticated/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/_authenticated/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
-  '/_authenticated/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -200,10 +180,8 @@ export interface FileRouteTypes {
     | '/dashboard/batches'
     | '/dashboard/hwid'
     | '/dashboard/keys'
-    | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
-    | '/dashboard/validate'
     | '/dashboard/'
     | '/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -219,10 +197,8 @@ export interface FileRouteTypes {
     | '/dashboard/batches'
     | '/dashboard/hwid'
     | '/dashboard/keys'
-    | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
-    | '/dashboard/validate'
     | '/dashboard'
     | '/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -239,10 +215,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
     | '/_authenticated/dashboard/keys'
-    | '/_authenticated/dashboard/obfuscate'
     | '/_authenticated/dashboard/panels'
     | '/_authenticated/dashboard/settings'
-    | '/_authenticated/dashboard/validate'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -326,13 +300,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/dashboard/obfuscate': {
-      id: '/_authenticated/dashboard/obfuscate'
-      path: '/dashboard/obfuscate'
-      fullPath: '/dashboard/obfuscate'
-      preLoaderRoute: typeof AuthenticatedDashboardObfuscateRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/dashboard/panels': {
       id: '/_authenticated/dashboard/panels'
       path: '/dashboard/panels'
@@ -345,13 +312,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/settings'
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/validate': {
-      id: '/_authenticated/dashboard/validate'
-      path: '/dashboard/validate'
-      fullPath: '/dashboard/validate'
-      preLoaderRoute: typeof AuthenticatedDashboardValidateRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard/scripts/': {
@@ -397,10 +357,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardBatchesRoute: typeof AuthenticatedDashboardBatchesRoute
   AuthenticatedDashboardHwidRoute: typeof AuthenticatedDashboardHwidRoute
   AuthenticatedDashboardKeysRoute: typeof AuthenticatedDashboardKeysRoute
-  AuthenticatedDashboardObfuscateRoute: typeof AuthenticatedDashboardObfuscateRoute
   AuthenticatedDashboardPanelsRoute: typeof AuthenticatedDashboardPanelsRoute
   AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
-  AuthenticatedDashboardValidateRoute: typeof AuthenticatedDashboardValidateRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedDashboardScriptsIdRoute: typeof AuthenticatedDashboardScriptsIdRoute
   AuthenticatedDashboardScriptsIndexRoute: typeof AuthenticatedDashboardScriptsIndexRoute
@@ -411,10 +369,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardBatchesRoute: AuthenticatedDashboardBatchesRoute,
   AuthenticatedDashboardHwidRoute: AuthenticatedDashboardHwidRoute,
   AuthenticatedDashboardKeysRoute: AuthenticatedDashboardKeysRoute,
-  AuthenticatedDashboardObfuscateRoute: AuthenticatedDashboardObfuscateRoute,
   AuthenticatedDashboardPanelsRoute: AuthenticatedDashboardPanelsRoute,
   AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
-  AuthenticatedDashboardValidateRoute: AuthenticatedDashboardValidateRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedDashboardScriptsIdRoute: AuthenticatedDashboardScriptsIdRoute,
   AuthenticatedDashboardScriptsIndexRoute:
