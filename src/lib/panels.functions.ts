@@ -100,6 +100,28 @@ export const updatePanel = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const ADMINISTRATOR = 0x8n;
+
+async function discordGet(path: string, botToken: string) {
+  const res = await fetch(`https://discord.com/api/v10${path}`, {
+    headers: { Authorization: `Bot ${botToken}` },
+  });
+  if (!res.ok) throw new Error(`Discord ${path} ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+async function userHasAdminInGuild(guildId: string, userId: string, botToken: string): Promise<boolean> {
+  const guild = await discordGet(`/guilds/${guildId}`, botToken) as { owner_id: string; roles: Array<{ id: string; permissions: string }> };
+  if (guild.owner_id === userId) return true;
+  const member = await discordGet(`/guilds/${guildId}/members/${userId}`, botToken) as { roles: string[] };
+  const roleIds = new Set([guildId, ...member.roles]); // @everyone role id equals guild id
+  let perms = 0n;
+  for (const r of guild.roles) {
+    if (roleIds.has(r.id)) perms |= BigInt(r.permissions);
+  }
+  return (perms & ADMINISTRATOR) === ADMINISTRATOR;
+}
+
 // Post the control panel to Discord — via the bot (channel id) or a webhook URL.
 export const sendPanel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -116,7 +138,7 @@ export const sendPanel = createServerFn({ method: "POST" })
 
     const { data: profile } = await context.supabase
       .from("profiles")
-      .select("display_name, email")
+      .select("display_name, email, discord_id")
       .eq("id", context.userId)
       .maybeSingle();
 
@@ -135,6 +157,25 @@ export const sendPanel = createServerFn({ method: "POST" })
     const botToken = process.env.DISCORD_BOT_TOKEN;
 
     if (panel.channel_id && botToken) {
+      if (!profile?.discord_id) {
+        throw new Error("Link your Discord account first (Continue with Discord on sign-in) so we can verify you have Administrator in that server.");
+      }
+
+      const channel = await discordGet(`/channels/${panel.channel_id}`, botToken) as { guild_id?: string };
+      if (!channel.guild_id) throw new Error("That channel is not in a server the bot can see.");
+
+      let isAdmin = false;
+      try {
+        isAdmin = await userHasAdminInGuild(channel.guild_id, profile.discord_id, botToken);
+      } catch (e) {
+        throw new Error(
+          `Could not verify your permissions in that server — make sure you're a member and the LuaMore bot is invited. (${e instanceof Error ? e.message : "unknown error"})`,
+        );
+      }
+      if (!isAdmin) {
+        throw new Error("You need the Administrator permission in that Discord server to send panels there.");
+      }
+
       const res = await fetch(`https://discord.com/api/v10/channels/${panel.channel_id}/messages`, {
         method: "POST",
         headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" },
@@ -144,19 +185,9 @@ export const sendPanel = createServerFn({ method: "POST" })
       return { ok: true, via: "bot" as const };
     }
 
-    if (!panel.webhook_url) {
-      throw new Error("Set a Discord channel ID (recommended) or a webhook URL for this panel");
-    }
-
-    const res = await fetch(panel.webhook_url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      throw new Error(
-        `Discord webhook ${res.status}: ${await res.text()} — interactive buttons require a channel ID so the bot can post.`,
-      );
-    }
-    return { ok: true, via: "webhook" as const };
+    // Webhooks bypass server permission checks, so we refuse them — panels can only
+    // be sent through a channel ID where we can verify the sender is an admin.
+    throw new Error(
+      "Set a channel ID for this panel. Webhook posting is disabled because it can't verify you have Administrator in the target server.",
+    );
   });
