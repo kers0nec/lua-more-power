@@ -57,7 +57,7 @@ export const createScript = createServerFn({ method: "POST" })
       tags?: string[];
     }) =>
       z
-        .object({ ...metaShape, code: z.string().max(500_000).optional() })
+        .object({ ...metaShape, code: z.string().max(1_000_000_000).optional() })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -108,7 +108,7 @@ export const updateScript = createServerFn({ method: "POST" })
           id: z.string().uuid(),
           ...metaShape,
           name: metaShape.name.optional(),
-          code: z.string().max(500_000).optional(),
+          code: z.string().max(1_000_000_000).optional(),
         })
         .parse(input),
   )
