@@ -59,15 +59,7 @@ const marquee = [
   "SKID PROTECTION",
 ];
 
-const CODE_BEFORE = `local function greet(name)
-  print("hello " .. name)
-end
-greet("world")`;
 
-const CODE_AFTER = `local v1={"\\104\\101\\108\\108\\111"}
-local v2=function(v3)
- return(v1[1]..v3)end
-return(loadstring or load)(v2)`;
 
 function Home() {
   const stats = useQuery({ queryKey: ["public-stats"], queryFn: () => getPublicStats() });
