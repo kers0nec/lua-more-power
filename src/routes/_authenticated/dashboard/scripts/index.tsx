@@ -61,7 +61,7 @@ function Scripts() {
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <span className="badge-blue">{s.public_id}</span>
                   {s.ffa && <span className="badge-blue">FFA</span>}
-                  {s.is_protected && <span className="badge-solid">Protected</span>}
+                  
                 </div>
               </div>
               <button
