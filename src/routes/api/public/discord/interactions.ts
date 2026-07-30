@@ -36,6 +36,8 @@ export const Route = createFileRoute("/api/public/discord/interactions")({
         if (body.type === 2) return json(await handleCommand(body));
         if (body.type === 3) return json(await handleComponent(body));
         if (body.type === 5) return json(await handleModal(body));
+        return json({ type: 4, data: { content: "Unsupported interaction", flags: 64 } });
+
 
       },
     },
