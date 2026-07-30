@@ -52,7 +52,7 @@ function Page() {
   return (
     <div className="p-8 max-w-6xl">
       <h1 className="text-3xl font-bold">Discord Panels</h1>
-      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>Create embeds with redeem / script / role / HWID / stats buttons and post them to a Discord webhook.</p>
+      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>Create control panels with redeem / script / role / HWID / stats buttons and post them straight to a Discord channel.</p>
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-2 items-end">
         <div>
@@ -70,8 +70,17 @@ function Page() {
           <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>DESCRIPTION</label>
           <input value={description} onChange={(e) => setDescription(e.target.value)} className="input-blue mt-1" />
         </div>
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>DISCORD CHANNEL ID</label>
+          <input value={channelId} onChange={(e) => setChannelId(e.target.value)} className="input-blue mt-1" placeholder="1234567890123456789" />
+          <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>Recommended — the bot posts here with working buttons.</p>
+        </div>
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>WHITELIST ANNOUNCE CHANNEL ID</label>
+          <input value={whitelistChannelId} onChange={(e) => setWhitelistChannelId(e.target.value)} className="input-blue mt-1" placeholder="optional" />
+        </div>
         <div className="md:col-span-2">
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>DISCORD WEBHOOK URL</label>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>DISCORD WEBHOOK URL (FALLBACK)</label>
           <input value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} className="input-blue mt-1" placeholder="https://discord.com/api/webhooks/..." />
         </div>
         <button onClick={() => name && createMut.mutate()} disabled={createMut.isPending} className="btn-primary md:col-start-2">
@@ -88,21 +97,25 @@ function Page() {
           <div key={p.id} className="card-blue p-5">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-semibold">{p.name}</h3>
+                <h3 className="text-lg font-semibold">{p.name} Control Panel</h3>
                 <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>{p.description || "—"}</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  {p.channel_id ? `Channel: ${p.channel_id}` : p.webhook_url ? "Webhook only" : "No destination set"}
+                </p>
               </div>
               <button onClick={() => confirm("Delete panel?") && delMut.mutate(p.id)} className="text-xs text-[color:var(--destructive)] hover:underline">Delete</button>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>🔑 Redeem</div>
-              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>📜 Script</div>
-              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>👤 Role</div>
-              <div className="text-center rounded-md py-2 text-[color:var(--primary-foreground)]" style={{ background: "var(--gradient-primary)" }}>⚙️ HWID</div>
-              <div className="text-center rounded-md py-2 border-2 col-span-2" style={{ borderColor: "var(--primary)", color: "var(--primary)" }}>📊 Stats</div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div className="text-center rounded-md py-2 text-white" style={{ background: "#248046" }}>🔑 Redeem Key</div>
+              <div className="text-center rounded-md py-2 text-white" style={{ background: "#5865f2" }}>🧵 Get Script</div>
+              <div className="text-center rounded-md py-2 text-white" style={{ background: "#5865f2" }}>👤 Get Role</div>
+              <div className="text-center rounded-md py-2" style={{ background: "var(--muted)", color: "var(--foreground)" }}>⚙️ Reset HWID</div>
+              <div className="text-center rounded-md py-2 col-span-2" style={{ background: "var(--muted)", color: "var(--foreground)" }}>📊 Get Stats</div>
             </div>
-            <button onClick={() => sendMut.mutate(p.id)} disabled={sendMut.isPending || !p.webhook_url} className="btn-primary w-full mt-4 text-sm">
-              {p.webhook_url ? "Send to Discord" : "No webhook set"}
+            <button onClick={() => sendMut.mutate(p.id)} disabled={sendMut.isPending || (!p.channel_id && !p.webhook_url)} className="btn-primary w-full mt-4 text-sm">
+              {p.channel_id || p.webhook_url ? "Send to Discord" : "No channel or webhook set"}
             </button>
+
           </div>
         ))}
       </div>
