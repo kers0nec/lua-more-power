@@ -8,6 +8,7 @@ import {
   Ban,
   PanelsTopLeft,
   Terminal,
+  Shield,
   Settings,
   Menu,
   X,
