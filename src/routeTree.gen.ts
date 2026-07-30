@@ -10,33 +10,268 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CommandsRouteImport } from './routes/commands'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
+import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
+import { Route as AuthenticatedDashboardHwidRouteImport } from './routes/_authenticated/dashboard/hwid'
+import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authenticated/dashboard/keys'
+import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_authenticated/dashboard/obfuscate'
+import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
+import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
+import { Route as AuthenticatedDashboardValidateRouteImport } from './routes/_authenticated/dashboard/validate'
+import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
+import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
+import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
+import { Route as ApiPublicDiscordRegisterCommandsRouteImport } from './routes/api/public/discord/register-commands'
+import { Route as ApiPublicLoaderPublicIdRouteImport } from './routes/api/public/loader/$publicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandsRoute = CommandsRouteImport.update({
+  id: '/commands',
+  path: '/commands',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardApiKeysRoute =
+  AuthenticatedDashboardApiKeysRouteImport.update({
+    id: '/dashboard/api-keys',
+    path: '/dashboard/api-keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardBatchesRoute =
+  AuthenticatedDashboardBatchesRouteImport.update({
+    id: '/dashboard/batches',
+    path: '/dashboard/batches',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardHwidRoute =
+  AuthenticatedDashboardHwidRouteImport.update({
+    id: '/dashboard/hwid',
+    path: '/dashboard/hwid',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardKeysRoute =
+  AuthenticatedDashboardKeysRouteImport.update({
+    id: '/dashboard/keys',
+    path: '/dashboard/keys',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardObfuscateRoute =
+  AuthenticatedDashboardObfuscateRouteImport.update({
+    id: '/dashboard/obfuscate',
+    path: '/dashboard/obfuscate',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardPanelsRoute =
+  AuthenticatedDashboardPanelsRouteImport.update({
+    id: '/dashboard/panels',
+    path: '/dashboard/panels',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSettingsRoute =
+  AuthenticatedDashboardSettingsRouteImport.update({
+    id: '/dashboard/settings',
+    path: '/dashboard/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardValidateRoute =
+  AuthenticatedDashboardValidateRouteImport.update({
+    id: '/dashboard/validate',
+    path: '/dashboard/validate',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardScriptsIndexRoute =
+  AuthenticatedDashboardScriptsIndexRouteImport.update({
+    id: '/dashboard/scripts/',
+    path: '/dashboard/scripts/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardScriptsIdRoute =
+  AuthenticatedDashboardScriptsIdRouteImport.update({
+    id: '/dashboard/scripts/$id',
+    path: '/dashboard/scripts/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicDiscordInteractionsRoute =
+  ApiPublicDiscordInteractionsRouteImport.update({
+    id: '/api/public/discord/interactions',
+    path: '/api/public/discord/interactions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicDiscordRegisterCommandsRoute =
+  ApiPublicDiscordRegisterCommandsRouteImport.update({
+    id: '/api/public/discord/register-commands',
+    path: '/api/public/discord/register-commands',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicLoaderPublicIdRoute = ApiPublicLoaderPublicIdRouteImport.update({
+  id: '/api/public/loader/$publicId',
+  path: '/api/public/loader/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/commands': typeof CommandsRoute
+  '/demo': typeof DemoRoute
+  '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
+  '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
+  '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
+  '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
+  '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/commands': typeof CommandsRoute
+  '/demo': typeof DemoRoute
+  '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
+  '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
+  '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
+  '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
+  '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/dashboard/scripts': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/commands': typeof CommandsRoute
+  '/demo': typeof DemoRoute
+  '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
+  '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
+  '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
+  '/_authenticated/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
+  '/_authenticated/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
+  '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
+  '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/_authenticated/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/_authenticated/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/commands'
+    | '/demo'
+    | '/dashboard/api-keys'
+    | '/dashboard/batches'
+    | '/dashboard/hwid'
+    | '/dashboard/keys'
+    | '/dashboard/obfuscate'
+    | '/dashboard/panels'
+    | '/dashboard/settings'
+    | '/dashboard/validate'
+    | '/dashboard/'
+    | '/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
+    | '/dashboard/scripts/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/commands'
+    | '/demo'
+    | '/dashboard/api-keys'
+    | '/dashboard/batches'
+    | '/dashboard/hwid'
+    | '/dashboard/keys'
+    | '/dashboard/obfuscate'
+    | '/dashboard/panels'
+    | '/dashboard/settings'
+    | '/dashboard/validate'
+    | '/dashboard'
+    | '/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
+    | '/dashboard/scripts'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/commands'
+    | '/demo'
+    | '/_authenticated/dashboard/api-keys'
+    | '/_authenticated/dashboard/batches'
+    | '/_authenticated/dashboard/hwid'
+    | '/_authenticated/dashboard/keys'
+    | '/_authenticated/dashboard/obfuscate'
+    | '/_authenticated/dashboard/panels'
+    | '/_authenticated/dashboard/settings'
+    | '/_authenticated/dashboard/validate'
+    | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
+    | '/_authenticated/dashboard/scripts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  CommandsRoute: typeof CommandsRoute
+  DemoRoute: typeof DemoRoute
+  ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
+  ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
+  ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +283,177 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commands': {
+      id: '/commands'
+      path: '/commands'
+      fullPath: '/commands'
+      preLoaderRoute: typeof CommandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/api-keys': {
+      id: '/_authenticated/dashboard/api-keys'
+      path: '/dashboard/api-keys'
+      fullPath: '/dashboard/api-keys'
+      preLoaderRoute: typeof AuthenticatedDashboardApiKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/batches': {
+      id: '/_authenticated/dashboard/batches'
+      path: '/dashboard/batches'
+      fullPath: '/dashboard/batches'
+      preLoaderRoute: typeof AuthenticatedDashboardBatchesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/hwid': {
+      id: '/_authenticated/dashboard/hwid'
+      path: '/dashboard/hwid'
+      fullPath: '/dashboard/hwid'
+      preLoaderRoute: typeof AuthenticatedDashboardHwidRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/keys': {
+      id: '/_authenticated/dashboard/keys'
+      path: '/dashboard/keys'
+      fullPath: '/dashboard/keys'
+      preLoaderRoute: typeof AuthenticatedDashboardKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/obfuscate': {
+      id: '/_authenticated/dashboard/obfuscate'
+      path: '/dashboard/obfuscate'
+      fullPath: '/dashboard/obfuscate'
+      preLoaderRoute: typeof AuthenticatedDashboardObfuscateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/panels': {
+      id: '/_authenticated/dashboard/panels'
+      path: '/dashboard/panels'
+      fullPath: '/dashboard/panels'
+      preLoaderRoute: typeof AuthenticatedDashboardPanelsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/settings': {
+      id: '/_authenticated/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/validate': {
+      id: '/_authenticated/dashboard/validate'
+      path: '/dashboard/validate'
+      fullPath: '/dashboard/validate'
+      preLoaderRoute: typeof AuthenticatedDashboardValidateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/scripts/': {
+      id: '/_authenticated/dashboard/scripts/'
+      path: '/dashboard/scripts'
+      fullPath: '/dashboard/scripts/'
+      preLoaderRoute: typeof AuthenticatedDashboardScriptsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/scripts/$id': {
+      id: '/_authenticated/dashboard/scripts/$id'
+      path: '/dashboard/scripts/$id'
+      fullPath: '/dashboard/scripts/$id'
+      preLoaderRoute: typeof AuthenticatedDashboardScriptsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/discord/interactions': {
+      id: '/api/public/discord/interactions'
+      path: '/api/public/discord/interactions'
+      fullPath: '/api/public/discord/interactions'
+      preLoaderRoute: typeof ApiPublicDiscordInteractionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/discord/register-commands': {
+      id: '/api/public/discord/register-commands'
+      path: '/api/public/discord/register-commands'
+      fullPath: '/api/public/discord/register-commands'
+      preLoaderRoute: typeof ApiPublicDiscordRegisterCommandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/loader/$publicId': {
+      id: '/api/public/loader/$publicId'
+      path: '/api/public/loader/$publicId'
+      fullPath: '/api/public/loader/$publicId'
+      preLoaderRoute: typeof ApiPublicLoaderPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardApiKeysRoute: typeof AuthenticatedDashboardApiKeysRoute
+  AuthenticatedDashboardBatchesRoute: typeof AuthenticatedDashboardBatchesRoute
+  AuthenticatedDashboardHwidRoute: typeof AuthenticatedDashboardHwidRoute
+  AuthenticatedDashboardKeysRoute: typeof AuthenticatedDashboardKeysRoute
+  AuthenticatedDashboardObfuscateRoute: typeof AuthenticatedDashboardObfuscateRoute
+  AuthenticatedDashboardPanelsRoute: typeof AuthenticatedDashboardPanelsRoute
+  AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
+  AuthenticatedDashboardValidateRoute: typeof AuthenticatedDashboardValidateRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedDashboardScriptsIdRoute: typeof AuthenticatedDashboardScriptsIdRoute
+  AuthenticatedDashboardScriptsIndexRoute: typeof AuthenticatedDashboardScriptsIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardApiKeysRoute: AuthenticatedDashboardApiKeysRoute,
+  AuthenticatedDashboardBatchesRoute: AuthenticatedDashboardBatchesRoute,
+  AuthenticatedDashboardHwidRoute: AuthenticatedDashboardHwidRoute,
+  AuthenticatedDashboardKeysRoute: AuthenticatedDashboardKeysRoute,
+  AuthenticatedDashboardObfuscateRoute: AuthenticatedDashboardObfuscateRoute,
+  AuthenticatedDashboardPanelsRoute: AuthenticatedDashboardPanelsRoute,
+  AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
+  AuthenticatedDashboardValidateRoute: AuthenticatedDashboardValidateRoute,
+  AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedDashboardScriptsIdRoute: AuthenticatedDashboardScriptsIdRoute,
+  AuthenticatedDashboardScriptsIndexRoute:
+    AuthenticatedDashboardScriptsIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  CommandsRoute: CommandsRoute,
+  DemoRoute: DemoRoute,
+  ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
+  ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
+  ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
