@@ -71,11 +71,28 @@ function ScriptDetail() {
 
       <div className="mt-6">
         <div className="card-blue p-4">
-          <div className="text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>SOURCE CODE (Luau)</div>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>SOURCE CODE (Luau)</div>
+            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+              <span>{code.length.toLocaleString()} chars</span>
+              <label className="btn-outline text-xs cursor-pointer">
+                Upload file
+                <input
+                  type="file"
+                  accept=".lua,.luau,.txt,text/plain"
+                  className="hidden"
+                  onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ""; }}
+                />
+              </label>
+            </div>
+          </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => { e.preventDefault(); onUpload(e.dataTransfer.files?.[0]); }}
+            placeholder="Paste your Luau code, or drop a .lua file here"
             className="input-blue font-mono text-sm h-[420px] resize-none"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -84,6 +101,7 @@ function ScriptDetail() {
             </button>
             {status && <span className="text-sm" style={{ color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)" }}>{status}</span>}
           </div>
+
         </div>
       </div>
 
