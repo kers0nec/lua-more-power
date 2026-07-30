@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Legacy loader URL — kept working; prefer /api/public/r/<public_id>.
+// Short public loader URL:
+//   loadstring(game:HttpGet("https://.../api/public/r/<public_id>"))()
 
-export const Route = createFileRoute("/api/public/loader/$publicId")({
+export const Route = createFileRoute("/api/public/r/$publicId")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {

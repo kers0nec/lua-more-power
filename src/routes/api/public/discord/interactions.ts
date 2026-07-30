@@ -262,7 +262,7 @@ async function handleComponent(body: any) {
     if (!script.ffa && !wl && !lic) return errorReply("You are not whitelisted for this script — redeem a key first.");
     if (lic?.revoked) return errorReply("Your access has been revoked");
 
-    const url = `${originFromEnv()}/api/public/loader/${script.public_id}`;
+    const url = `${originFromEnv()}/api/public/r/${script.public_id}`;
     const keyPart = lic?.key ? `?key=${lic.key}&hwid=` : "?hwid=";
     return embedReply({
       title: `📜 ${script.name}`,
