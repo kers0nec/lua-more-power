@@ -13,25 +13,43 @@ export const Route = createFileRoute("/_authenticated")({
   component: Layout,
 });
 
-const NAV: { to: string; label: string; icon: string }[] = [
-  { to: "/dashboard", label: "Overview", icon: "🏠" },
-  { to: "/dashboard/scripts", label: "Scripts", icon: "📜" },
-  { to: "/dashboard/obfuscate", label: "Obfuscate", icon: "🛡️" },
-  { to: "/dashboard/validate", label: "Validate", icon: "✅" },
-  { to: "/dashboard/keys", label: "Keys", icon: "🔑" },
-  { to: "/dashboard/batches", label: "Key Batches", icon: "📦" },
-  { to: "/dashboard/panels", label: "Panels", icon: "💬" },
-  { to: "/dashboard/hwid", label: "HWID Bans", icon: "🖥️" },
-  { to: "/dashboard/api-keys", label: "API Keys", icon: "🗝️" },
-  { to: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+type NavItem = { to: string; label: string; icon: string };
+
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  {
+    label: "Workspace",
+    items: [
+      { to: "/dashboard", label: "Overview", icon: "◈" },
+      { to: "/dashboard/scripts", label: "Scripts", icon: "❯" },
+      { to: "/dashboard/obfuscate", label: "Obfuscate", icon: "✦" },
+      { to: "/dashboard/validate", label: "Validate", icon: "✓" },
+    ],
+  },
+  {
+    label: "Protection",
+    items: [
+      { to: "/dashboard/keys", label: "Keys", icon: "⚿" },
+      { to: "/dashboard/batches", label: "Key Batches", icon: "▦" },
+      { to: "/dashboard/hwid", label: "HWID Bans", icon: "⊘" },
+    ],
+  },
+  {
+    label: "Integrations",
+    items: [
+      { to: "/dashboard/panels", label: "Panels", icon: "◧" },
+      { to: "/dashboard/api-keys", label: "API Keys", icon: "⌘" },
+      { to: "/dashboard/settings", label: "Settings", icon: "⚙" },
+    ],
+  },
 ];
+
+const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 
 function Layout() {
   const nav = useNavigate();
   const loc = useLocation();
   const [open, setOpen] = useState(false);
 
-  // Close the drawer whenever the route changes.
   useEffect(() => {
     setOpen(false);
   }, [loc.pathname]);
@@ -43,8 +61,8 @@ function Layout() {
 
   const SidebarBody = (
     <>
-      <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-        <Link to="/"><Logo /></Link>
+      <div className="px-5 py-5 flex items-center justify-between">
+        <Link to="/"><Logo size={28} /></Link>
         <button
           onClick={() => setOpen(false)}
           aria-label="Close menu"
@@ -53,40 +71,60 @@ function Layout() {
           ✕
         </button>
       </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {NAV.map((item) => {
-          const active = loc.pathname === item.to || (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              style={{
-                background: active ? "var(--accent-light)" : "transparent",
-                color: active ? "var(--primary-dark)" : "var(--foreground)",
-                borderLeft: active ? "3px solid var(--primary)" : "3px solid transparent",
-              }}
+      <nav className="flex-1 px-3 pb-3 space-y-6 overflow-y-auto">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div
+              className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
+              style={{ color: "#71717a" }}
             >
-              <span>{item.icon}</span> {item.label}
-            </Link>
-          );
-        })}
+              {group.label}
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active =
+                  loc.pathname === item.to || (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      background: active ? "var(--accent-light)" : "transparent",
+                      color: active ? "var(--foreground)" : "var(--muted-foreground)",
+                      boxShadow: active ? "inset 0 0 0 1px var(--border)" : "none",
+                    }}
+                  >
+                    <span
+                      className="w-5 text-center text-xs"
+                      style={{ color: active ? "var(--foreground)" : "#71717a" }}
+                    >
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       <div className="p-3 border-t" style={{ borderColor: "var(--border)" }}>
-        <button onClick={signOut} className="btn-ghost w-full text-sm">Sign out</button>
+        <button onClick={signOut} className="btn-ghost w-full text-sm justify-start">Sign out</button>
       </div>
     </>
   );
 
   const currentLabel =
-    [...NAV].sort((a, b) => b.to.length - a.to.length).find((i) => loc.pathname.startsWith(i.to))?.label ?? "Dashboard";
+    [...ALL_ITEMS].sort((a, b) => b.to.length - a.to.length).find((i) => loc.pathname.startsWith(i.to))?.label ??
+    "Dashboard";
 
   return (
-    <div className="min-h-screen flex w-full" style={{ background: "var(--secondary)" }}>
+    <div className="min-h-screen flex w-full" style={{ background: "var(--background)" }}>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col w-64 shrink-0 border-r bg-white"
-        style={{ borderColor: "var(--border)" }}
+        className="hidden md:flex flex-col w-64 shrink-0 border-r"
+        style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
       >
         {SidebarBody}
       </aside>
@@ -96,12 +134,12 @@ function Layout() {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div
             className="absolute inset-0"
-            style={{ background: "rgba(10,30,50,0.45)" }}
+            style={{ background: "rgba(0,0,0,0.65)" }}
             onClick={() => setOpen(false)}
           />
           <aside
-            className="relative flex flex-col w-72 max-w-[85%] h-full bg-white border-r shadow-xl"
-            style={{ borderColor: "var(--border)" }}
+            className="relative flex flex-col w-72 max-w-[85%] h-full border-r shadow-xl"
+            style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
           >
             {SidebarBody}
           </aside>
@@ -111,8 +149,8 @@ function Layout() {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Mobile top bar */}
         <header
-          className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b bg-white px-4 py-3"
-          style={{ borderColor: "var(--border)" }}
+          className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3"
+          style={{ borderColor: "var(--border)", background: "var(--sidebar)" }}
         >
           <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost px-2 py-1 text-xl">
             ☰

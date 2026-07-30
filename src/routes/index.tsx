@@ -62,7 +62,7 @@ function Home() {
           </p>
           <div className="mt-8 flex justify-center gap-3">
             <Link to="/auth" className="btn-primary">Get Started →</Link>
-            <Link to="/demo" className="btn-outline">View Demo</Link>
+            <Link to="/commands" className="btn-outline">View Commands</Link>
           </div>
         </div>
       </section>
