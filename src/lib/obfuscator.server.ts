@@ -263,7 +263,8 @@ for ${I}=1,#${OUT} do
 end
 local ${SRC}=table.concat(${DEC})
 local ${FN},${ERR}=(loadstring or load)(${SRC},"=LuaMore")
-print("[trace] decrypted, loading inner")
+print("[trace] decrypted, loading inner, len=", #${SRC})
+print("[trace] first80:", string.sub(${SRC},1,80))
 if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
 if setfenv then pcall(setfenv,${FN},${E}) end
 return ${FN}()
