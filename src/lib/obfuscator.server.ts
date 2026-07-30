@@ -239,10 +239,9 @@ if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
 -- unpermute (xorshift32 seeded)
 local ${PERM}=${num(permSeed)}
 local ${NXT}=function()
-  ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)
-  ${PERM}=math.floor(${PERM}/131072)+(${PERM}*32768)%4294967296
-  ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072))
-  ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)
+  ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)  -- s ^= s << 13
+  ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072)) -- s ^= s >> 17
+  ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)    -- s ^= s << 5
   return ${PERM}
 end
 local ${T}={}
