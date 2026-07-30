@@ -127,6 +127,20 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // "Remember me": when the user opted out, end the session on a new browser session.
+  useEffect(() => {
+    try {
+      const remember = localStorage.getItem("lm_remember");
+      const active = sessionStorage.getItem("lm_session_active");
+      if (remember === "0" && !active) {
+        void import("@/integrations/supabase/client").then(({ supabase }) => supabase.auth.signOut());
+      }
+      sessionStorage.setItem("lm_session_active", "1");
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
@@ -134,3 +148,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

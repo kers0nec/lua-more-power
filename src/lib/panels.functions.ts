@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildPanelComponents, buildPanelEmbed } from "@/lib/discord-panel";
 
 export const listPanels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -16,16 +17,27 @@ export const listPanels = createServerFn({ method: "GET" })
 
 export const createPanel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { name: string; description?: string; scriptId?: string; webhookUrl?: string; roleId?: string }) =>
-    z
-      .object({
-        name: z.string().trim().min(1).max(120),
-        description: z.string().max(500).optional(),
-        scriptId: z.string().uuid().optional(),
-        webhookUrl: z.string().url().optional(),
-        roleId: z.string().max(64).optional(),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      name: string;
+      description?: string;
+      scriptId?: string;
+      webhookUrl?: string;
+      roleId?: string;
+      channelId?: string;
+      whitelistChannelId?: string;
+    }) =>
+      z
+        .object({
+          name: z.string().trim().min(1).max(120),
+          description: z.string().max(1000).optional(),
+          scriptId: z.string().uuid().optional(),
+          webhookUrl: z.string().url().optional(),
+          roleId: z.string().max(64).optional(),
+          channelId: z.string().regex(/^\d{5,25}$/).optional(),
+          whitelistChannelId: z.string().regex(/^\d{5,25}$/).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
@@ -37,6 +49,8 @@ export const createPanel = createServerFn({ method: "POST" })
         script_id: data.scriptId ?? null,
         webhook_url: data.webhookUrl ?? null,
         discord_role_id: data.roleId ?? null,
+        channel_id: data.channelId ?? null,
+        whitelist_channel_id: data.whitelistChannelId ?? null,
       })
       .select("*")
       .maybeSingle();
@@ -57,7 +71,7 @@ export const deletePanel = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// Fire a Discord embed to the panel's webhook URL
+// Post the control panel to Discord — via the bot (channel id) or a webhook URL.
 export const sendPanel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
@@ -70,38 +84,50 @@ export const sendPanel = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!panel) throw new Error("Panel not found");
-    if (!panel.webhook_url) throw new Error("Panel has no Discord webhook URL configured");
 
-    const embed = {
-      title: `LuaMore · ${panel.name}`,
-      description: panel.description || "More Power, More Security, More Lua",
-      color: 0x00aaff,
-      footer: { text: "LuaMore · Script Delivery" },
-      timestamp: new Date().toISOString(),
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("display_name, email")
+      .eq("id", context.userId)
+      .maybeSingle();
+
+    const payload = {
+      embeds: [
+        buildPanelEmbed({
+          id: panel.id,
+          name: panel.name,
+          description: panel.description,
+          sentBy: profile?.display_name || profile?.email?.split("@")[0] || null,
+        }),
+      ],
+      components: buildPanelComponents(panel.id),
     };
-    const components = [
-      {
-        type: 1,
-        components: [
-          { type: 2, style: 1, label: "🔑 Redeem Key", custom_id: `lm:redeem:${panel.id}` },
-          { type: 2, style: 1, label: "📜 Get Script", custom_id: `lm:script:${panel.id}` },
-          { type: 2, style: 1, label: "👤 Get Role", custom_id: `lm:role:${panel.id}` },
-        ],
-      },
-      {
-        type: 1,
-        components: [
-          { type: 2, style: 1, label: "⚙️ Reset HWID", custom_id: `lm:hwid:${panel.id}` },
-          { type: 2, style: 2, label: "📊 Get Stats", custom_id: `lm:stats:${panel.id}` },
-        ],
-      },
-    ];
+
+    const botToken = process.env.DISCORD_BOT_TOKEN;
+
+    if (panel.channel_id && botToken) {
+      const res = await fetch(`https://discord.com/api/v10/channels/${panel.channel_id}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Discord API ${res.status}: ${await res.text()}`);
+      return { ok: true, via: "bot" as const };
+    }
+
+    if (!panel.webhook_url) {
+      throw new Error("Set a Discord channel ID (recommended) or a webhook URL for this panel");
+    }
 
     const res = await fetch(panel.webhook_url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed], components }),
+      body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error(`Discord webhook returned ${res.status}`);
-    return { ok: true };
+    if (!res.ok) {
+      throw new Error(
+        `Discord webhook ${res.status}: ${await res.text()} — interactive buttons require a channel ID so the bot can post.`,
+      );
+    }
+    return { ok: true, via: "webhook" as const };
   });
