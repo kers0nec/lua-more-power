@@ -2,12 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const metaShape = {
+  name: z.string().trim().min(1).max(120),
+  description: z.string().max(2000).optional(),
+  category: z.string().max(60).optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(12).optional(),
+  is_active: z.boolean().optional(),
+  ffa: z.boolean().optional(),
+};
+
 export const listScripts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("scripts")
-      .select("id, name, public_id, ffa, updated_at, created_at")
+      .select(
+        "id, name, public_id, ffa, description, category, tags, is_active, run_count, last_run_at, updated_at, created_at",
+      )
       .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -36,14 +47,18 @@ export const getScript = createServerFn({ method: "POST" })
 
 export const createScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { name: string; code?: string; ffa?: boolean }) =>
-    z
-      .object({
-        name: z.string().trim().min(1).max(120),
-        code: z.string().max(500_000).optional().default(""),
-        ffa: z.boolean().optional().default(false),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      name: string;
+      code?: string;
+      ffa?: boolean;
+      description?: string;
+      category?: string;
+      tags?: string[];
+    }) =>
+      z
+        .object({ ...metaShape, code: z.string().max(500_000).optional() })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: profile } = await context.supabase
@@ -60,7 +75,15 @@ export const createScript = createServerFn({ method: "POST" })
     }
     const { data: row, error } = await context.supabase
       .from("scripts")
-      .insert({ name: data.name, code: data.code ?? "", ffa: data.ffa ?? false, user_id: context.userId })
+      .insert({
+        name: data.name,
+        code: data.code ?? "",
+        ffa: data.ffa ?? false,
+        description: data.description ?? null,
+        category: data.category ?? null,
+        tags: data.tags ?? [],
+        user_id: context.userId,
+      })
       .select("*")
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -69,15 +92,25 @@ export const createScript = createServerFn({ method: "POST" })
 
 export const updateScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; name?: string; code?: string; ffa?: boolean }) =>
-    z
-      .object({
-        id: z.string().uuid(),
-        name: z.string().trim().min(1).max(120).optional(),
-        code: z.string().max(500_000).optional(),
-        ffa: z.boolean().optional(),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      id: string;
+      name?: string;
+      code?: string;
+      ffa?: boolean;
+      description?: string;
+      category?: string;
+      tags?: string[];
+      is_active?: boolean;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid(),
+          ...metaShape,
+          name: metaShape.name.optional(),
+          code: z.string().max(500_000).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
