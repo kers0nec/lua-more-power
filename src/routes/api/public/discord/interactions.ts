@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { buildPanelComponents, buildPanelEmbed, buildWhitelistMessage } from "@/lib/discord-panel";
+import { buildLoaderMessage, buildPanelComponents, buildPanelEmbed, buildWhitelistMessage, formatDuration, parseDuration } from "@/lib/discord-panel";
 
 
 // Discord HTTP Interactions endpoint.
@@ -222,6 +222,18 @@ async function handleComponent(body: any) {
   const [, action, panelId] = cid.split(":");
   const discordId = body.member?.user?.id ?? body.user?.id;
 
+  if (action === "setup") {
+    const profile = await getProfileByDiscord(discordId);
+    if (!profile) return errorReply("Account not linked. Use `/login <api_key>` first.");
+    const publicId = String(body.data?.values?.[0] ?? "");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: script } = await supabaseAdmin
+      .from("scripts").select("id, name, description")
+      .eq("public_id", publicId).eq("user_id", profile.id).maybeSingle();
+    if (!script) return errorReply("Script not found");
+    return await postPanelForScript(profile.id, script, body);
+  }
+
   if (action === "redeem") {
     return {
       type: 9, // MODAL
@@ -254,7 +266,7 @@ async function handleComponent(body: any) {
     const keyPart = lic?.key ? `?key=${lic.key}&hwid=` : "?hwid=";
     return embedReply({
       title: `📜 ${script.name}`,
-      description: `\`\`\`lua\nloadstring(game:HttpGet("${url}${keyPart}"..game:GetService('RbxAnalyticsService'):GetClientId()))()\n\`\`\``,
+      description: buildLoaderMessage(`loadstring(game:HttpGet("${url}${keyPart}"..game:GetService('RbxAnalyticsService'):GetClientId()))()`),
       color: COLOR_INFO,
       footer: { text: "LuaMore · keep this loader private" },
     });
@@ -408,18 +420,10 @@ function hexToBytes(hex: string) {
 }
 
 const HELP_TEXT = [
-  "`/create-script` · create a script",
-  "`/login <api_key>` · link Discord to your account",
-  "`/limits` · view your quota",
-  "`/panel <panel_id>` · post a panel here",
-  "`/generatekey <panel_id> <hours> [note] [user]`",
-  "`/whitelist <script_id> <user> [duration]`",
-  "`/blacklist <script_id> <user>`",
-  "`/deletekey <key>` · revoke a key",
-  "`/keys [panel_id]` · list your keys",
-  "`/loader <script_id>` · loader snippet",
-  "`/resethwid` / `/forceresethwid`",
-  "`/banhwid` / `/unbanhwid`",
-  "`/banuser` / `/unbanuser`",
-  "`/setup` · panel setup guide",
+  "**1.** Invite the LuaMore bot.",
+  "**2.** Enable Key system on your script.",
+  "**3.** Run `/setup` in a channel and pick the script.",
+  "**4.** Configure the Buyer role and Admin roles for that panel on the dashboard.",
+  "**5.** Use `/whitelist user duration` — duration like 20s, 35m, 2h, 1d, 7d, 30d (omit for forever).",
+  "**6.** Admins can use `/resethwid user` with no cooldown.",
 ].join("\n");
