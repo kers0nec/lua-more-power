@@ -53,7 +53,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
 
   if (script.ffa) {
     await bumpRuns();
-    return lua(script.code);
+    return lua(obfuscateLua(script.code));
   }
 
   if (!key) return luaError("License key required");
@@ -91,7 +91,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   }
 
   await bumpRuns();
-  return lua(script.code);
+  return lua(obfuscateLua(script.code));
 }
 
 function lua(body: string) {
