@@ -25,6 +25,9 @@ import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardValidateRouteImport } from './routes/_authenticated/dashboard/validate'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
 import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
+import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
+import { Route as ApiPublicDiscordRegisterCommandsRouteImport } from './routes/api/public/discord/register-commands'
+import { Route as ApiPublicLoaderPublicIdRouteImport } from './routes/api/public/loader/$publicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -116,6 +119,23 @@ const AuthenticatedDashboardScriptsIdRoute =
     path: '/dashboard/scripts/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicDiscordInteractionsRoute =
+  ApiPublicDiscordInteractionsRouteImport.update({
+    id: '/api/public/discord/interactions',
+    path: '/api/public/discord/interactions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicDiscordRegisterCommandsRoute =
+  ApiPublicDiscordRegisterCommandsRouteImport.update({
+    id: '/api/public/discord/register-commands',
+    path: '/api/public/discord/register-commands',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicLoaderPublicIdRoute = ApiPublicLoaderPublicIdRouteImport.update({
+  id: '/api/public/loader/$publicId',
+  path: '/api/public/loader/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -132,6 +152,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -149,6 +172,9 @@ export interface FileRoutesByTo {
   '/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/dashboard/scripts': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRoutesById {
@@ -168,6 +194,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/validate': typeof AuthenticatedDashboardValidateRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
+  '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
+  '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/_authenticated/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
 }
 export interface FileRouteTypes {
@@ -187,6 +216,9 @@ export interface FileRouteTypes {
     | '/dashboard/validate'
     | '/dashboard/'
     | '/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
     | '/dashboard/scripts/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,6 +236,9 @@ export interface FileRouteTypes {
     | '/dashboard/validate'
     | '/dashboard'
     | '/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
     | '/dashboard/scripts'
   id:
     | '__root__'
@@ -222,6 +257,9 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/validate'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/scripts/$id'
+    | '/api/public/discord/interactions'
+    | '/api/public/discord/register-commands'
+    | '/api/public/loader/$publicId'
     | '/_authenticated/dashboard/scripts/'
   fileRoutesById: FileRoutesById
 }
@@ -231,6 +269,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CommandsRoute: typeof CommandsRoute
   DemoRoute: typeof DemoRoute
+  ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
+  ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
+  ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -347,6 +388,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardScriptsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/discord/interactions': {
+      id: '/api/public/discord/interactions'
+      path: '/api/public/discord/interactions'
+      fullPath: '/api/public/discord/interactions'
+      preLoaderRoute: typeof ApiPublicDiscordInteractionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/discord/register-commands': {
+      id: '/api/public/discord/register-commands'
+      path: '/api/public/discord/register-commands'
+      fullPath: '/api/public/discord/register-commands'
+      preLoaderRoute: typeof ApiPublicDiscordRegisterCommandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/loader/$publicId': {
+      id: '/api/public/loader/$publicId'
+      path: '/api/public/loader/$publicId'
+      fullPath: '/api/public/loader/$publicId'
+      preLoaderRoute: typeof ApiPublicLoaderPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -388,6 +450,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CommandsRoute: CommandsRoute,
   DemoRoute: DemoRoute,
+  ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
+  ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
+  ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
