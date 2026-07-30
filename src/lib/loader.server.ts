@@ -21,7 +21,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   let key = url.searchParams.get("key")?.trim() || null;
   let { data: script } = await supabaseAdmin
     .from("scripts")
-    .select("id, user_id, name, code, ffa, public_id, is_active, run_count")
+    .select("id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count")
     .eq("public_id", token)
     .maybeSingle();
 
@@ -35,7 +35,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     key = byKey.key;
     const { data: s2 } = await supabaseAdmin
       .from("scripts")
-      .select("id, user_id, name, code, ffa, public_id, is_active, run_count")
+      .select("id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count")
       .eq("id", byKey.script_id)
       .maybeSingle();
     script = s2 ?? null;
