@@ -116,8 +116,11 @@ export const updateScript = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const patch: Record<string, unknown> = { ...rest };
-    // Auto-obfuscate on save when protection is enabled and code changed.
+    const patch: Partial<{
+      name: string; code: string; ffa: boolean; description: string | null;
+      category: string | null; tags: string[]; is_active: boolean; is_protected: boolean;
+      obfuscated_code: string; obfuscator: string;
+    }> = { ...rest };
     if (rest.is_protected && typeof rest.code === "string" && rest.code.length > 0) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       patch.obfuscated_code = obfuscateLua(rest.code);
