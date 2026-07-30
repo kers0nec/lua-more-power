@@ -64,17 +64,29 @@ async function handleCommand(body: any) {
 
       case "setup": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Account not linked. Use `/login <api_key>` first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const scriptPublicId = String(opts.get("script_id") ?? "");
         if (scriptPublicId) {
+          // Look up the script by public_id ACROSS ALL OWNERS so an admin in
+          // another server can post someone else's script panel (with the ID).
           const { data: script } = await supabaseAdmin
-            .from("scripts").select("id, name, description")
-            .eq("public_id", scriptPublicId).eq("user_id", profile.id).maybeSingle();
+            .from("scripts").select("id, name, description, user_id")
+            .eq("public_id", scriptPublicId).maybeSingle();
           if (!script) return errorReply("Script not found — check its public ID");
-          return await postPanelForScript(profile.id, script, body);
+
+          // Invoker must own the script OR have Administrator in this guild.
+          const isOwner = profile?.id === script.user_id;
+          const perms = BigInt(body.member?.permissions ?? "0");
+          const isGuildAdmin = (perms & 0x8n) === 0x8n;
+          if (!isOwner && !isGuildAdmin) {
+            return errorReply("You need the Administrator permission in this server to post someone else's panel.");
+          }
+          return await postPanelForScript(script.user_id, script, body);
         }
+
+        if (!profile) return errorReply("Account not linked. Use `/login <api_key>` first, or pass `script_id:<public_id>`.");
+
 
         const { data: scripts } = await supabaseAdmin
           .from("scripts").select("id, name, public_id")
@@ -185,8 +197,12 @@ async function isPanelAdmin(panel: any, body: any, profileId?: string) {
 
 async function postPanelForScript(profileId: string, script: any, body: any) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Key panels by (owner, script, channel) so the same script can be posted
+  // in multiple servers/channels without stomping each other.
   const { data: existing } = await supabaseAdmin
-    .from("panels").select("*").eq("user_id", profileId).eq("script_id", script.id).maybeSingle();
+    .from("panels").select("*")
+    .eq("user_id", profileId).eq("script_id", script.id).eq("channel_id", body.channel_id ?? "")
+    .maybeSingle();
 
   let panel = existing;
   if (!panel) {
@@ -200,11 +216,8 @@ async function postPanelForScript(profileId: string, script: any, body: any) {
     }).select("*").maybeSingle();
     if (error || !created) return errorReply(error?.message ?? "Could not create panel");
     panel = created;
-  } else if (body.channel_id && panel.channel_id !== body.channel_id) {
-    await supabaseAdmin.from("panels")
-      .update({ channel_id: body.channel_id, whitelist_channel_id: panel.whitelist_channel_id ?? body.channel_id })
-      .eq("id", panel.id);
   }
+
 
   const sentBy = body.member?.user?.global_name || body.member?.user?.username || null;
   return {
@@ -371,7 +384,9 @@ function json(v: unknown, status = 200) {
   return new Response(JSON.stringify(v), { status, headers: { "Content-Type": "application/json" } });
 }
 function originFromEnv() {
-  return process.env.PUBLIC_BASE_URL || "https://luamore.app";
+  let base = (process.env.PUBLIC_BASE_URL || "https://luamore.app").trim();
+  if (!/^https?:\/\//i.test(base)) base = `https://${base}`;
+  return base.replace(/\/+$/, "");
 }
 function randomKey() {
   const bytes = new Uint8Array(18);
