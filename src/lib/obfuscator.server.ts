@@ -251,7 +251,8 @@ for ${I}=#${T},2,-1 do
   ${T}[${I}],${T}[${J}]=${T}[${J}],${T}[${I}]
 end
 local ${OUT}={}
-for ${I}=1,#${CT} do ${OUT}[${T}[${I}]]=${CT}[${I}] end
+-- inverse permutation: JS did out[idx[i]] = src[i], so src[i] = out[idx[i]]
+for ${I}=1,#${CT} do ${OUT}[${I}]=${CT}[${T}[${I}]] end
 -- decrypt (triple XOR)
 local ${DEC}={}
 for ${I}=1,#${OUT} do
