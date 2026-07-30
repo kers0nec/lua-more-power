@@ -9,6 +9,23 @@ export const Route = createFileRoute("/_authenticated/dashboard/scripts/$id")({
   component: ScriptDetail,
 });
 
+function prettyError(e: unknown) {
+  const raw = e instanceof Error ? e.message : String(e ?? "Failed");
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((i: { message?: string; path?: (string | number)[] }) =>
+          i.code === "too_big" && i.path?.[0] === "code"
+            ? "Script is too large to save"
+            : `${i.path?.join(".") ?? "input"}: ${i.message ?? "invalid"}`,
+        )
+        .join(", ");
+    }
+  } catch { /* not JSON */ }
+  return raw;
+}
+
 function ScriptDetail() {
   const { id } = Route.useParams();
   const get = useServerFn(getScript);
