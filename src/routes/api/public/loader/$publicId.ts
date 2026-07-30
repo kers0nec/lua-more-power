@@ -35,8 +35,10 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
 
 
         if (script.ffa) {
+          await bumpRuns();
           return lua(script.code);
         }
+
 
         if (!key) return luaError("License key required");
 
