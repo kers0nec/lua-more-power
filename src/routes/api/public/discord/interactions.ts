@@ -64,17 +64,29 @@ async function handleCommand(body: any) {
 
       case "setup": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Account not linked. Use `/login <api_key>` first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const scriptPublicId = String(opts.get("script_id") ?? "");
         if (scriptPublicId) {
+          // Look up the script by public_id ACROSS ALL OWNERS so an admin in
+          // another server can post someone else's script panel (with the ID).
           const { data: script } = await supabaseAdmin
-            .from("scripts").select("id, name, description")
-            .eq("public_id", scriptPublicId).eq("user_id", profile.id).maybeSingle();
+            .from("scripts").select("id, name, description, user_id")
+            .eq("public_id", scriptPublicId).maybeSingle();
           if (!script) return errorReply("Script not found — check its public ID");
-          return await postPanelForScript(profile.id, script, body);
+
+          // Invoker must own the script OR have Administrator in this guild.
+          const isOwner = profile?.id === script.user_id;
+          const perms = BigInt(body.member?.permissions ?? "0");
+          const isGuildAdmin = (perms & 0x8n) === 0x8n;
+          if (!isOwner && !isGuildAdmin) {
+            return errorReply("You need the Administrator permission in this server to post someone else's panel.");
+          }
+          return await postPanelForScript(script.user_id, script, body);
         }
+
+        if (!profile) return errorReply("Account not linked. Use `/login <api_key>` first, or pass `script_id:<public_id>`.");
+
 
         const { data: scripts } = await supabaseAdmin
           .from("scripts").select("id, name, public_id")
