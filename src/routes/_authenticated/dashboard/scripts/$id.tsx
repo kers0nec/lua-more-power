@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { getScript, updateScript } from "@/lib/scripts.functions";
+import { getScript, updateScript, obfuscateScriptNow } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/$id")({
   head: () => ({ meta: [{ title: "Script — LuaMore" }] }),
@@ -30,11 +30,13 @@ function ScriptDetail() {
   const { id } = Route.useParams();
   const get = useServerFn(getScript);
   const upd = useServerFn(updateScript);
+  const obf = useServerFn(obfuscateScriptNow);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["script", id], queryFn: () => get({ data: { id } }) });
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [ffa, setFfa] = useState(false);
+  const [autoObf, setAutoObf] = useState(false);
   const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
@@ -42,12 +44,25 @@ function ScriptDetail() {
       setCode(q.data.script.code ?? "");
       setName(q.data.script.name ?? "");
       setFfa(q.data.script.ffa ?? false);
+      setAutoObf(q.data.script.is_protected ?? false);
     }
   }, [q.data]);
 
   const saveMut = useMutation({
-    mutationFn: () => upd({ data: { id, name, code, ffa } }),
-    onSuccess: () => { setStatus("✓ Saved"); qc.invalidateQueries({ queryKey: ["script", id] }); },
+    mutationFn: () => upd({ data: { id, name, code, ffa, is_protected: autoObf } }),
+    onSuccess: () => {
+      setStatus(autoObf ? "✓ Saved & obfuscated" : "✓ Saved");
+      qc.invalidateQueries({ queryKey: ["script", id] });
+    },
+    onError: (e) => setStatus(`✗ ${prettyError(e)}`),
+  });
+
+  const obfMut = useMutation({
+    mutationFn: () => obf({ data: { id } }),
+    onSuccess: (r) => {
+      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, LuaMore VM v2)`);
+      qc.invalidateQueries({ queryKey: ["script", id] });
+    },
     onError: (e) => setStatus(`✗ ${prettyError(e)}`),
   });
 
@@ -69,12 +84,19 @@ function ScriptDetail() {
   return (
     <div className="p-8 max-w-6xl">
       <Link to="/dashboard/scripts" className="text-sm" style={{ color: "var(--primary)" }}>← All scripts</Link>
-      <div className="mt-2 flex items-center gap-3">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <input value={name} onChange={(e) => setName(e.target.value)} className="input-blue text-xl font-bold max-w-md" />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={ffa} onChange={(e) => setFfa(e.target.checked)} /> FFA
         </label>
+        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v2 every time you save">
+          <input type="checkbox" checked={autoObf} onChange={(e) => setAutoObf(e.target.checked)} />
+          Auto-obfuscate on save
+        </label>
         <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="btn-outline">Save</button>
+        <button onClick={() => obfMut.mutate()} disabled={obfMut.isPending} className="btn-primary">
+          {obfMut.isPending ? "Obfuscating…" : "Obfuscate now"}
+        </button>
       </div>
       {script && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
