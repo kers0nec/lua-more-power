@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Shield,
+  KeyRound,
+  Cpu,
+  MessageSquare,
+  CheckCircle2,
+  Package,
+  ArrowRight,
+  type LucideIcon,
+} from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getPublicStats } from "@/lib/dashboard.functions";
@@ -18,19 +28,19 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const features = [
-  { icon: "🛡️", title: "Larph Obfuscation", desc: "Powered by the Larph engine — control-flow scrambling, variable renaming, and server-side skid protection." },
-  { icon: "🔑", title: "License Management", desc: "Generate single or bulk keys with expiry, notes, and per-script scoping." },
-  { icon: "🖥️", title: "HWID Protection", desc: "Lock scripts to hardware, ban abusers, and reset devices in one click." },
-  { icon: "💬", title: "Panel System", desc: "Interactive Discord panels with redeem, script, role, and HWID buttons." },
-  { icon: "✅", title: "Whitelist System", desc: "Auto-generate keys when whitelisting a user by Discord ID." },
-  { icon: "📦", title: "Script Hosting", desc: "Version, release, and serve obfuscated scripts through secure loaders." },
+const features: { icon: LucideIcon; title: string; desc: string; tag: string }[] = [
+  { icon: Shield, tag: "01", title: "Larph Obfuscation", desc: "Control-flow scrambling, variable renaming, and server-side skid protection powered by the Larph engine." },
+  { icon: KeyRound, tag: "02", title: "License Management", desc: "Generate single or bulk keys with expiry windows, notes, and per-script scoping." },
+  { icon: Cpu, tag: "03", title: "HWID Protection", desc: "Lock scripts to hardware, ban abusers, and reset devices in a single click." },
+  { icon: MessageSquare, tag: "04", title: "Panel System", desc: "Interactive Discord panels with redeem, script, role, and HWID buttons." },
+  { icon: CheckCircle2, tag: "05", title: "Whitelist System", desc: "Auto-generate keys the moment you whitelist a user by Discord ID." },
+  { icon: Package, tag: "06", title: "Script Hosting", desc: "Version, release, and serve obfuscated builds through secure loaders." },
 ];
 
 const steps = [
-  { n: 1, title: "Upload your Luau script", desc: "Paste code or import from Discord — validated on the fly." },
-  { n: 2, title: "Obfuscate with Larph", desc: "Choose Light, Standard, or Advanced. Server-side protection available." },
-  { n: 3, title: "Deploy with Discord", desc: "Panels, license keys, and HWID checks — all wired to your server." },
+  { n: "01", title: "Upload your Luau script", desc: "Paste code or import from Discord — syntax validated on the fly." },
+  { n: "02", title: "Obfuscate with Larph", desc: "Light, Standard, or Advanced. Server-side protection available." },
+  { n: "03", title: "Deploy with Discord", desc: "Panels, license keys, and HWID checks wired to your server." },
 ];
 
 const plans = [
@@ -39,6 +49,26 @@ const plans = [
   { name: "Enterprise", price: "Custom", features: ["Unlimited scripts", "Skid protection tier", "Dedicated support", "Custom Discord bot"], cta: "Contact us" },
 ];
 
+const marquee = [
+  "CONTROL-FLOW SCRAMBLING",
+  "HWID LOCKING",
+  "LICENSE KEYS",
+  "DISCORD PANELS",
+  "SECURE LOADERS",
+  "VERSIONED RELEASES",
+  "SKID PROTECTION",
+];
+
+const CODE_BEFORE = `local function greet(name)
+  print("hello " .. name)
+end
+greet("world")`;
+
+const CODE_AFTER = `local v1={"\\104\\101\\108\\108\\111"}
+local v2=function(v3)
+ return(v1[1]..v3)end
+return(loadstring or load)(v2)`;
+
 function Home() {
   const stats = useQuery({ queryKey: ["public-stats"], queryFn: () => getPublicStats() });
   const s = stats.data ?? { scriptsObfuscated: 0, scriptsHosted: 0, keysGenerated: 0, activeUsers: 0 };
@@ -46,59 +76,165 @@ function Home() {
   return (
     <div className="min-h-screen">
       <SiteNav />
+
       {/* Hero */}
-      <section style={{ background: "var(--gradient-hero)" }}>
-        <div className="mx-auto max-w-6xl px-6 pt-20 pb-24 text-center">
-          <div className="inline-flex badge-blue mb-6">✨ Powered by the Larph obfuscation engine</div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
-            Lua<span style={{ color: "var(--primary)" }}>More</span>
+      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+        <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
+        <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 text-center md:pt-28 md:pb-24">
+          <div className="rise inline-flex">
+            <span className="badge-blue">
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: "var(--foreground)" }}
+              />
+              Powered by the Larph engine
+            </span>
+          </div>
+
+          <h1
+            className="rise mt-7 font-display text-5xl leading-[0.95] font-bold tracking-tighter md:text-8xl"
+            style={{ animationDelay: "60ms" }}
+          >
+            Lua<span style={{ color: "var(--muted-foreground)" }}>More</span>
           </h1>
-          <p className="mt-4 text-xl md:text-2xl" style={{ color: "var(--muted-foreground)" }}>
-            More Power, More Security, More Lua.
+
+          <p
+            className="rise mt-5 font-mono text-sm uppercase tracking-[0.28em] md:text-base"
+            style={{ color: "var(--muted-foreground)", animationDelay: "120ms" }}
+          >
+            More Power · More Security · More Lua
           </p>
-          <p className="mt-6 mx-auto max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
-            Obfuscate Luau scripts, generate license keys, lock hardware, and ship
-            everything through a Discord panel — one dashboard, zero setup.
+
+          <p
+            className="rise mx-auto mt-7 max-w-2xl text-base leading-relaxed md:text-lg"
+            style={{ color: "var(--muted-foreground)", animationDelay: "180ms" }}
+          >
+            Obfuscate Luau scripts, generate license keys, lock hardware, and ship everything
+            through a Discord panel — one dashboard, zero setup.
           </p>
-          <div className="mt-8 flex justify-center gap-3">
-            <Link to="/auth" className="btn-primary">Get Started →</Link>
-            <Link to="/commands" className="btn-outline">View Commands</Link>
+
+          <div
+            className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            style={{ animationDelay: "240ms" }}
+          >
+            <Link to="/auth" className="btn-primary w-full sm:w-auto">
+              Get Started <ArrowRight size={16} />
+            </Link>
+            <Link to="/commands" className="btn-outline w-full sm:w-auto">
+              View Commands
+            </Link>
+          </div>
+
+          {/* Before / after terminal */}
+          <div
+            className="rise card-flat mx-auto mt-16 max-w-4xl overflow-hidden text-left"
+            style={{ animationDelay: "320ms" }}
+          >
+            <div
+              className="flex items-center gap-2 border-b px-4 py-2.5"
+              style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+            >
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
+              <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--muted-foreground)" }}>
+                larph — obfuscate --mode advanced
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2">
+              <pre
+                className="overflow-x-auto p-5 font-mono text-xs leading-relaxed md:border-r"
+                style={{ color: "var(--muted-foreground)", borderColor: "var(--border)" }}
+              >
+                <span className="eyebrow block pb-3">Input</span>
+                {CODE_BEFORE}
+              </pre>
+              <pre
+                className="overflow-x-auto border-t p-5 font-mono text-xs leading-relaxed md:border-t-0"
+                style={{ color: "var(--foreground)", borderColor: "var(--border)" }}
+              >
+                <span className="eyebrow block pb-3">Protected output</span>
+                {CODE_AFTER}
+                <span className="caret">&nbsp;</span>
+              </pre>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* Marquee */}
+      <div
+        className="overflow-hidden border-y py-3"
+        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+      >
+        <div className="marquee-track">
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex shrink-0 items-center">
+              {marquee.map((m) => (
+                <span
+                  key={`${dup}-${m}`}
+                  className="flex items-center gap-6 px-6 font-mono text-[11px] tracking-[0.24em]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {m}
+                  <span style={{ color: "var(--border-strong)" }}>/</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center">Everything you need to ship Lua</h2>
-        <p className="mt-3 text-center" style={{ color: "var(--muted-foreground)" }}>
-          One platform for obfuscation, delivery, and protection.
-        </p>
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+        <div className="max-w-2xl">
+          <div className="eyebrow">Capabilities</div>
+          <h2 className="mt-3 font-display text-3xl font-bold md:text-5xl">
+            Everything you need to ship Lua
+          </h2>
+          <p className="mt-4 text-base" style={{ color: "var(--muted-foreground)" }}>
+            One platform for obfuscation, delivery, and protection — no glue code, no extra services.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="card-blue p-6">
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="text-lg font-semibold">{f.title}</h3>
-              <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>{f.desc}</p>
+            <div key={f.title} className="card-blue group p-6">
+              <div className="flex items-start justify-between">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border"
+                  style={{ borderColor: "var(--border-strong)", background: "var(--accent-light)" }}
+                >
+                  <f.icon size={18} strokeWidth={1.6} />
+                </div>
+                <span className="font-mono text-[11px] tracking-[0.2em]" style={{ color: "var(--border-strong)" }}>
+                  {f.tag}
+                </span>
+              </div>
+              <h3 className="mt-5 font-display text-lg font-bold">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section style={{ background: "var(--secondary)" }}>
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-center">How it works</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {steps.map((s) => (
-              <div key={s.n} className="card-blue p-8 text-center">
-                <div
-                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-[color:var(--primary-foreground)]"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  {s.n}
+      <section className="border-y" style={{ background: "var(--secondary)", borderColor: "var(--border)" }}>
+        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+          <div className="eyebrow">Workflow</div>
+          <h2 className="mt-3 font-display text-3xl font-bold md:text-5xl">Three steps to protected</h2>
+          <div className="mt-12 grid gap-px overflow-hidden rounded-lg border md:grid-cols-3" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
+            {steps.map((st) => (
+              <div key={st.n} className="p-8" style={{ background: "var(--card)" }}>
+                <div className="font-display text-4xl font-bold" style={{ color: "var(--border-strong)" }}>
+                  {st.n}
                 </div>
-                <h3 className="text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>{s.desc}</p>
+                <h3 className="mt-5 font-display text-lg font-bold">{st.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                  {st.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -107,53 +243,86 @@ function Home() {
 
       {/* Stats */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border md:grid-cols-4" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
           {[
-            { label: "Scripts Obfuscated", value: s.scriptsObfuscated },
-            { label: "Active Users", value: s.activeUsers },
-            { label: "Keys Generated", value: s.keysGenerated },
-            { label: "Scripts Hosted", value: s.scriptsHosted },
+            { label: "Scripts obfuscated", value: s.scriptsObfuscated },
+            { label: "Active users", value: s.activeUsers },
+            { label: "Keys generated", value: s.keysGenerated },
+            { label: "Scripts hosted", value: s.scriptsHosted },
           ].map((x) => (
-            <div key={x.label} className="card-blue p-6 text-center">
-              <div className="text-3xl md:text-4xl font-bold" style={{ color: "var(--primary)" }}>
+            <div key={x.label} className="p-8 text-center" style={{ background: "var(--card)" }}>
+              <div className="font-display text-3xl font-bold tracking-tight md:text-5xl">
                 {x.value.toLocaleString()}
               </div>
-              <div className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>{x.label}</div>
+              <div className="eyebrow mt-3">{x.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Pricing */}
-      <section style={{ background: "var(--secondary)" }}>
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-center">Simple pricing</h2>
-          <p className="mt-3 text-center" style={{ color: "var(--muted-foreground)" }}>
-            Start free, upgrade when you scale.
-          </p>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+      <section className="border-t" style={{ background: "var(--secondary)", borderColor: "var(--border)" }}>
+        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+          <div className="eyebrow">Pricing</div>
+          <h2 className="mt-3 font-display text-3xl font-bold md:text-5xl">Start free, scale later</h2>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
             {plans.map((p) => (
               <div
                 key={p.name}
-                className="card-blue p-8"
-                style={p.highlight ? { borderColor: "var(--primary)", boxShadow: "0 12px 40px rgba(255,255,255,0.08)" } : undefined}
+                className="card-blue flex flex-col p-8"
+                style={
+                  p.highlight
+                    ? { borderColor: "var(--foreground)", boxShadow: "0 0 0 1px var(--foreground), 0 24px 60px rgba(255,255,255,0.06)" }
+                    : undefined
+                }
               >
-                {p.highlight && <div className="badge-solid mb-3">Most popular</div>}
-                <h3 className="text-xl font-bold">{p.name}</h3>
-                <div className="mt-2 text-4xl font-bold">
-                  {p.price}
-                  {p.price.startsWith("$") && <span className="text-base font-normal" style={{ color: "var(--muted-foreground)" }}>/mo</span>}
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-xl font-bold">{p.name}</h3>
+                  {p.highlight && <span className="badge-solid">Popular</span>}
                 </div>
-                <ul className="mt-6 space-y-2 text-sm">
+                <div className="mt-4 font-display text-5xl font-bold tracking-tighter">
+                  {p.price}
+                  {p.price.startsWith("$") && (
+                    <span className="font-sans text-sm font-normal" style={{ color: "var(--muted-foreground)" }}>
+                      /mo
+                    </span>
+                  )}
+                </div>
+                <ul className="mt-7 flex-1 space-y-3 text-sm">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span style={{ color: "var(--primary)" }}>✓</span> {f}
+                    <li key={f} className="flex items-start gap-2.5">
+                      <CheckCircle2 size={15} className="mt-0.5 shrink-0" strokeWidth={1.6} />
+                      <span style={{ color: "var(--muted-foreground)" }}>{f}</span>
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth" className={p.highlight ? "btn-primary mt-6 w-full" : "btn-outline mt-6 w-full"}>{p.cta}</Link>
+                <Link to="/auth" className={`${p.highlight ? "btn-primary" : "btn-outline"} mt-8 w-full`}>
+                  {p.cta}
+                </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative overflow-hidden border-t" style={{ borderColor: "var(--border)" }}>
+        <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
+        <div className="relative mx-auto max-w-3xl px-6 py-24 text-center">
+          <h2 className="font-display text-3xl font-bold tracking-tighter md:text-5xl">
+            Ship your script. Keep your source.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base" style={{ color: "var(--muted-foreground)" }}>
+            Set up obfuscation, keys, and a Discord panel in under five minutes.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to="/auth" className="btn-primary w-full sm:w-auto">
+              Create your account <ArrowRight size={16} />
+            </Link>
+            <Link to="/commands" className="btn-outline w-full sm:w-auto">
+              Browse commands
+            </Link>
           </div>
         </div>
       </section>
