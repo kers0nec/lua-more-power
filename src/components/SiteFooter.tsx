@@ -14,24 +14,24 @@ export function SiteFooter() {
         <div>
           <h4 className="mb-3 text-sm font-semibold">Product</h4>
           <ul className="space-y-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            <li><Link to="/" className="hover:text-[color:var(--primary)]">Home</Link></li>
-            <li><Link to="/demo" className="hover:text-[color:var(--primary)]">Demo</Link></li>
-            <li><Link to="/dashboard" className="hover:text-[color:var(--primary)]">Dashboard</Link></li>
+            <li><Link to="/" className="hover:text-[color:var(--foreground)]">Home</Link></li>
+            
+            <li><Link to="/dashboard" className="hover:text-[color:var(--foreground)]">Dashboard</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="mb-3 text-sm font-semibold">Resources</h4>
           <ul className="space-y-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            <li><Link to="/commands" className="hover:text-[color:var(--primary)]">Commands</Link></li>
-            <li><a href="#" className="hover:text-[color:var(--primary)]">Support</a></li>
+            <li><Link to="/commands" className="hover:text-[color:var(--foreground)]">Commands</Link></li>
+            <li><a href="#" className="hover:text-[color:var(--foreground)]">Support</a></li>
           </ul>
         </div>
         <div>
           <h4 className="mb-3 text-sm font-semibold">Community</h4>
           <ul className="space-y-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            <li><a href="#" className="hover:text-[color:var(--primary)]">Discord</a></li>
-            <li><a href="#" className="hover:text-[color:var(--primary)]">GitHub</a></li>
-            <li><a href="#" className="hover:text-[color:var(--primary)]">Twitter</a></li>
+            <li><a href="#" className="hover:text-[color:var(--foreground)]">Discord</a></li>
+            <li><a href="#" className="hover:text-[color:var(--foreground)]">GitHub</a></li>
+            <li><a href="#" className="hover:text-[color:var(--foreground)]">Twitter</a></li>
           </ul>
         </div>
       </div>

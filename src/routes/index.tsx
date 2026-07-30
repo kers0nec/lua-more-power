@@ -62,7 +62,7 @@ function Home() {
           </p>
           <div className="mt-8 flex justify-center gap-3">
             <Link to="/auth" className="btn-primary">Get Started →</Link>
-            <Link to="/demo" className="btn-outline">View Demo</Link>
+            <Link to="/commands" className="btn-outline">View Commands</Link>
           </div>
         </div>
       </section>
@@ -92,7 +92,7 @@ function Home() {
             {steps.map((s) => (
               <div key={s.n} className="card-blue p-8 text-center">
                 <div
-                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
+                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-[color:var(--primary-foreground)]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   {s.n}
@@ -136,7 +136,7 @@ function Home() {
               <div
                 key={p.name}
                 className="card-blue p-8"
-                style={p.highlight ? { borderColor: "var(--primary)", boxShadow: "0 12px 40px rgba(0,170,255,0.25)" } : undefined}
+                style={p.highlight ? { borderColor: "var(--primary)", boxShadow: "0 12px 40px rgba(255,255,255,0.08)" } : undefined}
               >
                 {p.highlight && <div className="badge-solid mb-3">Most popular</div>}
                 <h3 className="text-xl font-bold">{p.name}</h3>

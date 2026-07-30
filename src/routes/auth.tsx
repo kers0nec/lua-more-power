@@ -63,8 +63,8 @@ function Auth() {
                 onClick={() => setMode(m)}
                 className="flex-1 py-2 text-sm font-medium"
                 style={{
-                  background: mode === m ? "var(--gradient-primary)" : "#ffffff",
-                  color: mode === m ? "#ffffff" : "var(--foreground)",
+                  background: mode === m ? "var(--gradient-primary)" : "transparent",
+                  color: mode === m ? "var(--primary-foreground)" : "var(--muted-foreground)",
                 }}
               >
                 {m === "signin" ? "Sign in" : "Sign up"}

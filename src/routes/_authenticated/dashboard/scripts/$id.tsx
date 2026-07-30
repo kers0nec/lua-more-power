@@ -83,8 +83,8 @@ function ScriptDetail() {
                   onClick={() => setMode(m)}
                   className="px-3 py-1.5 text-xs font-semibold capitalize"
                   style={{
-                    background: mode === m ? "var(--gradient-primary)" : "#ffffff",
-                    color: mode === m ? "#ffffff" : "var(--foreground)",
+                    background: mode === m ? "var(--gradient-primary)" : "transparent",
+                    color: mode === m ? "var(--primary-foreground)" : "var(--muted-foreground)",
                   }}
                 >
                   {m}

@@ -39,7 +39,7 @@ function Page() {
       {newKey && (
         <div className="mt-4 card-blue p-4" style={{ background: "#e6fff4" }}>
           <div className="text-sm font-semibold" style={{ color: "var(--success)" }}>Copy this key now — it won't be shown again:</div>
-          <code className="block mt-2 font-mono text-sm p-2 rounded bg-white">{newKey}</code>
+          <code className="block mt-2 font-mono text-sm p-2 rounded bg-[color:var(--input)]">{newKey}</code>
         </div>
       )}
 

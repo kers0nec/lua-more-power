@@ -2,19 +2,20 @@ export function Logo({ size = 32 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2">
       <div
-        className="flex items-center justify-center rounded-lg font-bold text-white"
+        className="flex items-center justify-center rounded-lg font-bold"
         style={{
           width: size,
           height: size,
-          background: "var(--gradient-primary)",
-          fontSize: size * 0.5,
-          boxShadow: "0 4px 12px rgba(0,170,255,0.35)",
+          background: "#ffffff",
+          color: "#09090b",
+          fontSize: size * 0.42,
+          letterSpacing: "-0.02em",
         }}
       >
         LM
       </div>
       <span className="text-xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
-        Lua<span style={{ color: "var(--primary)" }}>More</span>
+        Lua<span style={{ color: "var(--muted-foreground)" }}>More</span>
       </span>
     </div>
   );

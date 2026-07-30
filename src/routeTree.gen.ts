@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommandsRouteImport } from './routes/commands'
-import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
@@ -46,11 +45,6 @@ const AuthRoute = AuthRouteImport.update({
 const CommandsRoute = CommandsRouteImport.update({
   id: '/commands',
   path: '/commands',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardIndexRoute =
@@ -141,7 +135,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
-  '/demo': typeof DemoRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -161,7 +154,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
-  '/demo': typeof DemoRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -183,7 +175,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
-  '/demo': typeof DemoRoute
   '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -205,7 +196,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
-    | '/demo'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -225,7 +215,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
-    | '/demo'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -246,7 +235,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/commands'
-    | '/demo'
     | '/_authenticated/dashboard/api-keys'
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
@@ -268,7 +256,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CommandsRoute: typeof CommandsRoute
-  DemoRoute: typeof DemoRoute
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
   ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
@@ -302,13 +289,6 @@ declare module '@tanstack/react-router' {
       path: '/commands'
       fullPath: '/commands'
       preLoaderRoute: typeof CommandsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/': {
@@ -449,7 +429,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CommandsRoute: CommandsRoute,
-  DemoRoute: DemoRoute,
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
   ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
