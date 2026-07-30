@@ -371,7 +371,7 @@ function json(v: unknown, status = 200) {
   return new Response(JSON.stringify(v), { status, headers: { "Content-Type": "application/json" } });
 }
 function originFromEnv() {
-  return process.env.PUBLIC_BASE_URL || "https://your-luamore.lovable.app";
+  return process.env.PUBLIC_BASE_URL || "https://luamore.app";
 }
 function randomKey() {
   const bytes = new Uint8Array(18);
