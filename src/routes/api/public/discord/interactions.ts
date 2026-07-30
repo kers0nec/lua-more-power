@@ -307,19 +307,134 @@ async function handleCommand(body: any) {
 
 async function handleComponent(body: any) {
   const cid = String(body.data?.custom_id ?? "");
-  const [, action] = cid.split(":");
+  const [, action, panelId] = cid.split(":");
+  const discordId = body.member?.user?.id ?? body.user?.id;
+
   if (action === "redeem") {
     return {
       type: 9, // MODAL
       data: {
-        custom_id: cid.replace(":redeem:", ":redeem-submit:"),
+        custom_id: `lm:redeem-submit:${panelId}`,
         title: "Redeem LuaMore Key",
         components: [{ type: 1, components: [{ type: 4, custom_id: "key", label: "License key", style: 1, required: true, min_length: 8, max_length: 64 }] }],
       },
     };
   }
-  return embedReply({ title: `Action: ${action}`, description: "This button is wired — extend the handler for your workflow.", color: COLOR_INFO });
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: panel } = await supabaseAdmin.from("panels").select("*").eq("id", panelId).maybeSingle();
+  if (!panel) return errorReply("This panel no longer exists");
+
+  if (action === "script") {
+    if (!panel.script_id) return errorReply("No script is attached to this panel");
+    const { data: script } = await supabaseAdmin.from("scripts").select("public_id, name, ffa").eq("id", panel.script_id).maybeSingle();
+    if (!script) return errorReply("Script not found");
+
+    const { data: wl } = await supabaseAdmin
+      .from("whitelists").select("id, expires_at").eq("script_id", panel.script_id).eq("discord_id", discordId).maybeSingle();
+    const { data: lic } = await supabaseAdmin
+      .from("license_keys").select("key, revoked, expires_at").eq("script_id", panel.script_id).eq("discord_id", discordId).maybeSingle();
+
+    if (!script.ffa && !wl && !lic) return errorReply("You are not whitelisted for this script — redeem a key first.");
+    if (lic?.revoked) return errorReply("Your access has been revoked");
+
+    const url = `${originFromEnv()}/api/public/loader/${script.public_id}`;
+    const keyPart = lic?.key ? `?key=${lic.key}&hwid=` : "?hwid=";
+    return embedReply({
+      title: `📜 ${script.name}`,
+      description: `\`\`\`lua\nloadstring(game:HttpGet("${url}${keyPart}"..game:GetService('RbxAnalyticsService'):GetClientId()))()\n\`\`\``,
+      color: COLOR_INFO,
+      footer: { text: "LuaMore · keep this loader private" },
+    });
+  }
+
+  if (action === "role") {
+    if (!panel.discord_role_id) return errorReply("No role is configured for this panel");
+    const botToken = process.env.DISCORD_BOT_TOKEN;
+    const guildId = body.guild_id;
+    if (!botToken || !guildId) return errorReply("Bot is not configured for role granting");
+    const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${discordId}/roles/${panel.discord_role_id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bot ${botToken}` },
+    });
+    if (!res.ok) return errorReply(`Could not grant the role (${res.status})`);
+    return embedReply({ title: "👤 Role granted", description: `<@&${panel.discord_role_id}> is yours.`, color: COLOR_SUCCESS });
+  }
+
+  if (action === "hwid") {
+    const { error } = await supabaseAdmin
+      .from("license_keys").update({ hwid: null })
+      .eq("discord_id", discordId)
+      .eq("user_id", panel.user_id);
+    if (error) return errorReply(error.message);
+    return embedReply({ title: "⚙️ HWID reset", description: "Run the script again to lock a new HWID.", color: COLOR_SUCCESS });
+  }
+
+  if (action === "stats") {
+    const [{ count: keys }, { count: wls }] = await Promise.all([
+      supabaseAdmin.from("license_keys").select("id", { count: "exact", head: true }).eq("user_id", panel.user_id),
+      supabaseAdmin.from("whitelists").select("id", { count: "exact", head: true }).eq("user_id", panel.user_id),
+    ]);
+    const { data: script } = panel.script_id
+      ? await supabaseAdmin.from("scripts").select("name, run_count").eq("id", panel.script_id).maybeSingle()
+      : { data: null };
+    return embedReply({
+      title: "📊 Panel stats",
+      color: COLOR_INFO,
+      fields: [
+        { name: "Script", value: script?.name ?? "—", inline: true },
+        { name: "Executions", value: String(script?.run_count ?? 0), inline: true },
+        { name: "Keys issued", value: String(keys ?? 0), inline: true },
+        { name: "Whitelisted users", value: String(wls ?? 0), inline: true },
+      ],
+    });
+  }
+
+  return errorReply(`Unknown action: ${action}`);
 }
+
+async function handleModal(body: any) {
+  const cid = String(body.data?.custom_id ?? "");
+  const [, action, panelId] = cid.split(":");
+  if (action !== "redeem-submit") return errorReply("Unknown form");
+  const discordId = body.member?.user?.id ?? body.user?.id;
+  const key = String(
+    body.data?.components?.[0]?.components?.[0]?.value ?? "",
+  ).trim();
+  if (!key) return errorReply("No key provided");
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: panel } = await supabaseAdmin.from("panels").select("*").eq("id", panelId).maybeSingle();
+  if (!panel) return errorReply("This panel no longer exists");
+
+  const { data: lic } = await supabaseAdmin.from("license_keys").select("*").eq("key", key).maybeSingle();
+  if (!lic || lic.user_id !== panel.user_id) return errorReply("Invalid key");
+  if (lic.revoked) return errorReply("This key has been revoked");
+  if (lic.expires_at && new Date(lic.expires_at) < new Date()) return errorReply("This key has expired");
+  if (lic.discord_id && lic.discord_id !== discordId) return errorReply("This key is already bound to another user");
+
+  const scriptId = lic.script_id ?? panel.script_id;
+  await supabaseAdmin.from("license_keys").update({ discord_id: discordId, script_id: scriptId }).eq("id", lic.id);
+  if (scriptId) {
+    await supabaseAdmin.from("whitelists").insert({
+      user_id: panel.user_id, script_id: scriptId, discord_id: discordId, license_key_id: lic.id, expires_at: lic.expires_at,
+    });
+  }
+
+  if (panel.discord_role_id && body.guild_id && process.env.DISCORD_BOT_TOKEN) {
+    await fetch(`https://discord.com/api/v10/guilds/${body.guild_id}/members/${discordId}/roles/${panel.discord_role_id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
+    }).catch(() => undefined);
+  }
+
+  return embedReply({
+    title: "✅ Key redeemed",
+    description: buildWhitelistMessage(discordId, panel.whitelist_channel_id || panel.channel_id),
+    color: COLOR_SUCCESS,
+  });
+}
+
 
 // ---- helpers ----
 function embedReply(embed: Record<string, unknown>) {
