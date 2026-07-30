@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { getScript, updateScript } from "@/lib/scripts.functions";
+import { getScript, updateScript, obfuscateScriptNow } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/$id")({
   head: () => ({ meta: [{ title: "Script — LuaMore" }] }),
@@ -30,11 +30,13 @@ function ScriptDetail() {
   const { id } = Route.useParams();
   const get = useServerFn(getScript);
   const upd = useServerFn(updateScript);
+  const obf = useServerFn(obfuscateScriptNow);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["script", id], queryFn: () => get({ data: { id } }) });
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [ffa, setFfa] = useState(false);
+  const [autoObf, setAutoObf] = useState(false);
   const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
@@ -42,12 +44,25 @@ function ScriptDetail() {
       setCode(q.data.script.code ?? "");
       setName(q.data.script.name ?? "");
       setFfa(q.data.script.ffa ?? false);
+      setAutoObf(q.data.script.is_protected ?? false);
     }
   }, [q.data]);
 
   const saveMut = useMutation({
-    mutationFn: () => upd({ data: { id, name, code, ffa } }),
-    onSuccess: () => { setStatus("✓ Saved"); qc.invalidateQueries({ queryKey: ["script", id] }); },
+    mutationFn: () => upd({ data: { id, name, code, ffa, is_protected: autoObf } }),
+    onSuccess: () => {
+      setStatus(autoObf ? "✓ Saved & obfuscated" : "✓ Saved");
+      qc.invalidateQueries({ queryKey: ["script", id] });
+    },
+    onError: (e) => setStatus(`✗ ${prettyError(e)}`),
+  });
+
+  const obfMut = useMutation({
+    mutationFn: () => obf({ data: { id } }),
+    onSuccess: (r) => {
+      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, LuaMore VM v2)`);
+      qc.invalidateQueries({ queryKey: ["script", id] });
+    },
     onError: (e) => setStatus(`✗ ${prettyError(e)}`),
   });
 
