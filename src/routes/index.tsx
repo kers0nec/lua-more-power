@@ -125,40 +125,6 @@ function Home() {
             </Link>
           </div>
 
-          {/* Before / after terminal */}
-          <div
-            className="rise card-flat mx-auto mt-16 max-w-4xl overflow-hidden text-left"
-            style={{ animationDelay: "320ms" }}
-          >
-            <div
-              className="flex items-center gap-2 border-b px-4 py-2.5"
-              style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-            >
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#2a2a2a" }} />
-              <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--muted-foreground)" }}>
-                larph — obfuscate --mode advanced
-              </span>
-            </div>
-            <div className="grid md:grid-cols-2">
-              <pre
-                className="overflow-x-auto p-5 font-mono text-xs leading-relaxed md:border-r"
-                style={{ color: "var(--muted-foreground)", borderColor: "var(--border)" }}
-              >
-                <span className="eyebrow block pb-3">Input</span>
-                {CODE_BEFORE}
-              </pre>
-              <pre
-                className="overflow-x-auto border-t p-5 font-mono text-xs leading-relaxed md:border-t-0"
-                style={{ color: "var(--foreground)", borderColor: "var(--border)" }}
-              >
-                <span className="eyebrow block pb-3">Protected output</span>
-                {CODE_AFTER}
-                <span className="caret">&nbsp;</span>
-              </pre>
-            </div>
-          </div>
         </div>
       </section>
 
