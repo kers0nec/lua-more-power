@@ -236,7 +236,7 @@ for ${I}=1,#${CT} do
   ${SUM}=(_lo+_hi)%4294967296
 end
 if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
--- unpermute (xorshift32 seeded)
+print("[trace] integrity ok, unpermuting")
 local ${PERM}=${num(permSeed)}
 local ${NXT}=function()
   ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)  -- s ^= s << 13
@@ -263,6 +263,7 @@ for ${I}=1,#${OUT} do
 end
 local ${SRC}=table.concat(${DEC})
 local ${FN},${ERR}=(loadstring or load)(${SRC},"=LuaMore")
+print("[trace] decrypted, loading inner")
 if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
 if setfenv then pcall(setfenv,${FN},${E}) end
 return ${FN}()
