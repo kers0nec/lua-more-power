@@ -263,10 +263,10 @@ async function handleComponent(body: any) {
     if (lic?.revoked) return errorReply("Your access has been revoked");
 
     const url = `${originFromEnv()}/api/public/r/${script.public_id}`;
-    const keyPart = lic?.key ? `?key=${lic.key}&hwid=` : "?hwid=";
+
     return embedReply({
       title: `📜 ${script.name}`,
-      description: buildLoaderMessage(`loadstring(game:HttpGet("${url}${keyPart}"..game:GetService('RbxAnalyticsService'):GetClientId()))()`),
+      description: buildLoaderMessage(`loadstring(game:HttpGet("${lic?.key ? `${originFromEnv()}/api/public/r/${lic.key}` : url}"))()`),
       color: COLOR_INFO,
       footer: { text: "LuaMore · keep this loader private" },
     });
