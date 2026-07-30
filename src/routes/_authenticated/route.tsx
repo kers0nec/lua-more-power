@@ -8,6 +8,7 @@ import {
   Ban,
   PanelsTopLeft,
   Terminal,
+  Shield,
   Settings,
   Menu,
   X,
@@ -35,6 +36,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/dashboard", label: "Overview", icon: LayoutGrid },
       { to: "/dashboard/scripts", label: "Scripts", icon: FileCode2 },
+      { to: "/dashboard/obfuscate", label: "Obfuscator", icon: Shield },
     ],
   },
   {

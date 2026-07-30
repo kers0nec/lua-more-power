@@ -171,3 +171,15 @@ export const deleteScript = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// Standalone: obfuscate arbitrary code without saving it.
+export const obfuscateCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { code: string }) =>
+    z.object({ code: z.string().min(1).max(1_000_000_000) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { obfuscateLua } = await import("@/lib/obfuscator.server");
+    const obfuscated = obfuscateLua(data.code);
+    return { obfuscated, size: obfuscated.length, sourceSize: data.code.length };
+  });

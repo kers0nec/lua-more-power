@@ -47,12 +47,17 @@ function randName(used: Set<string>): string {
   }
 }
 
-/** FNV-1a 32-bit checksum used for the anti-tamper guard. */
+/** FNV-1a 32-bit checksum used for the anti-tamper guard.
+ *  Multiplication is split so the Lua-side implementation stays within the
+ *  53-bit double precision limit (h*16777619 would otherwise overflow). */
 function fnv1a(bytes: Uint8Array | number[]): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < bytes.length; i++) {
     h ^= bytes[i];
-    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    // h * 16777619 mod 2^32, split as h*403 + (h%256)*2^24
+    const low = h * 403;
+    const high = (h % 256) * 16777216;
+    h = (low + high) >>> 0;
   }
   return h >>> 0;
 }
@@ -204,7 +209,7 @@ local ${K3}=${keyLua(k3)}
 local ${L1},${L2},${L3}=#${K1},#${K2},#${K3}
 local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
-  for _=1,8 do
+  for _=1,32 do
     local x,y=a%2,b%2
     if x~=y then r=r+p end
     a,b,p=(a-x)/2,(b-y)/2,p*2
@@ -225,16 +230,18 @@ end
 local ${SUM}=2166136261
 for ${I}=1,#${CT} do
   ${SUM}=${XOR}(${SUM},${CT}[${I}])
-  ${SUM}=(${SUM}+${SUM}*2+${SUM}*16+${SUM}*128+${SUM}*256+${SUM}*16777216)%4294967296
+  -- SUM * 16777619 mod 2^32, split to stay within 2^53 doubles
+  local _lo=${SUM}*403
+  local _hi=(${SUM}%256)*16777216
+  ${SUM}=(_lo+_hi)%4294967296
 end
 if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
 -- unpermute (xorshift32 seeded)
 local ${PERM}=${num(permSeed)}
 local ${NXT}=function()
-  ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)
-  ${PERM}=math.floor(${PERM}/131072)+(${PERM}*32768)%4294967296
-  ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072))
-  ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)
+  ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)  -- s ^= s << 13
+  ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072)) -- s ^= s >> 17
+  ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)    -- s ^= s << 5
   return ${PERM}
 end
 local ${T}={}
@@ -244,7 +251,8 @@ for ${I}=#${T},2,-1 do
   ${T}[${I}],${T}[${J}]=${T}[${J}],${T}[${I}]
 end
 local ${OUT}={}
-for ${I}=1,#${CT} do ${OUT}[${T}[${I}]]=${CT}[${I}] end
+-- inverse permutation: JS did out[idx[i]] = src[i], so src[i] = out[idx[i]]
+for ${I}=1,#${CT} do ${OUT}[${I}]=${CT}[${T}[${I}]] end
 -- decrypt (triple XOR)
 local ${DEC}={}
 for ${I}=1,#${OUT} do
