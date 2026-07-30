@@ -230,7 +230,10 @@ end
 local ${SUM}=2166136261
 for ${I}=1,#${CT} do
   ${SUM}=${XOR}(${SUM},${CT}[${I}])
-  ${SUM}=(${SUM}+${SUM}*2+${SUM}*16+${SUM}*128+${SUM}*256+${SUM}*16777216)%4294967296
+  -- SUM * 16777619 mod 2^32, split to stay within 2^53 doubles
+  local _lo=${SUM}*403
+  local _hi=(${SUM}%256)*16777216
+  ${SUM}=(_lo+_hi)%4294967296
 end
 if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
 -- unpermute (xorshift32 seeded)
