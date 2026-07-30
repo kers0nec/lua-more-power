@@ -11,11 +11,11 @@ export function Logo({ size = 32 }: { size?: number }) {
           fontSize: size * 0.4,
           borderRadius: size * 0.22,
           letterSpacing: "-0.08em",
-          boxShadow: "0 0 18px rgba(26,109,255,0.35)",
+          boxShadow: "0 2px 8px rgba(26,109,255,0.18)",
         }}
       >
         <span style={{ color: "var(--primary)" }}>L</span>
-        <span style={{ color: "var(--foreground)", textShadow: "0 0 10px rgba(26,109,255,0.8)" }}>M</span>
+        <span style={{ color: "var(--foreground)", textShadow: "none" }}>M</span>
       </div>
       <span
         className="font-display text-lg font-bold tracking-tight"
