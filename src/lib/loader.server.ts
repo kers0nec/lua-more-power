@@ -51,9 +51,16 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
       .update({ run_count: (script!.run_count ?? 0) + 1, last_run_at: new Date().toISOString() })
       .eq("id", script!.id);
 
+  // Serve stored obfuscated_code when protection is enabled and a build exists;
+  // otherwise obfuscate on the fly. Non-protected scripts still get VM-wrapped
+  // so raw source never leaves the server.
+  const payload = (script.is_protected && script.obfuscated_code)
+    ? script.obfuscated_code
+    : obfuscateLua(script.code);
+
   if (script.ffa) {
     await bumpRuns();
-    return lua(obfuscateLua(script.code));
+    return lua(payload);
   }
 
   if (!key) return luaError("License key required");
@@ -91,7 +98,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   }
 
   await bumpRuns();
-  return lua(obfuscateLua(script.code));
+  return lua(payload);
 }
 
 function lua(body: string) {
