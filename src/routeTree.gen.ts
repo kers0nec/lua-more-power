@@ -25,6 +25,7 @@ import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_a
 import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
 import { Route as ApiPublicDiscordRegisterCommandsRouteImport } from './routes/api/public/discord/register-commands'
 import { Route as ApiPublicLoaderPublicIdRouteImport } from './routes/api/public/loader/$publicId'
+import { Route as ApiPublicRPublicIdRouteImport } from './routes/api/public/r/$publicId'
 import { Route as ApiPublicDiscordOauthCallbackRouteImport } from './routes/api/public/discord/oauth/callback'
 import { Route as ApiPublicDiscordOauthStartRouteImport } from './routes/api/public/discord/oauth/start'
 
@@ -118,6 +119,11 @@ const ApiPublicLoaderPublicIdRoute = ApiPublicLoaderPublicIdRouteImport.update({
   path: '/api/public/loader/$publicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRPublicIdRoute = ApiPublicRPublicIdRouteImport.update({
+  id: '/api/public/r/$publicId',
+  path: '/api/public/r/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiscordOauthCallbackRoute =
   ApiPublicDiscordOauthCallbackRouteImport.update({
     id: '/api/public/discord/oauth/callback',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
   '/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
   '/api/public/discord/oauth/start': typeof ApiPublicDiscordOauthStartRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
   '/dashboard/scripts': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
   '/api/public/discord/oauth/start': typeof ApiPublicDiscordOauthStartRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
+  '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
   '/_authenticated/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
   '/api/public/discord/oauth/start': typeof ApiPublicDiscordOauthStartRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
+    | '/api/public/r/$publicId'
     | '/dashboard/scripts/'
     | '/api/public/discord/oauth/callback'
     | '/api/public/discord/oauth/start'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
+    | '/api/public/r/$publicId'
     | '/dashboard/scripts'
     | '/api/public/discord/oauth/callback'
     | '/api/public/discord/oauth/start'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
+    | '/api/public/r/$publicId'
     | '/_authenticated/dashboard/scripts/'
     | '/api/public/discord/oauth/callback'
     | '/api/public/discord/oauth/start'
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
   ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
+  ApiPublicRPublicIdRoute: typeof ApiPublicRPublicIdRoute
   ApiPublicDiscordOauthCallbackRoute: typeof ApiPublicDiscordOauthCallbackRoute
   ApiPublicDiscordOauthStartRoute: typeof ApiPublicDiscordOauthStartRoute
 }
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLoaderPublicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/r/$publicId': {
+      id: '/api/public/r/$publicId'
+      path: '/api/public/r/$publicId'
+      fullPath: '/api/public/r/$publicId'
+      preLoaderRoute: typeof ApiPublicRPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/discord/oauth/callback': {
       id: '/api/public/discord/oauth/callback'
       path: '/api/public/discord/oauth/callback'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
   ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
+  ApiPublicRPublicIdRoute: ApiPublicRPublicIdRoute,
   ApiPublicDiscordOauthCallbackRoute: ApiPublicDiscordOauthCallbackRoute,
   ApiPublicDiscordOauthStartRoute: ApiPublicDiscordOauthStartRoute,
 }
