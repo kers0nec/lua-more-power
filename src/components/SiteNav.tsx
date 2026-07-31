@@ -20,9 +20,9 @@ export function SiteNav() {
   return (
     <header
       className="sticky top-0 z-40 border-b backdrop-blur-xl"
-      style={{ background: "rgba(255,255,255,0.78)", borderColor: "var(--border)" }}
+      style={{ background: "rgba(255,255,255,0.72)", borderColor: "var(--border)" }}
     >
-      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-6 py-3 md:flex md:justify-between">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link to="/" className="min-w-0">
           <Logo />
         </Link>
@@ -34,10 +34,10 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-3 py-1.5 font-mono text-xs uppercase tracking-[0.14em] transition-colors"
+                className="rounded-md px-3 py-1.5 text-sm transition-colors"
                 style={{
                   color: active ? "var(--foreground)" : "var(--muted-foreground)",
-                  background: active ? "var(--accent-light)" : "transparent",
+                  fontWeight: active ? 500 : 400,
                 }}
               >
                 {l.label}
@@ -46,11 +46,11 @@ export function SiteNav() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Link to="/auth" className="btn-ghost font-mono text-xs uppercase tracking-[0.14em]">
+        <div className="hidden items-center gap-3 md:flex">
+          <Link to="/auth" className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Sign in
           </Link>
-          <Link to="/auth" className="btn-primary py-2 text-xs">
+          <Link to="/auth" className="btn-primary py-2 text-sm">
             Get Started
           </Link>
         </div>
@@ -75,7 +75,7 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-3 py-2 font-mono text-xs uppercase tracking-[0.14em] hover:bg-[color:var(--accent-light)]"
+                className="rounded-md px-3 py-2 text-sm hover:bg-[color:var(--muted)]"
               >
                 {l.label}
               </Link>

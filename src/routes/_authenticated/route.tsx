@@ -150,7 +150,7 @@ function Layout() {
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
             className="absolute inset-0 backdrop-blur-sm"
-            style={{ background: "rgba(0,0,0,0.7)" }}
+            style={{ background: "rgba(10,10,10,0.35)" }}
             onClick={() => setOpen(false)}
           />
           <aside
@@ -166,12 +166,12 @@ function Layout() {
         {/* Mobile top bar */}
         <header
           className="sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl md:hidden"
-          style={{ borderColor: "var(--border)", background: "rgba(7,7,7,0.85)" }}
+          style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.85)" }}
         >
           <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost shrink-0 px-2 py-1">
             <Menu size={20} />
           </button>
-          <span className="truncate font-display font-bold">{currentLabel}</span>
+          <span className="truncate font-display text-lg">{currentLabel}</span>
         </header>
 
         <main className="min-w-0 flex-1">
