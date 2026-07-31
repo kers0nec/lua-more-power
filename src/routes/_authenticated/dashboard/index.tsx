@@ -32,53 +32,51 @@ function Dashboard() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8 md:py-10">
+    <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div className="eyebrow">Overview</div>
-      <h1 className="mt-2 font-display text-3xl font-bold tracking-tighter md:text-4xl">
-        Welcome back{stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
+      <h1 className="mt-3 font-display text-5xl md:text-6xl">
+        Welcome <span style={{ fontStyle: "italic" }}>back</span>
+        {stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
       </h1>
-      <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+      <p className="mt-3 max-w-lg text-sm" style={{ color: "var(--muted-foreground)" }}>
         Here's what's happening across your workspace.
       </p>
 
-      <div
-        className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-lg border lg:grid-cols-4"
-        style={{ borderColor: "var(--border)", background: "var(--border)" }}
-      >
+      <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border lg:grid-cols-4" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
         {cards.map((c) => (
-          <Link key={c.label} to={c.to} className="group block p-5 transition-colors" style={{ background: "var(--card)" }}>
+          <Link key={c.label} to={c.to} className="group block p-6 transition-colors hover:bg-[color:var(--muted)]" style={{ background: "var(--card)" }}>
             <div className="flex items-center justify-between">
-              <c.icon size={16} strokeWidth={1.7} style={{ color: "var(--muted-foreground)" }} />
+              <c.icon size={16} strokeWidth={1.6} style={{ color: "var(--muted-foreground)" }} />
               <ArrowUpRight
                 size={14}
                 className="opacity-0 transition-opacity group-hover:opacity-100"
                 style={{ color: "var(--muted-foreground)" }}
               />
             </div>
-            <div className="mt-4 font-display text-4xl font-bold tracking-tighter">{c.value}</div>
-            <div className="eyebrow mt-2">{c.label}</div>
+            <div className="mt-6 font-display text-5xl">{c.value}</div>
+            <div className="eyebrow mt-3">{c.label}</div>
           </Link>
         ))}
       </div>
 
-      <div className="mt-10 flex items-center gap-4">
+      <div className="mt-16 flex items-center gap-4">
         <h2 className="eyebrow shrink-0">Quick actions</h2>
         <div className="hairline" />
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {actions.map((a) => (
           <Link key={a.title} to={a.to} className="card-blue group block p-6">
             <div className="flex items-start gap-4">
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border"
-                style={{ borderColor: "var(--border-strong)", background: "var(--accent-light)" }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
+                style={{ background: "var(--accent-light)", color: "var(--primary)" }}
               >
-                <a.icon size={18} strokeWidth={1.6} />
+                <a.icon size={20} strokeWidth={1.5} />
               </div>
               <div className="min-w-0">
-                <h3 className="font-display text-base font-bold">{a.title}</h3>
-                <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>{a.desc}</p>
+                <h3 className="font-display text-xl">{a.title}</h3>
+                <p className="mt-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>{a.desc}</p>
               </div>
             </div>
           </Link>
