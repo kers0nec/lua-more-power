@@ -86,11 +86,14 @@ function ObfuscatePage() {
   };
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Obfuscator</h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-          One-off protection using the LuaMore VM v2 — triple XOR, keyed permutation, fragmentation, double VM bootstrap, FNV-1a anti-tamper, anti-env-logger, anti-debug.
+        <div className="eyebrow">Protection</div>
+        <h1 className="mt-3 font-display text-5xl md:text-6xl">
+          Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
+        </h1>
+        <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
+          One-off protection using LuaMore VM v3 — triple VM bootstrap, 4× rotating XOR, keyed permutation, FNV-1a anti-tamper, hardened anti-env-logger, anti-debug, anti-decompile.
         </p>
       </div>
 
