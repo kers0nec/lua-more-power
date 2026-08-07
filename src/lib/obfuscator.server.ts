@@ -46,6 +46,10 @@ function rand(n: number): number {
 function randByte(): number {
   return 1 + rand(254);
 }
+// Cyrillic homoglyphs — visually identical to Latin a/e/o/p/c/x. Used inside
+// junk STRING LITERALS only (Lua 5.1 identifiers are ASCII), to poison string
+// dumps and break "grep the variable name" style deobfuscation.
+const HOMOGLYPHS = ["\u0430","\u0435","\u03bf","\u0440","\u0441","\u0445","\u0501","\u04bb","\u051b"];
 function randName(used: Set<string>): string {
   const chars = "abcdefghijklmnopqrstuvwxyz";
   for (;;) {
@@ -57,6 +61,16 @@ function randName(used: Set<string>): string {
       return s;
     }
   }
+}
+/** Lua literal that decodes to a homoglyph-soup string; emitted as \ddd bytes. */
+function homoglyphStr(): string {
+  let s = "";
+  const n = 4 + rand(8);
+  for (let i = 0; i < n; i++) s += HOMOGLYPHS[rand(HOMOGLYPHS.length)];
+  const utf8 = new TextEncoder().encode(s);
+  let out = '"';
+  for (const b of utf8) out += "\\" + b;
+  return out + '"';
 }
 
 /** FNV-1a 32-bit checksum. Multiplication split to stay within 2^53 doubles. */
