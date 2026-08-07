@@ -132,10 +132,11 @@ function hiddenStr(s: string): string {
   return parts.join("..");
 }
 
-/** Multi-round rotating XOR with 4 keys of coprime-ish lengths. */
+/** Multi-round rotating XOR with 4 keys of coprime-ish lengths, then RC4 pass. */
 function encryptLayer(src: Uint8Array | number[]): {
   ct: number[];
   k1: number[]; k2: number[]; k3: number[]; k4: number[];
+  rc4: number[];
 } {
   const k1: number[] = [], k2: number[] = [], k3: number[] = [], k4: number[] = [];
   const l1 = 17 + rand(16);
@@ -146,16 +147,35 @@ function encryptLayer(src: Uint8Array | number[]): {
   for (let i = 0; i < l2; i++) k2.push(randByte());
   for (let i = 0; i < l3; i++) k3.push(randByte());
   for (let i = 0; i < l4; i++) k4.push(randByte());
-  const ct: number[] = [];
+  const xored: number[] = [];
   for (let i = 0; i < src.length; i++) {
     let b = src[i];
     b = b ^ k1[i % l1];
     b = b ^ k2[i % l2];
     b = b ^ k3[i % l3];
     b = b ^ k4[i % l4];
-    ct.push(b & 0xff);
+    xored.push(b & 0xff);
   }
-  return { ct, k1, k2, k3, k4 };
+  // RC4 pass with a fresh dynamic key.
+  const rc4Len = 24 + rand(24);
+  const rc4: number[] = [];
+  for (let i = 0; i < rc4Len; i++) rc4.push(randByte());
+  const S = new Array<number>(256);
+  for (let i = 0; i < 256; i++) S[i] = i;
+  let j = 0;
+  for (let i = 0; i < 256; i++) {
+    j = (j + S[i] + rc4[i % rc4Len]) & 0xff;
+    [S[i], S[j]] = [S[j], S[i]];
+  }
+  let a = 0, b2 = 0;
+  const ct: number[] = [];
+  for (let i = 0; i < xored.length; i++) {
+    a = (a + 1) & 0xff;
+    b2 = (b2 + S[a]) & 0xff;
+    [S[a], S[b2]] = [S[b2], S[a]];
+    ct.push(xored[i] ^ S[(S[a] + S[b2]) & 0xff]);
+  }
+  return { ct, k1, k2, k3, k4, rc4 };
 }
 
 /** Keyed byte permutation (Fisher-Yates driven by xorshift32). */
