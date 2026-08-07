@@ -197,10 +197,13 @@ function permute(src: number[], seed: number): { out: number[]; seed: number } {
   return { out, seed };
 }
 
-/** Build one VM bootstrap that decodes {fragments -> unpermute -> 4xXOR} and executes. */
+/** Build one VM bootstrap. Phases run through a flattened dispatcher loop:
+ *  reassemble → integrity(FNV-1a) → unpermute → RC4 undo → 4×XOR undo → load.
+ *  The dispatcher replaces sequential if/then/else with a single while+switch. */
 function buildBootstrap(
   ciphertext: number[],
   k1: number[], k2: number[], k3: number[], k4: number[],
+  rc4Key: number[],
   permSeed: number,
   chunkName: string,
   extraGuards: string,
@@ -214,6 +217,7 @@ function buildBootstrap(
   const K2 = randName(used);
   const K3 = randName(used);
   const K4 = randName(used);
+  const RC4K = randName(used);
   const PERM = randName(used);
   const XOR = randName(used);
   const DEC = randName(used);
@@ -233,11 +237,16 @@ function buildBootstrap(
   const L2 = randName(used);
   const L3 = randName(used);
   const L4 = randName(used);
-  const RG = randName(used);        // rawget snapshot
-  const SBYTE = randName(used);     // string.byte snapshot
-  const SCHAR = randName(used);     // string.char snapshot
-  const TCONCAT = randName(used);   // table.concat snapshot
-  const LOAD = randName(used);      // loadstring/load snapshot
+  const RL = randName(used);
+  const SBOX = randName(used);
+  const AA = randName(used);
+  const BB = randName(used);
+  const STATE = randName(used);   // dispatcher state
+  const RG = randName(used);
+  const SBYTE = randName(used);
+  const SCHAR = randName(used);
+  const TCONCAT = randName(used);
+  const LOAD = randName(used);
 
   const parts = 6 + rand(8);
   const frags = fragment(ciphertext, parts);
@@ -250,6 +259,10 @@ function buildBootstrap(
   fragsLua += `n=${num(frags.length)}}`;
 
   const keyLua = (k: number[]) => "{" + k.map((b) => num(b)).join(",") + "}";
+
+  // Shuffled dispatcher state ids for the flattened control flow.
+  const ids = [1, 2, 3, 4, 5, 6, 7].map(() => 100 + rand(900));
+  const [S_REASM, S_SUM, S_UNPERM, S_RC4, S_XOR, S_LOAD, S_HALT] = ids;
 
   return `--[[LM/${chunkName}]]
 -- pristine snapshots: read via rawget so __index loggers on _G can't see us
@@ -286,7 +299,8 @@ local ${K1}=${keyLua(k1)}
 local ${K2}=${keyLua(k2)}
 local ${K3}=${keyLua(k3)}
 local ${K4}=${keyLua(k4)}
-local ${L1},${L2},${L3},${L4}=#${K1},#${K2},#${K3},#${K4}
+local ${RC4K}=${keyLua(rc4Key)}
+local ${L1},${L2},${L3},${L4},${RL}=#${K1},#${K2},#${K3},#${K4},#${RC4K}
 local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
   for _=1,32 do
@@ -296,57 +310,84 @@ local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   end
   return r
 end
--- reassemble ciphertext from fragments
-local ${CT}={}
-local ${I}=1
-for ${J}=0,${FRAGS}.n-1 do
-  local ${S}=${FRAGS}[${J}]
-  for ${IDX}=1,#${S} do
-    ${CT}[${I}]=${SBYTE}(${S},${IDX})
-    ${I}=${I}+1
+local ${CT},${OUT},${DEC},${T},${SRC}={},{},{},{},nil
+local ${SUM}=2166136261
+-- CONTROL-FLOW FLATTENING: single dispatcher loop, no sequential phase code.
+local ${STATE}=${S_REASM}
+while ${STATE}~=${S_HALT} do
+  if ${STATE}==${S_REASM} then
+    local ${I}=1
+    for ${J}=0,${FRAGS}.n-1 do
+      local ${S}=${FRAGS}[${J}]
+      for ${IDX}=1,#${S} do
+        ${CT}[${I}]=${SBYTE}(${S},${IDX}); ${I}=${I}+1
+      end
+    end
+    ${STATE}=${S_SUM}
+  elseif ${STATE}==${S_SUM} then
+    for ${I}=1,#${CT} do
+      ${SUM}=${XOR}(${SUM},${CT}[${I}])
+      local _lo=${SUM}*403
+      local _hi=(${SUM}%256)*16777216
+      ${SUM}=(_lo+_hi)%4294967296
+    end
+    if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
+    ${STATE}=${S_UNPERM}
+  elseif ${STATE}==${S_UNPERM} then
+    local ${PERM}=${num(permSeed)}
+    local ${NXT}=function()
+      ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)
+      ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072))
+      ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)
+      return ${PERM}
+    end
+    for ${I}=1,#${CT} do ${T}[${I}]=${I} end
+    for ${I}=#${T},2,-1 do
+      local ${J}=(${NXT}()%${I})+1
+      ${T}[${I}],${T}[${J}]=${T}[${J}],${T}[${I}]
+    end
+    for ${I}=1,#${CT} do ${OUT}[${I}]=${CT}[${T}[${I}]] end
+    ${STATE}=${S_RC4}
+  elseif ${STATE}==${S_RC4} then
+    -- RC4 keystream (symmetric): undo the RC4 pass applied at build time.
+    local ${SBOX}={}
+    for ${I}=0,255 do ${SBOX}[${I}]=${I} end
+    local ${J}=0
+    for ${I}=0,255 do
+      ${J}=(${J}+${SBOX}[${I}]+${RC4K}[(${I}%${RL})+1])%256
+      ${SBOX}[${I}],${SBOX}[${J}]=${SBOX}[${J}],${SBOX}[${I}]
+    end
+    local ${AA},${BB}=0,0
+    for ${I}=1,#${OUT} do
+      ${AA}=(${AA}+1)%256
+      ${BB}=(${BB}+${SBOX}[${AA}])%256
+      ${SBOX}[${AA}],${SBOX}[${BB}]=${SBOX}[${BB}],${SBOX}[${AA}]
+      ${OUT}[${I}]=${XOR}(${OUT}[${I}],${SBOX}[(${SBOX}[${AA}]+${SBOX}[${BB}])%256])
+    end
+    ${STATE}=${S_XOR}
+  elseif ${STATE}==${S_XOR} then
+    for ${I}=1,#${OUT} do
+      local ${B}=${OUT}[${I}]
+      ${B}=${XOR}(${B},${K1}[((${I}-1)%${L1})+1])
+      ${B}=${XOR}(${B},${K2}[((${I}-1)%${L2})+1])
+      ${B}=${XOR}(${B},${K3}[((${I}-1)%${L3})+1])
+      ${B}=${XOR}(${B},${K4}[((${I}-1)%${L4})+1])
+      ${DEC}[${I}]=${SCHAR}(${B})
+    end
+    ${SRC}=${TCONCAT}(${DEC})
+    ${STATE}=${S_LOAD}
+  elseif ${STATE}==${S_LOAD} then
+    local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
+    if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
+    local sf=${RG}(_G, ${hiddenStr("setfenv")})
+    if type(sf)=="function" then pcall(sf,${FN},${E}) end
+    local _r=${FN}()
+    ${STATE}=${S_HALT}
+    return _r
+  else
+    ${STATE}=${S_HALT}
   end
 end
--- anti-tamper: FNV-1a over ciphertext must equal build-time expected value
-local ${SUM}=2166136261
-for ${I}=1,#${CT} do
-  ${SUM}=${XOR}(${SUM},${CT}[${I}])
-  local _lo=${SUM}*403
-  local _hi=(${SUM}%256)*16777216
-  ${SUM}=(_lo+_hi)%4294967296
-end
-if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
--- unpermute
-local ${PERM}=${num(permSeed)}
-local ${NXT}=function()
-  ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)
-  ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072))
-  ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)
-  return ${PERM}
-end
-local ${T}={}
-for ${I}=1,#${CT} do ${T}[${I}]=${I} end
-for ${I}=#${T},2,-1 do
-  local ${J}=(${NXT}()%${I})+1
-  ${T}[${I}],${T}[${J}]=${T}[${J}],${T}[${I}]
-end
-local ${OUT}={}
-for ${I}=1,#${CT} do ${OUT}[${I}]=${CT}[${T}[${I}]] end
--- decrypt (4x XOR)
-local ${DEC}={}
-for ${I}=1,#${OUT} do
-  local ${B}=${OUT}[${I}]
-  ${B}=${XOR}(${B},${K1}[((${I}-1)%${L1})+1])
-  ${B}=${XOR}(${B},${K2}[((${I}-1)%${L2})+1])
-  ${B}=${XOR}(${B},${K3}[((${I}-1)%${L3})+1])
-  ${B}=${XOR}(${B},${K4}[((${I}-1)%${L4})+1])
-  ${DEC}[${I}]=${SCHAR}(${B})
-end
-local ${SRC}=${TCONCAT}(${DEC})
-local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
-if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
-local sf=${RG}(_G, ${hiddenStr("setfenv")})
-if type(sf)=="function" then pcall(sf,${FN},${E}) end
-return ${FN}()
 `;
 }
 
