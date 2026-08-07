@@ -443,14 +443,44 @@ end)
 `;
 }
 
-/** Junk / dead-branch noise interleaved into the outer bootstrap. */
+/** Dead-code injection: opaque predicates that always eval to a known value
+ *  but look data-dependent. Injected strings hold Unicode homoglyphs so string
+ *  dumps show plausible-looking names that don't match any real identifier. */
 function junkBlock(): string {
   const used = new Set<string>();
-  const a = randName(used), b = randName(used), c = randName(used);
-  return `local ${a}=${rand(1e9)}
-local ${b}=function(x) return x*${1 + rand(9)}+${rand(9)} end
-local ${c}=${b}(${a})
-if ${c}==${rand(1e9)} then ${a}=nil end
+  const a = randName(used), b = randName(used), c = randName(used), d = randName(used);
+  const n1 = 1 + rand(1e6), n2 = 1 + rand(1e6);
+  // Opaque true: (x*x) >= 0 for real x. Opaque false: (x*x + 1) == 0.
+  const kind = rand(4);
+  if (kind === 0) {
+    return `local ${a}=${n1}
+local ${b}=function(x) return x*x+${n2} end
+local ${c}=${homoglyphStr()}
+if (${b}(${a})>=0) then local ${d}=${c} end
+if (${b}(${a})+1==0) then return error(${homoglyphStr()}) end
+`;
+  }
+  if (kind === 1) {
+    return `local ${a},${b}=${n1},${n2}
+local ${c}=(${a}%2)*(${a}%2)+(${b}%2)*(${b}%2)
+if ${c}<0 then ${a}=${homoglyphStr()} end
+local ${d}=${homoglyphStr()}
+while false do ${d}=${d}..${d} end
+`;
+  }
+  if (kind === 2) {
+    return `local ${a}=function() return ${n1} end
+local ${b}=${a}()*${a}()
+if ${b}~=${n1 * n1} then return error(${homoglyphStr()}) end
+local ${c}=${homoglyphStr()}
+repeat break until true
+`;
+  }
+  return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
+local ${b}=#${a}
+if ${b}*${b}<0 then ${a}=nil end
+local ${c},${d}=${n1},${n2}
+if (${c}-${c})~=0 then return error(${homoglyphStr()}) end
 `;
 }
 
@@ -468,6 +498,7 @@ export function obfuscateLua(source: string): string {
   const innerBootstrap = buildBootstrap(
     permInner.out,
     encInner.k1, encInner.k2, encInner.k3, encInner.k4,
+    encInner.rc4,
     permInner.seed,
     "core",
     "",
@@ -481,6 +512,7 @@ export function obfuscateLua(source: string): string {
   const middleBootstrap = buildBootstrap(
     permMiddle.out,
     encMiddle.k1, encMiddle.k2, encMiddle.k3, encMiddle.k4,
+    encMiddle.rc4,
     permMiddle.seed,
     "vm1",
     "",
@@ -494,6 +526,7 @@ export function obfuscateLua(source: string): string {
   const outerBootstrap = buildBootstrap(
     permOuter.out,
     encOuter.k1, encOuter.k2, encOuter.k3, encOuter.k4,
+    encOuter.rc4,
     permOuter.seed,
     "vm2",
     outerGuards(),
@@ -501,11 +534,16 @@ export function obfuscateLua(source: string): string {
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v3  //  build ${stamp}
-  triple VM + 4x XOR + keyed permutation + fragmentation
-  hardened anti-env-logger, anti-tamper (FNV-1a), anti-debug, anti-decompile
+  LuaMore VM v4  //  build ${stamp}
+  triple VM + 4x rotating XOR + RC4 + keyed permutation + fragmentation
+  control-flow flattening (dispatcher loop), opaque predicates,
+  Unicode homoglyph literals, hardened anti-env-logger,
+  anti-tamper (FNV-1a), anti-debug, anti-decompile
   do not edit — integrity guards will refuse to run
 ]]
 `;
-  return banner + junkBlock() + junkBlock() + junkBlock() + outerBootstrap;
+  let junk = "";
+  const junkN = 6 + rand(6);
+  for (let i = 0; i < junkN; i++) junk += junkBlock();
+  return banner + junk + outerBootstrap;
 }
