@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getScript, updateScript, obfuscateScriptNow } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/$id")({
-  head: () => ({ meta: [{ title: "Script — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Script — Lua Security" }] }),
   component: ScriptDetail,
 });
 
@@ -60,7 +60,7 @@ function ScriptDetail() {
   const obfMut = useMutation({
     mutationFn: () => obf({ data: { id } }),
     onSuccess: (r) => {
-      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, LuaMore VM v2)`);
+      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, Lua Security VM v2)`);
       qc.invalidateQueries({ queryKey: ["script", id] });
     },
     onError: (e) => setStatus(`✗ ${prettyError(e)}`),
@@ -89,7 +89,7 @@ function ScriptDetail() {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={ffa} onChange={(e) => setFfa(e.target.checked)} /> FFA
         </label>
-        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v2 every time you save">
+        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the Lua Security VM v2 every time you save">
           <input type="checkbox" checked={autoObf} onChange={(e) => setAutoObf(e.target.checked)} />
           Auto-obfuscate on save
         </label>
@@ -102,7 +102,7 @@ function ScriptDetail() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="badge-blue">public id: {script.public_id}</span>
           <code className="text-xs px-2 py-1 rounded break-all" style={{ background: "var(--accent-light)" }}>
-            {`loadstring(game:HttpGet("https://luamore.app/api/public/r/${script.public_id}"))()`}
+            {`loadstring(game:HttpGet("https://luasecurity.app/api/public/r/${script.public_id}"))()`}
           </code>
 
         </div>

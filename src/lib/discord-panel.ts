@@ -1,4 +1,4 @@
-// Shared builders for the LuaMore Discord control panel message.
+// Shared builders for the Lua Security Discord control panel message.
 // Used by both the website (panels.functions.ts) and the Discord
 // interactions endpoint so the embed always looks identical.
 
@@ -21,7 +21,7 @@ export function buildPanelEmbed({ id, name, description, sentBy }: PanelEmbedInp
     title: `${name} Control Panel`,
     description: body,
     color: PANEL_ACCENT,
-    footer: { text: sentBy ? `Sent by ${sentBy}. • LuaMore` : "LuaMore" },
+    footer: { text: sentBy ? `Sent by ${sentBy}. • Lua Security` : "Lua Security" },
     timestamp: new Date().toISOString(),
   };
 }

@@ -1,4 +1,4 @@
-// LuaMore VM v3 — heavy multi-layer obfuscator with hardened anti-env-logger.
+// Lua Security VM v3 — heavy multi-layer obfuscator with hardened anti-env-logger.
 //
 // Layers stacked on the input Luau source (outermost is what ships):
 //   1.  Raw source                                              (plain)
@@ -331,7 +331,7 @@ while ${STATE}~=${S_HALT} do
       local _hi=(${SUM}%256)*16777216
       ${SUM}=(_lo+_hi)%4294967296
     end
-    if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
+    if ${SUM}~=${expected} then return error("[Lua Security] integrity check failed") end
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
@@ -377,8 +377,8 @@ while ${STATE}~=${S_HALT} do
     ${SRC}=${TCONCAT}(${DEC})
     ${STATE}=${S_LOAD}
   elseif ${STATE}==${S_LOAD} then
-    local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
-    if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
+    local ${FN},${ERR}=${LOAD}(${SRC},"=Lua Security")
+    if not ${FN} then return error("[Lua Security] "..tostring(${ERR})) end
     local sf=${RG}(_G, ${hiddenStr("setfenv")})
     if type(sf)=="function" then pcall(sf,${FN},${E}) end
     local _r=${FN}()
@@ -534,7 +534,7 @@ export function obfuscateLua(source: string): string {
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v4  //  build ${stamp}
+  Lua Security VM v4  //  build ${stamp}
   triple VM + 4x rotating XOR + RC4 + keyed permutation + fragmentation
   control-flow flattening (dispatcher loop), opaque predicates,
   Unicode homoglyph literals, hardened anti-env-logger,

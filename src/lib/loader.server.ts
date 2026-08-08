@@ -6,7 +6,7 @@
 // On the first hit (no ?hwid=) we return a tiny stub that re-requests with
 // the client's HWID appended, so HWID locking still works.
 //
-// Every served script is passed through the LuaMore VM obfuscator so the
+// Every served script is passed through the Lua Security VM obfuscator so the
 // response body never contains plaintext source.
 import { obfuscateLua } from "@/lib/obfuscator.server";
 
@@ -113,7 +113,7 @@ function lua(body: string) {
 }
 function luaError(msg: string) {
   const escaped = msg.replace(/"/g, '\\"');
-  return new Response(`error("[LuaMore] ${escaped}")`, {
+  return new Response(`error("[Lua Security] ${escaped}")`, {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

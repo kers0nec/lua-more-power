@@ -124,7 +124,7 @@ export const updateScript = createServerFn({ method: "POST" })
     if (rest.is_protected && typeof rest.code === "string" && rest.code.length > 0) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       patch.obfuscated_code = obfuscateLua(rest.code);
-      patch.obfuscator = "luamore-vm-v2";
+      patch.obfuscator = "luasecurity-vm-v2";
     }
     const { error } = await context.supabase
       .from("scripts")
@@ -152,7 +152,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
     const obfuscated_code = obfuscateLua(row.code);
     const { error: upErr } = await context.supabase
       .from("scripts")
-      .update({ obfuscated_code, obfuscator: "luamore-vm-v2" })
+      .update({ obfuscated_code, obfuscator: "luasecurity-vm-v2" })
       .eq("id", data.id)
       .eq("user_id", context.userId);
     if (upErr) throw new Error(upErr.message);
