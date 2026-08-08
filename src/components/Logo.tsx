@@ -20,7 +20,7 @@ export function Logo({ size = 32 }: { size?: number }) {
         className="font-display text-xl tracking-tight"
         style={{ color: "var(--foreground)" }}
       >
-        Lua<span style={{ fontStyle: "italic", color: "var(--primary)" }}>Security</span>
+        Lua<span style={{ fontStyle: "italic", color: "var(--primary)" }}>More</span>
       </span>
     </div>
   );
