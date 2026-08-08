@@ -384,7 +384,7 @@ function json(v: unknown, status = 200) {
   return new Response(JSON.stringify(v), { status, headers: { "Content-Type": "application/json" } });
 }
 function originFromEnv() {
-  let base = (process.env.PUBLIC_BASE_URL || "https://luasecurity.app").trim();
+  let base = (process.env.PUBLIC_BASE_URL || "https://luamore.app").trim();
   if (!/^https?:\/\//i.test(base)) base = `https://${base}`;
   return base.replace(/\/+$/, "");
 }

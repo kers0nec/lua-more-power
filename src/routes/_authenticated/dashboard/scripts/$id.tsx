@@ -102,7 +102,7 @@ function ScriptDetail() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="badge-blue">public id: {script.public_id}</span>
           <code className="text-xs px-2 py-1 rounded break-all" style={{ background: "var(--accent-light)" }}>
-            {`loadstring(game:HttpGet("https://luasecurity.app/api/public/r/${script.public_id}"))()`}
+            {`loadstring(game:HttpGet("https://luamore.app/api/public/r/${script.public_id}"))()`}
           </code>
 
         </div>
