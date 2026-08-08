@@ -6,10 +6,10 @@ import { Logo } from "@/components/Logo";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — LuaMore" },
-      { name: "description", content: "Sign in or create your LuaMore account to host and protect Luau scripts." },
-      { property: "og:title", content: "Sign in — LuaMore" },
-      { property: "og:description", content: "Access your LuaMore dashboard: script hosting, license keys, HWID protection." },
+      { title: "Sign in — Lua Security" },
+      { name: "description", content: "Sign in or create your Lua Security account to host and protect Luau scripts." },
+      { property: "og:title", content: "Sign in — Lua Security" },
+      { property: "og:description", content: "Access your Lua Security dashboard: script hosting, license keys, HWID protection." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -92,7 +92,7 @@ function Auth() {
           </p>
         </div>
         <div className="relative font-mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-          © {new Date().getFullYear()} LuaMore
+          © {new Date().getFullYear()} Lua Security
         </div>
       </div>
 
@@ -183,7 +183,7 @@ function Auth() {
 
           <p className="mt-6 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
             {mode === "signin" ? (
-              <>New to LuaMore?{" "}
+              <>New to Lua Security?{" "}
                 <button onClick={() => setMode("signup")} className="underline underline-offset-2" style={{ color: "var(--foreground)" }}>
                   Create an account
                 </button>

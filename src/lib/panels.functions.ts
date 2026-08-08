@@ -169,7 +169,7 @@ export const sendPanel = createServerFn({ method: "POST" })
         isAdmin = await userHasAdminInGuild(channel.guild_id, profile.discord_id, botToken);
       } catch (e) {
         throw new Error(
-          `Could not verify your permissions in that server — make sure you're a member and the LuaMore bot is invited. (${e instanceof Error ? e.message : "unknown error"})`,
+          `Could not verify your permissions in that server — make sure you're a member and the Lua Security bot is invited. (${e instanceof Error ? e.message : "unknown error"})`,
         );
       }
       if (!isAdmin) {

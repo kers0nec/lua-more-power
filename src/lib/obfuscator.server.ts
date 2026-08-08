@@ -1,4 +1,4 @@
-// LuaMore VM v3 — heavy multi-layer obfuscator with hardened anti-env-logger.
+// Lua Security VM v3 — heavy multi-layer obfuscator with hardened anti-env-logger.
 //
 // Layers stacked on the input Luau source (outermost is what ships):
 //   1.  Raw source                                              (plain)
@@ -331,7 +331,7 @@ while ${STATE}~=${S_HALT} do
       local _hi=(${SUM}%256)*16777216
       ${SUM}=(_lo+_hi)%4294967296
     end
-    if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
+    if ${SUM}~=${expected} then return error("[Lua Security] integrity check failed") end
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
@@ -377,8 +377,8 @@ while ${STATE}~=${S_HALT} do
     ${SRC}=${TCONCAT}(${DEC})
     ${STATE}=${S_LOAD}
   elseif ${STATE}==${S_LOAD} then
-    local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
-    if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
+    local ${FN},${ERR}=${LOAD}(${SRC},"=Lua Security")
+    if not ${FN} then return error("[Lua Security] "..tostring(${ERR})) end
     local sf=${RG}(_G, ${hiddenStr("setfenv")})
     if type(sf)=="function" then pcall(sf,${FN},${E}) end
     local _r=${FN}()
@@ -445,13 +445,15 @@ end)
 
 /** Dead-code injection: opaque predicates that always eval to a known value
  *  but look data-dependent. Injected strings hold Unicode homoglyphs so string
- *  dumps show plausible-looking names that don't match any real identifier. */
+ *  dumps show plausible-looking names that don't match any real identifier.
+ *  Several kinds emit infinite-looking loops guarded by opaque-false
+ *  predicates (or self-referential recursion) that never actually iterate at
+ *  runtime but poison static analysis and decompilers. */
 function junkBlock(): string {
   const used = new Set<string>();
-  const a = randName(used), b = randName(used), c = randName(used), d = randName(used);
+  const a = randName(used), b = randName(used), c = randName(used), d = randName(used), e = randName(used);
   const n1 = 1 + rand(1e6), n2 = 1 + rand(1e6);
-  // Opaque true: (x*x) >= 0 for real x. Opaque false: (x*x + 1) == 0.
-  const kind = rand(4);
+  const kind = rand(8);
   if (kind === 0) {
     return `local ${a}=${n1}
 local ${b}=function(x) return x*x+${n2} end
@@ -476,11 +478,57 @@ local ${c}=${homoglyphStr()}
 repeat break until true
 `;
   }
-  return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
+  if (kind === 3) {
+    return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
 local ${b}=#${a}
 if ${b}*${b}<0 then ${a}=nil end
 local ${c},${d}=${n1},${n2}
 if (${c}-${c})~=0 then return error(${homoglyphStr()}) end
+`;
+  }
+  if (kind === 4) {
+    // Opaque-false guarded infinite loop: (x*x+1)==0 is never true, so the
+    // while body never runs, but a decompiler must prove it to strip.
+    return `local ${a},${b}=${n1},${n2}
+while (${a}*${a}+1)==0 do
+  ${b}=${b}+${a}
+  while (${b}*${b}+7)<0 do ${a}=${a}*${b}; ${b}=${b}+1 end
+  repeat ${a}=${a}+${b} until (${a}*${a})<0
+end
+`;
+  }
+  if (kind === 5) {
+    // Self-referential recursion trap gated by opaque false.
+    return `local function ${a}(x) return ${a}(x+1) end
+local ${b}=${n1}
+if (${b}%2)*(${b}%2)<0 then ${a}(${b}) end
+while (${b}-${b})~=0 do ${a}(${b}) end
+`;
+  }
+  if (kind === 6) {
+    // Nested infinite loops behind opaque predicate; body references outer var.
+    return `local ${a},${b},${c}=${n1},${n2},0
+while ${a}<${a} do
+  while ${b}<${b} do
+    while ${c}<${c} do ${c}=${c}+1 end
+    ${b}=${b}+${c}
+  end
+  ${a}=${a}+${b}
+end
+repeat ${c}=${c}+1 until (${c}*${c}+1)<0
+`;
+  }
+  // kind === 7: coroutine-based infinite-looking trap wrapped in dead branch.
+  return `local ${a}=${n1}
+local ${b}=function()
+  while true do ${a}=${a}+1; coroutine.yield(${a}) end
+end
+if (${a}*${a}+1)==0 then
+  local ${c}=coroutine.create(${b})
+  while true do coroutine.resume(${c}) end
+end
+local ${d},${e}=${homoglyphStr()},${homoglyphStr()}
+for _=1,0 do ${d}=${d}..${e} end
 `;
 }
 
@@ -534,7 +582,7 @@ export function obfuscateLua(source: string): string {
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v4  //  build ${stamp}
+  Lua Security VM v4  //  build ${stamp}
   triple VM + 4x rotating XOR + RC4 + keyed permutation + fragmentation
   control-flow flattening (dispatcher loop), opaque predicates,
   Unicode homoglyph literals, hardened anti-env-logger,
@@ -543,7 +591,7 @@ export function obfuscateLua(source: string): string {
 ]]
 `;
   let junk = "";
-  const junkN = 6 + rand(6);
+  const junkN = 14 + rand(10);
   for (let i = 0; i < junkN; i++) junk += junkBlock();
   return banner + junk + outerBootstrap;
 }

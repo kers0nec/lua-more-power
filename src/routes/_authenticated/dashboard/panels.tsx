@@ -6,7 +6,7 @@ import { createPanel, deletePanel, listPanels, sendPanel, updatePanel } from "@/
 import { listScripts } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
-  head: () => ({ meta: [{ title: "Panels — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Panels — Lua Security" }] }),
   component: Page,
 });
 

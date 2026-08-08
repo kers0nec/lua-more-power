@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-// One-time helper to register / update the LuaMore slash-command set with Discord.
+// One-time helper to register / update the Lua Security slash-command set with Discord.
 // Call with:
 //   POST /api/public/discord/register-commands
 //   Header: x-owner-token: <OWNER_REGISTER_TOKEN>
@@ -17,15 +17,15 @@ const OPT = {
 } as const;
 
 const commands = [
-  { name: "help", description: "How to use LuaMore" },
+  { name: "help", description: "How to use Lua Security" },
   {
     name: "login",
-    description: "Link your Discord to a LuaMore account",
-    options: [{ type: OPT.STRING, name: "api_key", description: "Your LuaMore API key", required: true }],
+    description: "Link your Discord to a Lua Security account",
+    options: [{ type: OPT.STRING, name: "api_key", description: "Your Lua Security API key", required: true }],
   },
   {
     name: "setup",
-    description: "Set up the LuaMore panel in this channel",
+    description: "Set up the Lua Security panel in this channel",
     options: [{ type: OPT.STRING, name: "script_id", description: "Script public ID (optional — otherwise pick from a menu)", required: false }],
   },
   {

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createScript, deleteScript, listScripts } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/")({
-  head: () => ({ meta: [{ title: "Scripts — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Scripts — Lua Security" }] }),
   component: Scripts,
 });
 

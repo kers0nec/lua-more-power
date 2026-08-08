@@ -5,7 +5,7 @@ import { useState } from "react";
 import { generateBatch } from "@/lib/keys.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/batches")({
-  head: () => ({ meta: [{ title: "Key Batches — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Key Batches — Lua Security" }] }),
   component: Batches,
 });
 
@@ -48,7 +48,7 @@ function Batches() {
                 const blob = new Blob([keys.join("\n")], { type: "text/plain" });
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `luamore_keys_${Date.now()}.txt`;
+                a.download = `luasecurity_keys_${Date.now()}.txt`;
                 a.click();
               }}
             >

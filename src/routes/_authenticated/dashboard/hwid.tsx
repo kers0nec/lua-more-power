@@ -5,7 +5,7 @@ import { useState } from "react";
 import { banHwid, listHwidBans, unbanHwid } from "@/lib/hwid.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/hwid")({
-  head: () => ({ meta: [{ title: "HWID Bans — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "HWID Bans — Lua Security" }] }),
   component: Page,
 });
 

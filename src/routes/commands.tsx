@@ -5,10 +5,10 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/commands")({
   head: () => ({
     meta: [
-      { title: "Discord Commands — LuaMore" },
-      { name: "description", content: "All LuaMore Discord slash commands, including /create-script, /generatekey, /whitelist, /loader." },
-      { property: "og:title", content: "LuaMore Commands" },
-      { property: "og:description", content: "Every LuaMore Discord slash command explained." },
+      { title: "Discord Commands — Lua Security" },
+      { name: "description", content: "All Lua Security Discord slash commands, including /create-script, /generatekey, /whitelist, /loader." },
+      { property: "og:title", content: "Lua Security Commands" },
+      { property: "og:description", content: "Every Lua Security Discord slash command explained." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/commands")({
 });
 
 const STEPS: [string, string][] = [
-  ["1", "Invite the LuaMore bot to your Discord server."],
+  ["1", "Invite the Lua Security bot to your Discord server."],
   ["2", "Enable Key system on your script."],
   ["3", "Run /setup in a channel and pick the script."],
   ["4", "Configure the Buyer role and Admin roles for that panel above."],
@@ -29,7 +29,7 @@ const COMMANDS: [string, string][] = [
   ["/setup [script_id]", "Create the control panel in this channel for a script"],
   ["/whitelist <user> [duration]", "Whitelist a user — 20s, 35m, 2h, 1d, 7d, 30d, or omit for forever"],
   ["/resethwid [user]", "Reset your HWID; admins can reset for anyone, no cooldown"],
-  ["/login <api_key>", "Link your Discord account to LuaMore"],
+  ["/login <api_key>", "Link your Discord account to Lua Security"],
   ["/help", "Show the how-to-use guide in Discord"],
 ];
 

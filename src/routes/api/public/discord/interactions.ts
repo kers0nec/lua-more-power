@@ -52,7 +52,7 @@ async function handleCommand(body: any) {
   try {
     switch (name) {
       case "help":
-        return embedReply({ title: "How to use LuaMore", description: HELP_TEXT, color: COLOR_INFO });
+        return embedReply({ title: "How to use Lua Security", description: HELP_TEXT, color: COLOR_INFO });
 
       case "login": {
         const key = String(opts.get("api_key") ?? "");
@@ -97,7 +97,7 @@ async function handleCommand(body: any) {
           type: 4,
           data: {
             flags: 64,
-            embeds: [{ title: "LuaMore setup", description: "Pick the script this channel's panel should serve.", color: COLOR_INFO }],
+            embeds: [{ title: "Lua Security setup", description: "Pick the script this channel's panel should serve.", color: COLOR_INFO }],
             components: [{
               type: 1,
               components: [{
@@ -148,7 +148,7 @@ async function handleCommand(body: any) {
               title: "✅ Whitelisted",
               description: `Duration: **${formatDuration(ms)}**`,
               color: COLOR_SUCCESS,
-              footer: { text: "LuaMore" },
+              footer: { text: "Lua Security" },
             }],
           },
         };
@@ -252,7 +252,7 @@ async function handleComponent(body: any) {
       type: 9, // MODAL
       data: {
         custom_id: `lm:redeem-submit:${panelId}`,
-        title: "Redeem LuaMore Key",
+        title: "Redeem Lua Security Key",
         components: [{ type: 1, components: [{ type: 4, custom_id: "key", label: "License key", style: 1, required: true, min_length: 8, max_length: 64 }] }],
       },
     };
@@ -281,7 +281,7 @@ async function handleComponent(body: any) {
       title: `📜 ${script.name}`,
       description: buildLoaderMessage(`loadstring(game:HttpGet("${lic?.key ? `${originFromEnv()}/api/public/r/${lic.key}` : url}"))()`),
       color: COLOR_INFO,
-      footer: { text: "LuaMore · keep this loader private" },
+      footer: { text: "Lua Security · keep this loader private" },
     });
   }
 
@@ -435,7 +435,7 @@ function hexToBytes(hex: string) {
 }
 
 const HELP_TEXT = [
-  "**1.** Invite the LuaMore bot.",
+  "**1.** Invite the Lua Security bot.",
   "**2.** Enable Key system on your script.",
   "**3.** Run `/setup` in a channel and pick the script.",
   "**4.** Configure the Buyer role and Admin roles for that panel on the dashboard.",

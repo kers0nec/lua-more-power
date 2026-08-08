@@ -7,8 +7,8 @@ import { obfuscateCode } from "@/lib/scripts.functions";
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
     meta: [
-      { title: "Obfuscator — LuaMore" },
-      { name: "description", content: "Protect any Luau snippet with the LuaMore VM v2 obfuscator." },
+      { title: "Obfuscator — Lua Security" },
+      { name: "description", content: "Protect any Luau snippet with the Lua Security VM v2 obfuscator." },
     ],
   }),
   component: ObfuscatePage,
@@ -42,7 +42,7 @@ function ObfuscatePage() {
     onSuccess: (r) => {
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v2`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · Lua Security VM v2`,
       );
     },
     onError: (e) => {
@@ -78,7 +78,7 @@ function ObfuscatePage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `luamore-vm-${Date.now()}.lua`;
+    a.download = `luasecurity-vm-${Date.now()}.lua`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -93,7 +93,7 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          One-off protection using LuaMore VM v3 — triple VM bootstrap, 4× rotating XOR, keyed permutation, FNV-1a anti-tamper, hardened anti-env-logger, anti-debug, anti-decompile.
+          One-off protection using Lua Security VM v3 — triple VM bootstrap, 4× rotating XOR, keyed permutation, FNV-1a anti-tamper, hardened anti-env-logger, anti-debug, anti-decompile.
         </p>
       </div>
 
@@ -122,7 +122,7 @@ function ObfuscatePage() {
             spellCheck={false}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => { e.preventDefault(); onUpload(e.dataTransfer.files?.[0]); }}
-            placeholder='print("hello luamore")'
+            placeholder='print("hello luasecurity")'
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">

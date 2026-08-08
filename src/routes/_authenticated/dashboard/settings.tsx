@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
-  head: () => ({ meta: [{ title: "Settings — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Settings — Lua Security" }] }),
   component: Page,
 });
 
