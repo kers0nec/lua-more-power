@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // Discord OAuth callback: exchanges the code, finds/creates the matching
-// Lua Security account, links the Discord ID, then signs the user in by
+// LuaMore account, links the Discord ID, then signs the user in by
 // redirecting to a one-time magic link.
 //   GET /api/public/discord/oauth/callback?code=...
 export const Route = createFileRoute("/api/public/discord/oauth/callback")({

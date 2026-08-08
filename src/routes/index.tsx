@@ -17,9 +17,9 @@ import { getPublicStats } from "@/lib/dashboard.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lua Security — More Power, More Security, More Lua" },
+      { title: "LuaMore — More Power, More Security, More Lua" },
       { name: "description", content: "Luau script hosting, license keys, HWID protection, and Discord panels — all in one platform." },
-      { property: "og:title", content: "Lua Security — Luau Script Hosting & Protection" },
+      { property: "og:title", content: "LuaMore — Luau Script Hosting & Protection" },
       { property: "og:description", content: "Host and protect your Lua scripts with license keys, HWID locking, and Discord integration." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
