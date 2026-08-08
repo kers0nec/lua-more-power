@@ -591,7 +591,7 @@ export function obfuscateLua(source: string): string {
 ]]
 `;
   let junk = "";
-  const junkN = 6 + rand(6);
+  const junkN = 14 + rand(10);
   for (let i = 0; i < junkN; i++) junk += junkBlock();
   return banner + junk + outerBootstrap;
 }
