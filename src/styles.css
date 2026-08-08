@@ -148,8 +148,8 @@
 
 @utility grid-bg {
   background-image:
-    linear-gradient(to right, rgba(26, 109, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 109, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(10, 10, 10, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(10, 10, 10, 0.05) 1px, transparent 1px);
   background-size: 64px 64px;
 }
 
@@ -253,7 +253,7 @@
   &:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(26, 109, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.12);
   }
   &::placeholder { color: #9aa3b2; }
 }
