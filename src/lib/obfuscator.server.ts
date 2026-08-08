@@ -445,13 +445,15 @@ end)
 
 /** Dead-code injection: opaque predicates that always eval to a known value
  *  but look data-dependent. Injected strings hold Unicode homoglyphs so string
- *  dumps show plausible-looking names that don't match any real identifier. */
+ *  dumps show plausible-looking names that don't match any real identifier.
+ *  Several kinds emit infinite-looking loops guarded by opaque-false
+ *  predicates (or self-referential recursion) that never actually iterate at
+ *  runtime but poison static analysis and decompilers. */
 function junkBlock(): string {
   const used = new Set<string>();
-  const a = randName(used), b = randName(used), c = randName(used), d = randName(used);
+  const a = randName(used), b = randName(used), c = randName(used), d = randName(used), e = randName(used);
   const n1 = 1 + rand(1e6), n2 = 1 + rand(1e6);
-  // Opaque true: (x*x) >= 0 for real x. Opaque false: (x*x + 1) == 0.
-  const kind = rand(4);
+  const kind = rand(8);
   if (kind === 0) {
     return `local ${a}=${n1}
 local ${b}=function(x) return x*x+${n2} end
@@ -476,11 +478,57 @@ local ${c}=${homoglyphStr()}
 repeat break until true
 `;
   }
-  return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
+  if (kind === 3) {
+    return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
 local ${b}=#${a}
 if ${b}*${b}<0 then ${a}=nil end
 local ${c},${d}=${n1},${n2}
 if (${c}-${c})~=0 then return error(${homoglyphStr()}) end
+`;
+  }
+  if (kind === 4) {
+    // Opaque-false guarded infinite loop: (x*x+1)==0 is never true, so the
+    // while body never runs, but a decompiler must prove it to strip.
+    return `local ${a},${b}=${n1},${n2}
+while (${a}*${a}+1)==0 do
+  ${b}=${b}+${a}
+  while (${b}*${b}+7)<0 do ${a}=${a}*${b}; ${b}=${b}+1 end
+  repeat ${a}=${a}+${b} until (${a}*${a})<0
+end
+`;
+  }
+  if (kind === 5) {
+    // Self-referential recursion trap gated by opaque false.
+    return `local function ${a}(x) return ${a}(x+1) end
+local ${b}=${n1}
+if (${b}%2)*(${b}%2)<0 then ${a}(${b}) end
+while (${b}-${b})~=0 do ${a}(${b}) end
+`;
+  }
+  if (kind === 6) {
+    // Nested infinite loops behind opaque predicate; body references outer var.
+    return `local ${a},${b},${c}=${n1},${n2},0
+while ${a}<${a} do
+  while ${b}<${b} do
+    while ${c}<${c} do ${c}=${c}+1 end
+    ${b}=${b}+${c}
+  end
+  ${a}=${a}+${b}
+end
+repeat ${c}=${c}+1 until (${c}*${c}+1)<0
+`;
+  }
+  // kind === 7: coroutine-based infinite-looking trap wrapped in dead branch.
+  return `local ${a}=${n1}
+local ${b}=function()
+  while true do ${a}=${a}+1; coroutine.yield(${a}) end
+end
+if (${a}*${a}+1)==0 then
+  local ${c}=coroutine.create(${b})
+  while true do coroutine.resume(${c}) end
+end
+local ${d},${e}=${homoglyphStr()},${homoglyphStr()}
+for _=1,0 do ${d}=${d}..${e} end
 `;
 }
 
