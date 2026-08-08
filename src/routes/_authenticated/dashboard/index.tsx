@@ -6,8 +6,8 @@ import { getDashboardStats } from "@/lib/dashboard.functions";
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Lua Security" },
-      { name: "description", content: "Your Lua Security workspace: scripts, license keys, panels, and releases at a glance." },
+      { title: "Dashboard — LuaMore" },
+      { name: "description", content: "Your LuaMore workspace: scripts, license keys, panels, and releases at a glance." },
     ],
   }),
   component: Dashboard,

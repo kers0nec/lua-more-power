@@ -6,7 +6,7 @@ import { deleteKey, generateKey, listKeys } from "@/lib/keys.functions";
 import { listScripts } from "@/lib/scripts.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/keys")({
-  head: () => ({ meta: [{ title: "License Keys — Lua Security" }] }),
+  head: () => ({ meta: [{ title: "License Keys — LuaMore" }] }),
   component: Keys,
 });
 

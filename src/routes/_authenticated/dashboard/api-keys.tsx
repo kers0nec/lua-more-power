@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createApiKey, deleteApiKey, listApiKeys } from "@/lib/api-keys.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/api-keys")({
-  head: () => ({ meta: [{ title: "API Keys — Lua Security" }] }),
+  head: () => ({ meta: [{ title: "API Keys — LuaMore" }] }),
   component: Page,
 });
 

@@ -63,7 +63,7 @@ export function SiteFooter() {
         className="border-t py-5 text-center font-mono text-[11px] uppercase tracking-[0.18em]"
         style={{ color: "var(--muted-foreground)", borderColor: "var(--border)" }}
       >
-        © {new Date().getFullYear()} Lua Security — All rights reserved
+        © {new Date().getFullYear()} LuaMore — All rights reserved
       </div>
     </footer>
   );
