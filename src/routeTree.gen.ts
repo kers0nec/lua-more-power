@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommandsRouteImport } from './routes/commands'
+import { Route as ApiDocsRouteImport } from './routes/api.docs'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
@@ -21,6 +22,7 @@ import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_authenticated/dashboard/obfuscate'
 import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
+import { Route as ApiPublicObfuscateRouteImport } from './routes/api/public/obfuscate'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
 import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
 import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
@@ -47,6 +49,11 @@ const AuthRoute = AuthRouteImport.update({
 const CommandsRoute = CommandsRouteImport.update({
   id: '/commands',
   path: '/commands',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocsRoute = ApiDocsRouteImport.update({
+  id: '/api/docs',
+  path: '/api/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardIndexRoute =
@@ -97,6 +104,11 @@ const AuthenticatedDashboardSettingsRoute =
     path: '/dashboard/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicObfuscateRoute = ApiPublicObfuscateRouteImport.update({
+  id: '/api/public/obfuscate',
+  path: '/api/public/obfuscate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardScriptsIndexRoute =
   AuthenticatedDashboardScriptsIndexRouteImport.update({
     id: '/dashboard/scripts/',
@@ -148,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/api/docs': typeof ApiDocsRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -155,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -169,6 +183,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/api/docs': typeof ApiDocsRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -176,6 +191,7 @@ export interface FileRoutesByTo {
   '/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -192,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/api/docs': typeof ApiDocsRoute
   '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -199,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/obfuscate': typeof AuthenticatedDashboardObfuscateRoute
   '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
@@ -215,6 +233,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
+    | '/api/docs'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -222,6 +241,7 @@ export interface FileRouteTypes {
     | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
+    | '/api/public/obfuscate'
     | '/dashboard/'
     | '/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -236,6 +256,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
+    | '/api/docs'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -243,6 +264,7 @@ export interface FileRouteTypes {
     | '/dashboard/obfuscate'
     | '/dashboard/panels'
     | '/dashboard/settings'
+    | '/api/public/obfuscate'
     | '/dashboard'
     | '/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -258,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/commands'
+    | '/api/docs'
     | '/_authenticated/dashboard/api-keys'
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
@@ -265,6 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/obfuscate'
     | '/_authenticated/dashboard/panels'
     | '/_authenticated/dashboard/settings'
+    | '/api/public/obfuscate'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/scripts/$id'
     | '/api/public/discord/interactions'
@@ -281,6 +305,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CommandsRoute: typeof CommandsRoute
+  ApiDocsRoute: typeof ApiDocsRoute
+  ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
   ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
@@ -317,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/commands'
       fullPath: '/commands'
       preLoaderRoute: typeof CommandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/docs': {
+      id: '/api/docs'
+      path: '/api/docs'
+      fullPath: '/api/docs'
+      preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/': {
@@ -374,6 +407,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/obfuscate': {
+      id: '/api/public/obfuscate'
+      path: '/api/public/obfuscate'
+      fullPath: '/api/public/obfuscate'
+      preLoaderRoute: typeof ApiPublicObfuscateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/scripts/': {
       id: '/_authenticated/dashboard/scripts/'
@@ -469,6 +509,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CommandsRoute: CommandsRoute,
+  ApiDocsRoute: ApiDocsRoute,
+  ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
   ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
