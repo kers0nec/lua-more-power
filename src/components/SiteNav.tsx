@@ -6,6 +6,7 @@ import { Logo } from "./Logo";
 const LINKS = [
   { to: "/", label: "Home" },
   { to: "/commands", label: "Commands" },
+  { to: "/api/docs", label: "API" },
   { to: "/dashboard", label: "Dashboard" },
 ];
 
