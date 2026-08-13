@@ -559,5 +559,5 @@ export function obfuscateLua(source: string): string {
   let junk = "";
   const junkN = 18 + rand(12);
   for (let i = 0; i < junkN; i++) junk += junkBlock();
-  return banner + minifyLua(junk) + minified;
+  return banner + minifyLua(junk) + "\n" + minified;
 }
