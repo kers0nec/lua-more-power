@@ -1,5 +1,3 @@
-import { _wrap } from "./src/lib/obfuscator.server.ts";
-const inner = _wrap(new TextEncoder().encode(`print("ok")`), "core", "");
-const mid = _wrap(new TextEncoder().encode(inner), "vm1", "");
-const out = _wrap(new TextEncoder().encode(mid), "vm2", "");
-process.stdout.write(out);
+import { _wrap, _min } from "./src/lib/obfuscator.server.ts";
+import { obfuscateLua } from "./src/lib/obfuscator.server.ts";
+process.stdout.write(obfuscateLua(`print("ok")`));
