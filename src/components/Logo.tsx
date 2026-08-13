@@ -6,21 +6,22 @@ export function Logo({ size = 32 }: { size?: number }) {
         style={{
           width: size,
           height: size,
-          background: "var(--foreground)",
-          color: "#ffffff",
-          fontSize: size * 0.6,
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
+          fontSize: size * 0.7,
           borderRadius: size * 0.25,
           lineHeight: 1,
           paddingBottom: size * 0.05,
+          boxShadow: "0 0 24px rgba(212, 175, 55, 0.35)",
         }}
       >
-        <span style={{ fontStyle: "italic" }}>L</span>
+        <span>L</span>
       </div>
       <span
-        className="font-display text-xl tracking-tight"
+        className="font-display text-2xl tracking-tight"
         style={{ color: "var(--foreground)" }}
       >
-        Lua<span style={{ fontStyle: "italic", color: "var(--primary)" }}>More</span>
+        Lua<span style={{ color: "var(--primary)" }}>More</span>
       </span>
     </div>
   );
