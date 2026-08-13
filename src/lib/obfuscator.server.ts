@@ -64,13 +64,11 @@ function fnv1a(bytes: Uint8Array | number[]): number {
 function djb2(bytes: Uint8Array | number[]): number {
   let h = 5381;
   for (let i = 0; i < bytes.length; i++) {
-    // h*33 + byte, kept in 32 bits without going past 2^53.
-    const low = (h & 0xffffff) * 33;
-    const high = ((h >>> 24) * 33) * 0x1000000;
-    h = ((low + high) + bytes[i]) >>> 0;
+    h = ((h * 33) + bytes[i]) >>> 0;
   }
   return h >>> 0;
 }
+
 
 function encodeEscaped(enc: Uint8Array | number[]): string {
   const parts: string[] = [];
