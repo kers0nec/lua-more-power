@@ -1,4 +1,3 @@
-import { obfuscateLua } from "./src/lib/obfuscator.server.ts";
-// Only test the inner layer path — export the internal function
-const mod = await import("./src/lib/obfuscator.server.ts");
-console.log(Object.keys(mod));
+import { _wrap, _min } from "./src/lib/obfuscator.server.ts";
+const inner = _wrap(new TextEncoder().encode(`print("ok inner")`), "core", "");
+process.stdout.write(inner);
