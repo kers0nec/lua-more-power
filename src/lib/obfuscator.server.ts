@@ -352,11 +352,10 @@ while ${STATE}~=${HALT} do
     ${STATE}=${S_SIG}
   elseif ${STATE}==${S_SIG} then
     for ${I}=1,#${CT} do
-      local _lo=(${SIG}%16777216)*33
-      local _hi=(math.floor(${SIG}/16777216)*33)%256*16777216
-      ${SIG}=(_lo+_hi+${CT}[${I}])%4294967296
+      ${SIG}=(${SIG}*33+${CT}[${I}])%4294967296
     end
     if ${SIG}~=${signature} then return error("[LuaMore] signature invalid") end
+
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
