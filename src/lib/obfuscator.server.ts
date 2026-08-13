@@ -541,6 +541,7 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
 }
 
 export const _wrap = wrapLayer;
+export const _guards = outerGuards;
 export const _min = minifyLua;
 export function obfuscateLua(source: string): string {
   const inner = wrapLayer(new TextEncoder().encode(source), "core", "");
