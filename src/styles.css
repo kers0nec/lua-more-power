@@ -123,8 +123,9 @@
   }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #d7dce4; border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: #b8c1d1; }
+  ::-webkit-scrollbar-thumb { background: #4a3818; border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
 }
 
 @keyframes lm-rise {
