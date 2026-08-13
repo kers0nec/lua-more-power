@@ -1,54 +1,32 @@
-// LuaMore VM v3 — heavy multi-layer obfuscator with hardened anti-env-logger.
+// LuaMore VM v5 — parse → optimize → pseudo-bytecode → flatten → shuffle →
+// compress → encrypt → sign → VM-based → minify. Hardened anti-tamper,
+// anti-env-logger, anti-debug, anti-decompile.
 //
-// Layers stacked on the input Luau source (outermost is what ships):
-//   1.  Raw source                                              (plain)
-//   2.  Byte-shuffle by keyed permutation                       (permutation)
-//   3.  Multi-round rotating XOR (4 independent keys)           (encryption)
-//   4.  Payload split into N random chunks, out of order        (fragmentation)
-//   5.  \ddd escape encoding                                    (transport)
-//   6.  Inner VM bootstrap w/ anti-tamper                       (VM layer A)
-//   7.  Same pipeline again on the inner bootstrap              (fragmentation+xor)
-//   8.  Middle VM bootstrap w/ anti-debug                       (VM layer B)
-//   9.  Same pipeline again on the middle bootstrap             (fragmentation+xor)
-//  10.  Outer VM bootstrap w/ hardened env sanitizer + hooks    (VM layer C)
-//  11.  Random junk locals / dead branches interleaved          (noise)
-//  12.  Randomized identifier names everywhere                  (renaming)
+// Build pipeline (per layer, applied 3× nested):
+//   1. Source bytes
+//   2. RLE-lite compression                                (compress)
+//   3. 4-key rotating XOR                                  (encrypt A)
+//   4. RC4 stream cipher, dynamic key                      (encrypt B)
+//   5. Keyed Fisher-Yates permutation                      (shuffle)
+//   6. Fragmented, shuffled chunk table                    (transport)
+//   7. FNV-1a + djb2 dual signature                        (sign)
+//   8. Bootstrap w/ flattened dispatcher (shuffled opcodes)(VM)
+//   9. Nested twice more → VM(VM(VM(payload)))            (stacked VM)
+//  10. Bootstrap minified (whitespace/comments stripped)   (minify)
 //
 // Runtime protections:
-//   - Anti-tamper: FNV-1a rolling checksum of ciphertext, compared to a value
-//     embedded at build time. Any single-byte patch breaks execution.
-//   - Anti-env-logger (hardened):
-//       * Snapshots pristine `rawget`, `rawset`, `getmetatable`, `setmetatable`,
-//         `string.byte`, `string.char`, `table.concat`, `loadstring/load` from
-//         `_G` via `rawget` BEFORE any logger metatable can intercept a plain
-//         table read. All bootstrap logic uses those locals, so a logger's
-//         __index proxy on `_G`/`getgenv()` never sees which globals we touch.
-//       * Detaches __index/__newindex metatables from `_G`, `getgenv()`,
-//         `shared`, and `_ENV` using `debug.setmetatable` when available
-//         (bypasses `__metatable` locks).
-//       * Rejects proxied getgenv: if `getgenv()` returns a table whose
-//         metatable contains `__index` or `__newindex`, we skip it and fall
-//         back to a fresh env forked from a pristine snapshot.
-//       * Scrubs known logger keys (`__logger`, `logger`, `logs`, `_ENV_LOG`,
-//         `env_log`, `hooks`) via `rawset(..., nil)`.
-//   - Anti-debug: aborts if `debug.sethook` is currently active, and clears
-//     any existing hook. Detects `hookfunction`/`hookmetamethod` presence
-//     and scrubs metamethod hooks on our local tables via `getrawmetatable`.
-//   - Anti-decompile: no plaintext constants > 3 chars, no readable strings,
-//     numeric constants split into arithmetic expressions, critical function
-//     names built via `string.char` concatenation so string scans miss them.
-//   - Execution env: fresh table w/ __index into pristine snapshot when the
-//     shared env is compromised, else the real getgenv()/_G unmodified.
+//   - Dual anti-tamper: FNV-1a AND djb2 checksums both verified. Any single
+//     byte patch breaks execution at two independent phases.
+//   - Anti-env-logger (hardened): pristine `rawget` snapshots, __index/
+//     __newindex stripping via `debug.setmetatable`, logger-key scrubbing.
+//   - Anti-debug: aborts on active hooks, detects hookfunction presence.
+//   - Anti-decompile: pseudo-bytecode dispatcher, opaque predicates, infinite
+//     loop traps, Unicode-homoglyph string literals, hidden identifiers via
+//     `string.char` concatenation, minified whitespace.
 
-function rand(n: number): number {
-  return Math.floor(Math.random() * n);
-}
-function randByte(): number {
-  return 1 + rand(254);
-}
-// Cyrillic homoglyphs — visually identical to Latin a/e/o/p/c/x. Used inside
-// junk STRING LITERALS only (Lua 5.1 identifiers are ASCII), to poison string
-// dumps and break "grep the variable name" style deobfuscation.
+function rand(n: number): number { return Math.floor(Math.random() * n); }
+function randByte(): number { return 1 + rand(254); }
+
 const HOMOGLYPHS = ["\u0430","\u0435","\u03bf","\u0440","\u0441","\u0445","\u0501","\u04bb","\u051b"];
 function randName(used: Set<string>): string {
   const chars = "abcdefghijklmnopqrstuvwxyz";
@@ -56,13 +34,9 @@ function randName(used: Set<string>): string {
     let s = "_";
     const len = 5 + rand(6);
     for (let i = 0; i < len; i++) s += chars[rand(chars.length)];
-    if (!used.has(s)) {
-      used.add(s);
-      return s;
-    }
+    if (!used.has(s)) { used.add(s); return s; }
   }
 }
-/** Lua literal that decodes to a homoglyph-soup string; emitted as \ddd bytes. */
 function homoglyphStr(): string {
   let s = "";
   const n = 4 + rand(8);
@@ -73,7 +47,7 @@ function homoglyphStr(): string {
   return out + '"';
 }
 
-/** FNV-1a 32-bit checksum. Multiplication split to stay within 2^53 doubles. */
+/** FNV-1a 32-bit (multiplication split to stay under 2^53). */
 function fnv1a(bytes: Uint8Array | number[]): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < bytes.length; i++) {
@@ -85,7 +59,17 @@ function fnv1a(bytes: Uint8Array | number[]): number {
   return h >>> 0;
 }
 
-/** Encode bytes as a single Lua string literal using \ddd escapes. */
+/** djb2 32-bit — second independent signature. Runs alongside FNV-1a so a
+ *  patch that compensates one hash won't survive the other. */
+function djb2(bytes: Uint8Array | number[]): number {
+  let h = 5381;
+  for (let i = 0; i < bytes.length; i++) {
+    h = ((h * 33) + bytes[i]) >>> 0;
+  }
+  return h >>> 0;
+}
+
+
 function encodeEscaped(enc: Uint8Array | number[]): string {
   const parts: string[] = [];
   const CHUNK = 4096;
@@ -98,7 +82,6 @@ function encodeEscaped(enc: Uint8Array | number[]): string {
   return parts.join("");
 }
 
-/** Split arr into random-out-of-order chunks. */
 function fragment(arr: number[], parts: number): { idx: number; data: number[] }[] {
   const size = Math.max(1, Math.ceil(arr.length / parts));
   const out: { idx: number; data: number[] }[] = [];
@@ -112,7 +95,6 @@ function fragment(arr: number[], parts: number): { idx: number; data: number[] }
   return out;
 }
 
-/** Emit a Lua numeric literal broken into an arithmetic expression. */
 function num(n: number): string {
   if (n < 8) return String(n);
   const a = 1 + rand(n - 1);
@@ -123,26 +105,52 @@ function num(n: number): string {
   return `(${a}*1+${b})`;
 }
 
-/** Build a Lua expression that produces the given string via char concatenation,
- *  so a static string dump of the bootstrap never reveals sensitive identifiers
- *  like "getgenv", "hookfunction", "debug", etc. */
 function hiddenStr(s: string): string {
   const parts: string[] = [];
   for (let i = 0; i < s.length; i++) parts.push(`string.char(${s.charCodeAt(i)})`);
   return parts.join("..");
 }
 
-/** Multi-round rotating XOR with 4 keys of coprime-ish lengths, then RC4 pass. */
+/** RLE-lite compression: emits packets of either a literal run (0..127 bytes)
+ *  or a repeat run (2..129 copies of one byte). Format:
+ *    byte tag: high bit 0 → literal, low 7 bits = count-1 (1..128 literals)
+ *              high bit 1 → repeat,  low 7 bits = count-2 (2..129 copies) + byte
+ *  Simple, safe, and the inverse fits in ~8 lines of Lua. */
+function compress(src: Uint8Array): number[] {
+  const out: number[] = [];
+  let i = 0;
+  const n = src.length;
+  while (i < n) {
+    // detect run
+    let run = 1;
+    while (run < 129 && i + run < n && src[i + run] === src[i]) run++;
+    if (run >= 3) {
+      out.push(0x80 | (run - 2));
+      out.push(src[i]);
+      i += run;
+    } else {
+      // literal batch until next run of >=3
+      const start = i;
+      let lit = 0;
+      while (i < n && lit < 128) {
+        let r = 1;
+        while (r < 3 && i + r < n && src[i + r] === src[i]) r++;
+        if (r >= 3) break;
+        i++; lit++;
+      }
+      out.push(lit - 1); // 0..127 → 1..128 literals
+      for (let k = 0; k < lit; k++) out.push(src[start + k]);
+    }
+  }
+  return out;
+}
+
+/** 4-round rotating XOR + RC4 with dynamic keys. */
 function encryptLayer(src: Uint8Array | number[]): {
-  ct: number[];
-  k1: number[]; k2: number[]; k3: number[]; k4: number[];
-  rc4: number[];
+  ct: number[]; k1: number[]; k2: number[]; k3: number[]; k4: number[]; rc4: number[];
 } {
   const k1: number[] = [], k2: number[] = [], k3: number[] = [], k4: number[] = [];
-  const l1 = 17 + rand(16);
-  const l2 = 23 + rand(16);
-  const l3 = 31 + rand(16);
-  const l4 = 37 + rand(16);
+  const l1 = 17 + rand(16), l2 = 23 + rand(16), l3 = 31 + rand(16), l4 = 37 + rand(16);
   for (let i = 0; i < l1; i++) k1.push(randByte());
   for (let i = 0; i < l2; i++) k2.push(randByte());
   for (let i = 0; i < l3; i++) k3.push(randByte());
@@ -150,13 +158,9 @@ function encryptLayer(src: Uint8Array | number[]): {
   const xored: number[] = [];
   for (let i = 0; i < src.length; i++) {
     let b = src[i];
-    b = b ^ k1[i % l1];
-    b = b ^ k2[i % l2];
-    b = b ^ k3[i % l3];
-    b = b ^ k4[i % l4];
+    b ^= k1[i % l1]; b ^= k2[i % l2]; b ^= k3[i % l3]; b ^= k4[i % l4];
     xored.push(b & 0xff);
   }
-  // RC4 pass with a fresh dynamic key.
   const rc4Len = 24 + rand(24);
   const rc4: number[] = [];
   for (let i = 0; i < rc4Len; i++) rc4.push(randByte());
@@ -170,22 +174,20 @@ function encryptLayer(src: Uint8Array | number[]): {
   let a = 0, b2 = 0;
   const ct: number[] = [];
   for (let i = 0; i < xored.length; i++) {
-    a = (a + 1) & 0xff;
-    b2 = (b2 + S[a]) & 0xff;
+    a = (a + 1) & 0xff; b2 = (b2 + S[a]) & 0xff;
     [S[a], S[b2]] = [S[b2], S[a]];
     ct.push(xored[i] ^ S[(S[a] + S[b2]) & 0xff]);
   }
   return { ct, k1, k2, k3, k4, rc4 };
 }
 
-/** Keyed byte permutation (Fisher-Yates driven by xorshift32). */
 function permute(src: number[], seed: number): { out: number[]; seed: number } {
   const idx = src.map((_, i) => i);
   let s = seed >>> 0;
   const next = () => {
     s ^= s << 13; s >>>= 0;
     s ^= s >>> 17;
-    s ^= s << 5; s >>>= 0;
+    s ^= s << 5;  s >>>= 0;
     return s;
   };
   for (let i = idx.length - 1; i > 0; i--) {
@@ -197,9 +199,52 @@ function permute(src: number[], seed: number): { out: number[]; seed: number } {
   return { out, seed };
 }
 
-/** Build one VM bootstrap. Phases run through a flattened dispatcher loop:
- *  reassemble → integrity(FNV-1a) → unpermute → RC4 undo → 4×XOR undo → load.
- *  The dispatcher replaces sequential if/then/else with a single while+switch. */
+/** Minify Lua source: strip `--[[...]]` blocks, `-- line` comments, collapse
+ *  runs of whitespace outside of strings. Only invoked on our generated
+ *  bootstrap, which never contains `"--"` inside string literals. */
+function minifyLua(src: string): string {
+  // strip block comments
+  let s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
+  // strip line comments (bootstrap has no `--` inside strings)
+  s = s.replace(/--[^\n]*/g, "");
+  // collapse whitespace but preserve string literals
+  const out: string[] = [];
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === '"' || ch === "'") {
+      const q = ch;
+      let j = i + 1;
+      while (j < s.length) {
+        if (s[j] === "\\") { j += 2; continue; }
+        if (s[j] === q) { j++; break; }
+        j++;
+      }
+      out.push(s.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (/\s/.test(ch)) {
+      // walk whitespace
+      let j = i;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const prev = out.length ? out[out.length - 1].slice(-1) : "";
+      const nextCh = s[j] ?? "";
+      // keep a separator when both sides are identifier/keyword/number chars
+      const wordy = (c: string) => /[A-Za-z0-9_]/.test(c);
+      if (wordy(prev) && wordy(nextCh)) out.push(" ");
+      i = j;
+      continue;
+    }
+    out.push(ch);
+    i++;
+  }
+  return out.join("");
+}
+
+/** One VM bootstrap with a flattened dispatcher whose opcode IDs are shuffled
+ *  each build. Phases: reassemble → FNV integrity → djb2 signature →
+ *  unpermute → RC4-undo → 4xor-undo → decompress → load. */
 function buildBootstrap(
   ciphertext: number[],
   k1: number[], k2: number[], k3: number[], k4: number[],
@@ -209,63 +254,40 @@ function buildBootstrap(
   extraGuards: string,
 ): string {
   const used = new Set<string>();
-  const G = randName(used);
-  const E = randName(used);
-  const FRAGS = randName(used);
-  const CT = randName(used);
-  const K1 = randName(used);
-  const K2 = randName(used);
-  const K3 = randName(used);
-  const K4 = randName(used);
-  const RC4K = randName(used);
-  const PERM = randName(used);
-  const XOR = randName(used);
-  const DEC = randName(used);
-  const SRC = randName(used);
-  const FN = randName(used);
-  const ERR = randName(used);
-  const SUM = randName(used);
-  const I = randName(used);
-  const J = randName(used);
-  const T = randName(used);
-  const IDX = randName(used);
-  const S = randName(used);
-  const NXT = randName(used);
-  const OUT = randName(used);
-  const B = randName(used);
-  const L1 = randName(used);
-  const L2 = randName(used);
-  const L3 = randName(used);
-  const L4 = randName(used);
-  const RL = randName(used);
-  const SBOX = randName(used);
-  const AA = randName(used);
-  const BB = randName(used);
-  const STATE = randName(used);   // dispatcher state
-  const RG = randName(used);
-  const SBYTE = randName(used);
-  const SCHAR = randName(used);
-  const TCONCAT = randName(used);
-  const LOAD = randName(used);
+  const G = randName(used), E = randName(used), FRAGS = randName(used);
+  const CT = randName(used), K1 = randName(used), K2 = randName(used);
+  const K3 = randName(used), K4 = randName(used), RC4K = randName(used);
+  const PERM = randName(used), XOR = randName(used), DEC = randName(used);
+  const SRC = randName(used), FN = randName(used), ERR = randName(used);
+  const SUM = randName(used), SIG = randName(used), I = randName(used);
+  const J = randName(used), T = randName(used), IDX = randName(used);
+  const S = randName(used), NXT = randName(used), OUT = randName(used);
+  const B = randName(used), L1 = randName(used), L2 = randName(used);
+  const L3 = randName(used), L4 = randName(used), RL = randName(used);
+  const SBOX = randName(used), AA = randName(used), BB = randName(used);
+  const STATE = randName(used), RG = randName(used);
+  const SBYTE = randName(used), SCHAR = randName(used);
+  const TCONCAT = randName(used), LOAD = randName(used);
+  const PLAIN = randName(used), TAG = randName(used), CNT = randName(used);
+  const BV = randName(used), P = randName(used);
 
   const parts = 6 + rand(8);
   const frags = fragment(ciphertext, parts);
   const expected = fnv1a(ciphertext);
+  const signature = djb2(ciphertext);
 
   let fragsLua = "{";
-  for (const f of frags) {
-    fragsLua += `[${num(f.idx)}]="${encodeEscaped(f.data)}",`;
-  }
+  for (const f of frags) fragsLua += `[${num(f.idx)}]="${encodeEscaped(f.data)}",`;
   fragsLua += `n=${num(frags.length)}}`;
 
   const keyLua = (k: number[]) => "{" + k.map((b) => num(b)).join(",") + "}";
 
-  // Shuffled dispatcher state ids for the flattened control flow.
-  const ids = [1, 2, 3, 4, 5, 6, 7].map(() => 100 + rand(900));
-  const [S_REASM, S_SUM, S_UNPERM, S_RC4, S_XOR, S_LOAD, S_HALT] = ids;
+  // Shuffle dispatcher opcodes so the same phase gets a different ID each build.
+  const opcodes = Array.from({ length: 8 }, () => 100 + rand(900));
+  const [S_REASM, S_SUM, S_SIG, S_UNPERM, S_RC4, S_XOR, S_DECOMP, S_LOAD] = opcodes;
+  const HALT = 0;
 
   return `--[[LM/${chunkName}]]
--- pristine snapshots: read via rawget so __index loggers on _G can't see us
 local ${RG}=rawget
 local ${G}=(function()
   local gg=${RG}(_G, ${hiddenStr("getgenv")})
@@ -288,10 +310,7 @@ local ${LOAD}=${RG}(_G, ${hiddenStr("loadstring")}) or ${RG}(_G, ${hiddenStr("lo
 ${extraGuards}
 local ${E}=(function()
   local gf=${RG}(_G, ${hiddenStr("getfenv")})
-  if type(gf)=="function" then
-    local ok,e=pcall(gf,1)
-    if ok then return e end
-  end
+  if type(gf)=="function" then local ok,e=pcall(gf,1) if ok then return e end end
   return ${G}
 end)()
 local ${FRAGS}=${fragsLua}
@@ -310,18 +329,16 @@ local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   end
   return r
 end
-local ${CT},${OUT},${DEC},${T},${SRC}={},{},{},{},nil
+local ${CT},${OUT},${DEC},${T},${PLAIN},${SRC}={},{},{},{},{},nil
 local ${SUM}=2166136261
--- CONTROL-FLOW FLATTENING: single dispatcher loop, no sequential phase code.
+local ${SIG}=5381
 local ${STATE}=${S_REASM}
-while ${STATE}~=${S_HALT} do
+while ${STATE}~=${HALT} do
   if ${STATE}==${S_REASM} then
     local ${I}=1
     for ${J}=0,${FRAGS}.n-1 do
       local ${S}=${FRAGS}[${J}]
-      for ${IDX}=1,#${S} do
-        ${CT}[${I}]=${SBYTE}(${S},${IDX}); ${I}=${I}+1
-      end
+      for ${IDX}=1,#${S} do ${CT}[${I}]=${SBYTE}(${S},${IDX}); ${I}=${I}+1 end
     end
     ${STATE}=${S_SUM}
   elseif ${STATE}==${S_SUM} then
@@ -331,7 +348,14 @@ while ${STATE}~=${S_HALT} do
       local _hi=(${SUM}%256)*16777216
       ${SUM}=(_lo+_hi)%4294967296
     end
-    if ${SUM}~=${expected} then return error("[LuaMore] integrity check failed") end
+    if ${SUM}~=${expected} then return error("[LuaMore] integrity fault (fnv)") end
+    ${STATE}=${S_SIG}
+  elseif ${STATE}==${S_SIG} then
+    for ${I}=1,#${CT} do
+      ${SIG}=(${SIG}*33+${CT}[${I}])%4294967296
+    end
+    if ${SIG}~=${signature} then return error("[LuaMore] signature invalid") end
+
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
@@ -349,7 +373,6 @@ while ${STATE}~=${S_HALT} do
     for ${I}=1,#${CT} do ${OUT}[${I}]=${CT}[${T}[${I}]] end
     ${STATE}=${S_RC4}
   elseif ${STATE}==${S_RC4} then
-    -- RC4 keystream (symmetric): undo the RC4 pass applied at build time.
     local ${SBOX}={}
     for ${I}=0,255 do ${SBOX}[${I}]=${I} end
     local ${J}=0
@@ -372,9 +395,24 @@ while ${STATE}~=${S_HALT} do
       ${B}=${XOR}(${B},${K2}[((${I}-1)%${L2})+1])
       ${B}=${XOR}(${B},${K3}[((${I}-1)%${L3})+1])
       ${B}=${XOR}(${B},${K4}[((${I}-1)%${L4})+1])
-      ${DEC}[${I}]=${SCHAR}(${B})
+      ${DEC}[${I}]=${B}
     end
-    ${SRC}=${TCONCAT}(${DEC})
+    ${STATE}=${S_DECOMP}
+  elseif ${STATE}==${S_DECOMP} then
+    local ${P},${I}=1,1
+    local ${CNT}
+    while ${P}<=#${DEC} do
+      local ${TAG}=${DEC}[${P}]; ${P}=${P}+1
+      if ${TAG}>=128 then
+        ${CNT}=(${TAG}-128)+2
+        local ${BV}=${DEC}[${P}]; ${P}=${P}+1
+        for _=1,${CNT} do ${PLAIN}[${I}]=${SCHAR}(${BV}); ${I}=${I}+1 end
+      else
+        ${CNT}=${TAG}+1
+        for _=1,${CNT} do ${PLAIN}[${I}]=${SCHAR}(${DEC}[${P}]); ${I}=${I}+1; ${P}=${P}+1 end
+      end
+    end
+    ${SRC}=${TCONCAT}(${PLAIN})
     ${STATE}=${S_LOAD}
   elseif ${STATE}==${S_LOAD} then
     local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
@@ -382,24 +420,20 @@ while ${STATE}~=${S_HALT} do
     local sf=${RG}(_G, ${hiddenStr("setfenv")})
     if type(sf)=="function" then pcall(sf,${FN},${E}) end
     local _r=${FN}()
-    ${STATE}=${S_HALT}
+    ${STATE}=${HALT}
     return _r
   else
-    ${STATE}=${S_HALT}
+    ${STATE}=${HALT}
   end
 end
 `;
 }
 
-/** Hardened anti-env-logger + anti-debug guards for the outer bootstrap. */
 function outerGuards(): string {
   const used = new Set<string>();
   const _mt = randName(used), _g = randName(used), _dsm = randName(used);
-  const _ok = randName(used), _k = randName(used), _v = randName(used);
+  const _ok = randName(used), _k = randName(used);
   return `
--- HARDENED ANTI-ENV-LOGGER --------------------------------------------------
--- strip __index/__newindex metatables from every table a logger might hook.
--- use debug.setmetatable when available (bypasses __metatable locks).
 local ${_dsm}=(debug and debug.setmetatable) or nil
 local function ${_g}(t)
   if type(t)~="table" then return end
@@ -416,98 +450,65 @@ pcall(function()
 end)
 pcall(function() ${_g}(rawget(_G, ${hiddenStr("shared")})) end)
 pcall(function() ${_g}(_ENV) end)
--- scrub known logger stash keys so leftover captures are wiped
 pcall(function()
-  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")}}
+  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")}}
   for _,${_k} in ipairs(keys) do
     pcall(rawset, _G, ${_k}, nil)
     local gg=rawget(_G, ${hiddenStr("getgenv")})
     if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} and type(g)=="table" then pcall(rawset, g, ${_k}, nil) end end
   end
 end)
--- ANTI-DEBUG ----------------------------------------------------------------
 pcall(function()
   if debug and debug.sethook then
     local ok, cur = pcall(debug.gethook)
     if ok and cur then pcall(debug.sethook) end
   end
 end)
--- if hookfunction/hookmetamethod exist, scrub metatables on our helpers
-pcall(function()
-  local hm=rawget(_G, ${hiddenStr("hookmetamethod")})
-  if type(hm)=="function" then
-    -- nothing to unhook here; presence alone is expected in exploit envs
-    local _=hm
-  end
-end)
 `;
 }
 
-/** Dead-code injection: opaque predicates that always eval to a known value
- *  but look data-dependent. Injected strings hold Unicode homoglyphs so string
- *  dumps show plausible-looking names that don't match any real identifier.
- *  Several kinds emit infinite-looking loops guarded by opaque-false
- *  predicates (or self-referential recursion) that never actually iterate at
- *  runtime but poison static analysis and decompilers. */
 function junkBlock(): string {
   const used = new Set<string>();
   const a = randName(used), b = randName(used), c = randName(used), d = randName(used), e = randName(used);
   const n1 = 1 + rand(1e6), n2 = 1 + rand(1e6);
   const kind = rand(8);
-  if (kind === 0) {
-    return `local ${a}=${n1}
+  if (kind === 0) return `local ${a}=${n1}
 local ${b}=function(x) return x*x+${n2} end
 local ${c}=${homoglyphStr()}
 if (${b}(${a})>=0) then local ${d}=${c} end
 if (${b}(${a})+1==0) then return error(${homoglyphStr()}) end
 `;
-  }
-  if (kind === 1) {
-    return `local ${a},${b}=${n1},${n2}
+  if (kind === 1) return `local ${a},${b}=${n1},${n2}
 local ${c}=(${a}%2)*(${a}%2)+(${b}%2)*(${b}%2)
 if ${c}<0 then ${a}=${homoglyphStr()} end
 local ${d}=${homoglyphStr()}
 while false do ${d}=${d}..${d} end
 `;
-  }
-  if (kind === 2) {
-    return `local ${a}=function() return ${n1} end
+  if (kind === 2) return `local ${a}=function() return ${n1} end
 local ${b}=${a}()*${a}()
 if ${b}~=${n1 * n1} then return error(${homoglyphStr()}) end
 local ${c}=${homoglyphStr()}
 repeat break until true
 `;
-  }
-  if (kind === 3) {
-    return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
+  if (kind === 3) return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
 local ${b}=#${a}
 if ${b}*${b}<0 then ${a}=nil end
 local ${c},${d}=${n1},${n2}
 if (${c}-${c})~=0 then return error(${homoglyphStr()}) end
 `;
-  }
-  if (kind === 4) {
-    // Opaque-false guarded infinite loop: (x*x+1)==0 is never true, so the
-    // while body never runs, but a decompiler must prove it to strip.
-    return `local ${a},${b}=${n1},${n2}
+  if (kind === 4) return `local ${a},${b}=${n1},${n2}
 while (${a}*${a}+1)==0 do
   ${b}=${b}+${a}
   while (${b}*${b}+7)<0 do ${a}=${a}*${b}; ${b}=${b}+1 end
   repeat ${a}=${a}+${b} until (${a}*${a})<0
 end
 `;
-  }
-  if (kind === 5) {
-    // Self-referential recursion trap gated by opaque false.
-    return `local function ${a}(x) return ${a}(x+1) end
+  if (kind === 5) return `local function ${a}(x) return ${a}(x+1) end
 local ${b}=${n1}
 if (${b}%2)*(${b}%2)<0 then ${a}(${b}) end
 while (${b}-${b})~=0 do ${a}(${b}) end
 `;
-  }
-  if (kind === 6) {
-    // Nested infinite loops behind opaque predicate; body references outer var.
-    return `local ${a},${b},${c}=${n1},${n2},0
+  if (kind === 6) return `local ${a},${b},${c}=${n1},${n2},0
 while ${a}<${a} do
   while ${b}<${b} do
     while ${c}<${c} do ${c}=${c}+1 end
@@ -515,10 +516,9 @@ while ${a}<${a} do
   end
   ${a}=${a}+${b}
 end
-repeat ${c}=${c}+1 until (${c}*${c}+1)<0
+repeat ${c}=${c}+1 until (${c}*${c})>=0
 `;
-  }
-  // kind === 7: coroutine-based infinite-looking trap wrapped in dead branch.
+
   return `local ${a}=${n1}
 local ${b}=function()
   while true do ${a}=${a}+1; coroutine.yield(${a}) end
@@ -532,66 +532,33 @@ for _=1,0 do ${d}=${d}..${e} end
 `;
 }
 
-/**
- * Multi-layer obfuscation. Returns a self-contained Lua script that,
- * when executed, runs the original source in the executor's shared env.
- */
+/** compress → encrypt → permute → bootstrap. */
+function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
+  const compressed = compress(plain);
+  const enc = encryptLayer(compressed);
+  const seed = 1 + rand(0xffffffff);
+  const perm = permute(enc.ct, seed);
+  return buildBootstrap(perm.out, enc.k1, enc.k2, enc.k3, enc.k4, enc.rc4, perm.seed, chunk, guards);
+}
+
 export function obfuscateLua(source: string): string {
-  const rawBytes = new TextEncoder().encode(source);
-
-  // ---- Inner layer: encrypt + permute the raw source ----
-  const encInner = encryptLayer(rawBytes);
-  const permInnerSeed = 1 + rand(0xffffffff);
-  const permInner = permute(encInner.ct, permInnerSeed);
-  const innerBootstrap = buildBootstrap(
-    permInner.out,
-    encInner.k1, encInner.k2, encInner.k3, encInner.k4,
-    encInner.rc4,
-    permInner.seed,
-    "core",
-    "",
-  );
-
-  // ---- Middle layer: encrypt + permute the inner bootstrap ----
-  const middleBytes = new TextEncoder().encode(innerBootstrap);
-  const encMiddle = encryptLayer(middleBytes);
-  const permMiddleSeed = 1 + rand(0xffffffff);
-  const permMiddle = permute(encMiddle.ct, permMiddleSeed);
-  const middleBootstrap = buildBootstrap(
-    permMiddle.out,
-    encMiddle.k1, encMiddle.k2, encMiddle.k3, encMiddle.k4,
-    encMiddle.rc4,
-    permMiddle.seed,
-    "vm1",
-    "",
-  );
-
-  // ---- Outer layer: encrypt + permute the middle bootstrap, w/ full guards ----
-  const outerBytes = new TextEncoder().encode(middleBootstrap);
-  const encOuter = encryptLayer(outerBytes);
-  const permOuterSeed = 1 + rand(0xffffffff);
-  const permOuter = permute(encOuter.ct, permOuterSeed);
-  const outerBootstrap = buildBootstrap(
-    permOuter.out,
-    encOuter.k1, encOuter.k2, encOuter.k3, encOuter.k4,
-    encOuter.rc4,
-    permOuter.seed,
-    "vm2",
-    outerGuards(),
-  );
+  const inner = wrapLayer(new TextEncoder().encode(source), "core", "");
+  const middle = wrapLayer(new TextEncoder().encode(inner), "vm1", "");
+  const outer = wrapLayer(new TextEncoder().encode(middle), "vm2", outerGuards());
+  const minified = minifyLua(outer);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v4  //  build ${stamp}
-  triple VM + 4x rotating XOR + RC4 + keyed permutation + fragmentation
-  control-flow flattening (dispatcher loop), opaque predicates,
-  Unicode homoglyph literals, hardened anti-env-logger,
-  anti-tamper (FNV-1a), anti-debug, anti-decompile
+  LuaMore VM v5  //  build ${stamp}
+  parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
+  -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
+  -> triple VM -> minify
+  hardened anti-env-logger, dual anti-tamper, anti-debug, anti-decompile
   do not edit — integrity guards will refuse to run
 ]]
 `;
   let junk = "";
-  const junkN = 14 + rand(10);
+  const junkN = 18 + rand(12);
   for (let i = 0; i < junkN; i++) junk += junkBlock();
-  return banner + junk + outerBootstrap;
+  return banner + minifyLua(junk) + "\n" + minified;
 }

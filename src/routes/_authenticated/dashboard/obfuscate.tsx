@@ -42,8 +42,9 @@ function ObfuscatePage() {
     onSuccess: (r) => {
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v2`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v5`,
       );
+
     },
     onError: (e) => {
       setOut("");
@@ -93,8 +94,9 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          One-off protection using LuaMore VM v3 — triple VM bootstrap, 4× rotating XOR, keyed permutation, FNV-1a anti-tamper, hardened anti-env-logger, anti-debug, anti-decompile.
+          LuaMore VM v5 — parse, optimize, compile to pseudo-bytecode, flatten control flow, shuffle opcodes, RLE compress, 4× rotating XOR + RC4 encrypt, dual FNV-1a/djb2 sign, triple VM bootstrap, minify. Hardened anti-env-logger, anti-tamper, anti-debug, anti-decompile.
         </p>
+
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
