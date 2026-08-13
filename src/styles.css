@@ -257,9 +257,10 @@
   &:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.12);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.22);
   }
-  &::placeholder { color: #9aa3b2; }
+  &::placeholder { color: #5a4a2c; }
+
 }
 
 @utility badge-blue {
