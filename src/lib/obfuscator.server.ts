@@ -516,8 +516,9 @@ while ${a}<${a} do
   end
   ${a}=${a}+${b}
 end
-repeat ${c}=${c}+1 until (${c}*${c}+1)<0
+repeat ${c}=${c}+1 until (${c}*${c})>=0
 `;
+
   return `local ${a}=${n1}
 local ${b}=function()
   while true do ${a}=${a}+1; coroutine.yield(${a}) end
