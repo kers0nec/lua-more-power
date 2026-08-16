@@ -60,7 +60,7 @@ function ScriptDetail() {
   const obfMut = useMutation({
     mutationFn: () => obf({ data: { id } }),
     onSuccess: (r) => {
-      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, LuaMore VM v2)`);
+      setStatus(`✓ Obfuscated (${r.size.toLocaleString()} chars, LuaMore VM v6)`);
       qc.invalidateQueries({ queryKey: ["script", id] });
     },
     onError: (e) => setStatus(`✗ ${prettyError(e)}`),
@@ -89,7 +89,7 @@ function ScriptDetail() {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={ffa} onChange={(e) => setFfa(e.target.checked)} /> FFA
         </label>
-        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v2 every time you save">
+        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v6 every time you save">
           <input type="checkbox" checked={autoObf} onChange={(e) => setAutoObf(e.target.checked)} />
           Auto-obfuscate on save
         </label>

@@ -1,6 +1,6 @@
-// LuaMore VM v5 — parse → optimize → pseudo-bytecode → flatten → shuffle →
-// compress → encrypt → sign → VM-based → minify. Hardened anti-tamper,
-// anti-env-logger, anti-debug, anti-decompile.
+// LuaMore VM v6 — quad-nested VM, RLE compress, 4xor + RC4, dual FNV-1a/djb2
+// sign, env proxy, hardened anti-env-logger + anti-hook (hookfunction,
+// hookmetamethod, getrawmetatable, getgc, getreg, decompile, dumpstring, ...).
 //
 // Build pipeline (per layer, applied 3× nested):
 //   1. Source bytes
@@ -418,7 +418,14 @@ while ${STATE}~=${HALT} do
     local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
     if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
     local sf=${RG}(_G, ${hiddenStr("setfenv")})
-    if type(sf)=="function" then pcall(sf,${FN},${E}) end
+    if type(sf)=="function" then
+      local _proxy=setmetatable({}, {
+        __index=function(_,k) return ${E}[k] end,
+        __newindex=function(_,k,v) ${E}[k]=v end,
+        __metatable=false,
+      })
+      pcall(sf,${FN},_proxy)
+    end
     local _r=${FN}()
     ${STATE}=${HALT}
     return _r
@@ -451,7 +458,7 @@ end)
 pcall(function() ${_g}(rawget(_G, ${hiddenStr("shared")})) end)
 pcall(function() ${_g}(_ENV) end)
 pcall(function()
-  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")}}
+  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")},${hiddenStr("senv")},${hiddenStr("__envlogger")},${hiddenStr("envlog")},${hiddenStr("__record")},${hiddenStr("__tap")},${hiddenStr("__probe")},${hiddenStr("__watch")},${hiddenStr("__sink")}}
   for _,${_k} in ipairs(keys) do
     pcall(rawset, _G, ${_k}, nil)
     local gg=rawget(_G, ${hiddenStr("getgenv")})
@@ -462,6 +469,27 @@ pcall(function()
   if debug and debug.sethook then
     local ok, cur = pcall(debug.gethook)
     if ok and cur then pcall(debug.sethook) end
+  end
+end)
+pcall(function()
+  local danger={${hiddenStr("hookfunction")},${hiddenStr("hookmetamethod")},${hiddenStr("getrawmetatable")},${hiddenStr("setrawmetatable")},${hiddenStr("getgc")},${hiddenStr("getreg")},${hiddenStr("getinstances")},${hiddenStr("getnilinstances")},${hiddenStr("decompile")},${hiddenStr("getscriptbytecode")},${hiddenStr("dumpstring")},${hiddenStr("getconstants")},${hiddenStr("getupvalues")},${hiddenStr("getprotos")},${hiddenStr("islclosure")},${hiddenStr("checkcaller")},${hiddenStr("getcallingscript")},${hiddenStr("getsenv")},${hiddenStr("getfunctionhash")}}
+  for _,${_k} in ipairs(danger) do
+    local fn=rawget(_G, ${_k})
+    if type(fn)=="function" then
+      pcall(rawset, _G, ${_k}, function() return nil end)
+      local gg=rawget(_G, ${hiddenStr("getgenv")})
+      if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} and type(g)=="table" then pcall(rawset, g, ${_k}, function() return nil end) end end
+    end
+  end
+end)
+pcall(function()
+  local cc=rawget(_G, ${hiddenStr("checkcaller")})
+  if type(cc)=="function" then
+    local ok,is=pcall(cc)
+    if ok and is==false then
+      local hf=rawget(_G, ${hiddenStr("hookfunction")})
+      if type(hf)=="function" then return error("[LuaMore] hostile environment") end
+    end
   end
 end)
 `;
@@ -542,23 +570,26 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
 }
 
 export function obfuscateLua(source: string): string {
-  const inner = wrapLayer(new TextEncoder().encode(source), "core", "");
-  const middle = wrapLayer(new TextEncoder().encode(inner), "vm1", "");
-  const outer = wrapLayer(new TextEncoder().encode(middle), "vm2", outerGuards());
-  const minified = minifyLua(outer);
+  const enc = new TextEncoder();
+  const l1 = wrapLayer(enc.encode(source), "core", "");
+  const l2 = wrapLayer(enc.encode(l1), "vm1", "");
+  const l3 = wrapLayer(enc.encode(l2), "vm2", "");
+  const l4 = wrapLayer(enc.encode(l3), "vm3", outerGuards());
+  const minified = minifyLua(l4);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v5  //  build ${stamp}
+  LuaMore VM v6  //  build ${stamp}
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
-  -> triple VM -> minify
-  hardened anti-env-logger, dual anti-tamper, anti-debug, anti-decompile
-  do not edit — integrity guards will refuse to run
+  -> quad-nested VM -> env-proxy -> minify
+  hardened anti-env-logger, anti-hook (hookfunction/hookmetamethod/getrawmetatable/
+  getgc/getreg/decompile/getscriptbytecode/dumpstring/checkcaller), dual anti-tamper,
+  anti-debug, anti-decompile. do not edit — integrity guards will refuse to run
 ]]
 `;
   let junk = "";
-  const junkN = 18 + rand(12);
-  for (let i = 0; i < junkN; i++) junk += junkBlock();
+  const junkN = 60 + rand(40);
+  for (let i = 0; i < junkN; i++) junk += "do\n" + junkBlock() + "end\n";
   return banner + minifyLua(junk) + "\n" + minified;
 }
