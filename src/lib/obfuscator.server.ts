@@ -570,23 +570,26 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
 }
 
 export function obfuscateLua(source: string): string {
-  const inner = wrapLayer(new TextEncoder().encode(source), "core", "");
-  const middle = wrapLayer(new TextEncoder().encode(inner), "vm1", "");
-  const outer = wrapLayer(new TextEncoder().encode(middle), "vm2", outerGuards());
-  const minified = minifyLua(outer);
+  const enc = new TextEncoder();
+  const l1 = wrapLayer(enc.encode(source), "core", "");
+  const l2 = wrapLayer(enc.encode(l1), "vm1", "");
+  const l3 = wrapLayer(enc.encode(l2), "vm2", "");
+  const l4 = wrapLayer(enc.encode(l3), "vm3", outerGuards());
+  const minified = minifyLua(l4);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v5  //  build ${stamp}
+  LuaMore VM v6  //  build ${stamp}
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
-  -> triple VM -> minify
-  hardened anti-env-logger, dual anti-tamper, anti-debug, anti-decompile
-  do not edit — integrity guards will refuse to run
+  -> quad-nested VM -> env-proxy -> minify
+  hardened anti-env-logger, anti-hook (hookfunction/hookmetamethod/getrawmetatable/
+  getgc/getreg/decompile/getscriptbytecode/dumpstring/checkcaller), dual anti-tamper,
+  anti-debug, anti-decompile. do not edit — integrity guards will refuse to run
 ]]
 `;
   let junk = "";
-  const junkN = 18 + rand(12);
+  const junkN = 60 + rand(40);
   for (let i = 0; i < junkN; i++) junk += junkBlock();
   return banner + minifyLua(junk) + "\n" + minified;
 }
