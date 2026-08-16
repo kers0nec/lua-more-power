@@ -458,7 +458,7 @@ end)
 pcall(function() ${_g}(rawget(_G, ${hiddenStr("shared")})) end)
 pcall(function() ${_g}(_ENV) end)
 pcall(function()
-  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")}}
+  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")},${hiddenStr("senv")},${hiddenStr("__envlogger")},${hiddenStr("envlog")},${hiddenStr("__record")},${hiddenStr("__tap")},${hiddenStr("__probe")},${hiddenStr("__watch")},${hiddenStr("__sink")}}
   for _,${_k} in ipairs(keys) do
     pcall(rawset, _G, ${_k}, nil)
     local gg=rawget(_G, ${hiddenStr("getgenv")})
@@ -469,6 +469,27 @@ pcall(function()
   if debug and debug.sethook then
     local ok, cur = pcall(debug.gethook)
     if ok and cur then pcall(debug.sethook) end
+  end
+end)
+pcall(function()
+  local danger={${hiddenStr("hookfunction")},${hiddenStr("hookmetamethod")},${hiddenStr("getrawmetatable")},${hiddenStr("setrawmetatable")},${hiddenStr("getgc")},${hiddenStr("getreg")},${hiddenStr("getinstances")},${hiddenStr("getnilinstances")},${hiddenStr("decompile")},${hiddenStr("getscriptbytecode")},${hiddenStr("dumpstring")},${hiddenStr("getconstants")},${hiddenStr("getupvalues")},${hiddenStr("getprotos")},${hiddenStr("islclosure")},${hiddenStr("checkcaller")},${hiddenStr("getcallingscript")},${hiddenStr("getsenv")},${hiddenStr("getfunctionhash")}}
+  for _,${_k} in ipairs(danger) do
+    local fn=rawget(_G, ${_k})
+    if type(fn)=="function" then
+      pcall(rawset, _G, ${_k}, function() return nil end)
+      local gg=rawget(_G, ${hiddenStr("getgenv")})
+      if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} and type(g)=="table" then pcall(rawset, g, ${_k}, function() return nil end) end end
+    end
+  end
+end)
+pcall(function()
+  local cc=rawget(_G, ${hiddenStr("checkcaller")})
+  if type(cc)=="function" then
+    local ok,is=pcall(cc)
+    if ok and is==false then
+      local hf=rawget(_G, ${hiddenStr("hookfunction")})
+      if type(hf)=="function" then return error("[LuaMore] hostile environment") end
+    end
   end
 end)
 `;
