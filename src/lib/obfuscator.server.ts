@@ -590,6 +590,6 @@ export function obfuscateLua(source: string): string {
 `;
   let junk = "";
   const junkN = 60 + rand(40);
-  for (let i = 0; i < junkN; i++) junk += junkBlock();
+  for (let i = 0; i < junkN; i++) junk += "do\n" + junkBlock() + "end\n";
   return banner + minifyLua(junk) + "\n" + minified;
 }
