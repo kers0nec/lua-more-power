@@ -571,25 +571,32 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
 
 export function obfuscateLua(source: string): string {
   const enc = new TextEncoder();
+  // 6 nested VM layers. Each layer independently compresses, XOR+RC4
+  // encrypts, permutes, dual-signs, and wraps in a flattened dispatcher.
+  // Deobfuscation requires unrolling all six in order — patching any
+  // single byte in any layer trips FNV-1a + djb2 verification.
   const l1 = wrapLayer(enc.encode(source), "core", "");
   const l2 = wrapLayer(enc.encode(l1), "vm1", "");
   const l3 = wrapLayer(enc.encode(l2), "vm2", "");
-  const l4 = wrapLayer(enc.encode(l3), "vm3", outerGuards());
-  const minified = minifyLua(l4);
+  const l4 = wrapLayer(enc.encode(l3), "vm3", "");
+  const l5 = wrapLayer(enc.encode(l4), "vm4", "");
+  const l6 = wrapLayer(enc.encode(l5), "vm5", outerGuards());
+  const minified = minifyLua(l6);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v6  //  build ${stamp}
+  LuaMore VM v7  //  build ${stamp}
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
-  -> quad-nested VM -> env-proxy -> minify
-  hardened anti-env-logger, anti-hook (hookfunction/hookmetamethod/getrawmetatable/
-  getgc/getreg/decompile/getscriptbytecode/dumpstring/checkcaller), dual anti-tamper,
-  anti-debug, anti-decompile. do not edit — integrity guards will refuse to run
+  -> 6x-nested VM -> env-proxy -> minify
+  Luraph-grade anti-env-logger, anti-hook (hookfunction/hookmetamethod/
+  getrawmetatable/getgc/getreg/decompile/getscriptbytecode/dumpstring/
+  checkcaller), dual anti-tamper, anti-debug, anti-decompile.
+  do not edit — integrity guards will refuse to run
 ]]
 `;
   let junk = "";
-  const junkN = 60 + rand(40);
+  const junkN = 200 + rand(120);
   for (let i = 0; i < junkN; i++) junk += "do\n" + junkBlock() + "end\n";
   return banner + minifyLua(junk) + "\n" + minified;
 }
