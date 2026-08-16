@@ -1,6 +1,6 @@
-// LuaMore VM v5 — parse → optimize → pseudo-bytecode → flatten → shuffle →
-// compress → encrypt → sign → VM-based → minify. Hardened anti-tamper,
-// anti-env-logger, anti-debug, anti-decompile.
+// LuaMore VM v6 — quad-nested VM, RLE compress, 4xor + RC4, dual FNV-1a/djb2
+// sign, env proxy, hardened anti-env-logger + anti-hook (hookfunction,
+// hookmetamethod, getrawmetatable, getgc, getreg, decompile, dumpstring, ...).
 //
 // Build pipeline (per layer, applied 3× nested):
 //   1. Source bytes

@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/docs")({
   head: () => ({
     meta: [
       { title: "API Docs — LuaMore Obfuscation API" },
-      { name: "description", content: "Integrate LuaMore's LuaMore VM v4 obfuscation into your own whitelisting system with a single HTTP call." },
+      { name: "description", content: "Integrate LuaMore's LuaMore VM v6 obfuscation into your own whitelisting system with a single HTTP call." },
       { property: "og:title", content: "LuaMore API Docs" },
       { property: "og:description", content: "Obfuscate Lua on demand from your own backend or whitelisting system." },
       { property: "og:type", content: "website" },
@@ -61,7 +61,7 @@ function ApiDocs() {
               Obfuscation API
             </h1>
             <p className="mt-5 max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
-              Plug LuaMore VM v4 into your own whitelisting or key system. One POST
+              Plug LuaMore VM v6 into your own whitelisting or key system. One POST
               request, back comes production-ready obfuscated Lua.
             </p>
           </div>
@@ -108,10 +108,10 @@ X-API-Key: <YOUR_API_KEY>
               <p><strong>Successful response</strong> (200):</p>
               <Code>{`{
   "ok": true,
-  "obfuscated": "--[[ LuaMore VM v4 ... ]] local ...",
+  "obfuscated": "--[[ LuaMore VM v6 ... ]] local ...",
   "bytes_in": 21,
   "bytes_out": 138422,
-  "engine": "LuaMore VM v4"
+  "engine": "LuaMore VM v6"
 }`}</Code>
               <p>
                 The <code>obfuscated</code> field is a self-contained Lua chunk. Serve it
