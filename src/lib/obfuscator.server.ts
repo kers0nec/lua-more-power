@@ -418,7 +418,14 @@ while ${STATE}~=${HALT} do
     local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore")
     if not ${FN} then return error("[LuaMore] "..tostring(${ERR})) end
     local sf=${RG}(_G, ${hiddenStr("setfenv")})
-    if type(sf)=="function" then pcall(sf,${FN},${E}) end
+    if type(sf)=="function" then
+      local _proxy=setmetatable({}, {
+        __index=function(_,k) return ${E}[k] end,
+        __newindex=function(_,k,v) ${E}[k]=v end,
+        __metatable=false,
+      })
+      pcall(sf,${FN},_proxy)
+    end
     local _r=${FN}()
     ${STATE}=${HALT}
     return _r
