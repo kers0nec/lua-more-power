@@ -25,7 +25,15 @@ function Keys() {
   const [note, setNote] = useState("");
 
   const genMut = useMutation({
-    mutationFn: () => gen({ data: { scriptId: scriptId || undefined, hours, discordId: discordId || undefined, note: note || undefined } }),
+    mutationFn: () =>
+      gen({
+        data: {
+          scriptId: scriptId || undefined,
+          hours,
+          discordId: discordId || undefined,
+          note: note || undefined,
+        },
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["keys"] }),
   });
   const delMut = useMutation({
@@ -39,23 +47,53 @@ function Keys() {
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-5 items-end">
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>SCRIPT</label>
-          <select value={scriptId} onChange={(e) => setScriptId(e.target.value)} className="input-blue mt-1">
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            SCRIPT
+          </label>
+          <select
+            value={scriptId}
+            onChange={(e) => setScriptId(e.target.value)}
+            className="input-blue mt-1"
+          >
             <option value="">Any</option>
-            {(scriptsQ.data ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {(scriptsQ.data ?? []).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>HOURS</label>
-          <input type="number" min={0} value={hours} onChange={(e) => setHours(Number(e.target.value))} className="input-blue mt-1" />
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            HOURS
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={hours}
+            onChange={(e) => setHours(Number(e.target.value))}
+            className="input-blue mt-1"
+          />
         </div>
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>DISCORD ID</label>
-          <input value={discordId} onChange={(e) => setDiscordId(e.target.value)} className="input-blue mt-1" />
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            DISCORD ID
+          </label>
+          <input
+            value={discordId}
+            onChange={(e) => setDiscordId(e.target.value)}
+            className="input-blue mt-1"
+          />
         </div>
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>NOTE</label>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="input-blue mt-1" />
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            NOTE
+          </label>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="input-blue mt-1"
+          />
         </div>
         <button onClick={() => genMut.mutate()} disabled={genMut.isPending} className="btn-primary">
           {genMut.isPending ? "…" : "Generate Key"}
@@ -73,16 +111,34 @@ function Keys() {
             >
               {k.key}
             </code>
-            {k.revoked && <span className="badge-blue" style={{ background: "#ffe0e0", color: "var(--destructive)" }}>revoked</span>}
+            {k.revoked && (
+              <span
+                className="badge-blue"
+                style={{ background: "#ffe0e0", color: "var(--destructive)" }}
+              >
+                revoked
+              </span>
+            )}
             {k.hwid && <span className="badge-blue">🖥 {k.hwid.slice(0, 8)}…</span>}
             {k.discord_id && <span className="badge-blue">@ {k.discord_id}</span>}
-            {k.expires_at && <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>expires {new Date(k.expires_at).toLocaleString()}</span>}
+            {k.expires_at && (
+              <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                expires {new Date(k.expires_at).toLocaleString()}
+              </span>
+            )}
             <div className="flex-1" />
-            <button onClick={() => delMut.mutate(k.id)} className="text-xs text-[color:var(--destructive)] hover:underline">Delete</button>
+            <button
+              onClick={() => delMut.mutate(k.id)}
+              className="text-xs text-[color:var(--destructive)] hover:underline"
+            >
+              Delete
+            </button>
           </div>
         ))}
         {keys.data && keys.data.length === 0 && (
-          <div className="p-6 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>No keys yet</div>
+          <div className="p-6 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
+            No keys yet
+          </div>
         )}
       </div>
     </div>

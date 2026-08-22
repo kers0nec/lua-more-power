@@ -55,10 +55,7 @@ export const createScript = createServerFn({ method: "POST" })
       description?: string;
       category?: string;
       tags?: string[];
-    }) =>
-      z
-        .object({ ...metaShape, code: z.string().max(1_000_000_000).optional() })
-        .parse(input),
+    }) => z.object({ ...metaShape, code: z.string().max(1_000_000_000).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: profile } = await context.supabase
@@ -117,9 +114,16 @@ export const updateScript = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
     const patch: Partial<{
-      name: string; code: string; ffa: boolean; description: string | null;
-      category: string | null; tags: string[]; is_active: boolean; is_protected: boolean;
-      obfuscated_code: string; obfuscator: string;
+      name: string;
+      code: string;
+      ffa: boolean;
+      description: string | null;
+      category: string | null;
+      tags: string[];
+      is_active: boolean;
+      is_protected: boolean;
+      obfuscated_code: string;
+      obfuscator: string;
     }> = { ...rest };
     if (rest.is_protected && typeof rest.code === "string" && rest.code.length > 0) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");

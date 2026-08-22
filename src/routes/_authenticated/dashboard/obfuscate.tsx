@@ -8,7 +8,10 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
     meta: [
       { title: "Obfuscator — LuaMore" },
-      { name: "description", content: "Protect any Luau snippet with the LuaMore VM v6 obfuscator." },
+      {
+        name: "description",
+        content: "Protect any Luau snippet with the LuaMore VM v6 obfuscator.",
+      },
     ],
   }),
   component: ObfuscatePage,
@@ -27,7 +30,9 @@ function prettyError(e: unknown) {
         )
         .join(", ");
     }
-  } catch { /* not JSON */ }
+  } catch {
+    /* not JSON */
+  }
   return raw;
 }
 
@@ -44,7 +49,6 @@ function ObfuscatePage() {
       setStatus(
         `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v6`,
       );
-
     },
     onError: (e) => {
       setOut("");
@@ -94,9 +98,10 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore VM v6 — parse, optimize, compile to pseudo-bytecode, flatten control flow, shuffle opcodes, RLE compress, 4× rotating XOR + RC4 encrypt, dual FNV-1a/djb2 sign, triple VM bootstrap, minify. Hardened anti-env-logger, anti-tamper, anti-debug, anti-decompile.
+          LuaMore VM v6 — parse, optimize, compile to pseudo-bytecode, flatten control flow, shuffle
+          opcodes, RLE compress, 4× rotating XOR + RC4 encrypt, dual FNV-1a/djb2 sign, triple VM
+          bootstrap, minify. Hardened anti-env-logger, anti-tamper, anti-debug, anti-decompile.
         </p>
-
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -105,7 +110,10 @@ function ObfuscatePage() {
             <div className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
               SOURCE (Luau)
             </div>
-            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="flex items-center gap-3 text-xs"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               <span>{code.length.toLocaleString()} chars</span>
               <label className="btn-outline text-xs cursor-pointer">
                 Upload file
@@ -113,7 +121,10 @@ function ObfuscatePage() {
                   type="file"
                   accept=".lua,.luau,.txt,text/plain"
                   className="hidden"
-                  onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ""; }}
+                  onChange={(e) => {
+                    onUpload(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
                 />
               </label>
             </div>
@@ -123,7 +134,10 @@ function ObfuscatePage() {
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); onUpload(e.dataTransfer.files?.[0]); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              onUpload(e.dataTransfer.files?.[0]);
+            }}
             placeholder='print("hello luamore")'
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
@@ -136,7 +150,11 @@ function ObfuscatePage() {
               {mut.isPending ? "Obfuscating…" : "Obfuscate"}
             </button>
             <button
-              onClick={() => { setCode(""); setOut(""); setStatus(""); }}
+              onClick={() => {
+                setCode("");
+                setOut("");
+                setStatus("");
+              }}
               className="btn-outline"
             >
               Clear
@@ -157,12 +175,23 @@ function ObfuscatePage() {
             <div className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
               OBFUSCATED OUTPUT
             </div>
-            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="flex items-center gap-3 text-xs"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               <span>{out.length.toLocaleString()} chars</span>
-              <button onClick={copyOut} disabled={!out} className="btn-outline text-xs disabled:opacity-40">
+              <button
+                onClick={copyOut}
+                disabled={!out}
+                className="btn-outline text-xs disabled:opacity-40"
+              >
                 Copy
               </button>
-              <button onClick={downloadOut} disabled={!out} className="btn-outline text-xs disabled:opacity-40">
+              <button
+                onClick={downloadOut}
+                disabled={!out}
+                className="btn-outline text-xs disabled:opacity-40"
+              >
                 Download .lua
               </button>
             </div>

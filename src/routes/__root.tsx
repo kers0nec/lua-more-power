@@ -78,16 +78,33 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "LuaMore — Luau Script Hosting & Protection" },
-      { name: "description", content: "LuaMore is an advanced Lua script hosting and protection platform." },
+      {
+        name: "description",
+        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+      },
       { name: "author", content: "LuaMore" },
       { property: "og:title", content: "LuaMore — Luau Script Hosting & Protection" },
-      { property: "og:description", content: "LuaMore is an advanced Lua script hosting and protection platform." },
+      {
+        property: "og:description",
+        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "LuaMore — Luau Script Hosting & Protection" },
-      { name: "twitter:description", content: "LuaMore is an advanced Lua script hosting and protection platform." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png" },
+      {
+        name: "twitter:description",
+        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -134,7 +151,9 @@ function RootComponent() {
       const remember = localStorage.getItem("lm_remember");
       const active = sessionStorage.getItem("lm_session_active");
       if (remember === "0" && !active) {
-        void import("@/integrations/supabase/client").then(({ supabase }) => supabase.auth.signOut());
+        void import("@/integrations/supabase/client").then(({ supabase }) =>
+          supabase.auth.signOut(),
+        );
       }
       sessionStorage.setItem("lm_session_active", "1");
     } catch {
@@ -149,4 +168,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

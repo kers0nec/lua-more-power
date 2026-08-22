@@ -22,16 +22,35 @@ function Batches() {
   return (
     <div className="p-8 max-w-4xl">
       <h1 className="text-3xl font-bold">Bulk Key Generation</h1>
-      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>Generate up to 500 keys at once.</p>
+      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>
+        Generate up to 500 keys at once.
+      </p>
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-3 items-end">
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>SIZE (max 500)</label>
-          <input type="number" min={1} max={500} value={size} onChange={(e) => setSize(Number(e.target.value))} className="input-blue mt-1" />
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            SIZE (max 500)
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={500}
+            value={size}
+            onChange={(e) => setSize(Number(e.target.value))}
+            className="input-blue mt-1"
+          />
         </div>
         <div>
-          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>HOURS PER KEY</label>
-          <input type="number" min={0} value={hours} onChange={(e) => setHours(Number(e.target.value))} className="input-blue mt-1" />
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            HOURS PER KEY
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={hours}
+            onChange={(e) => setHours(Number(e.target.value))}
+            className="input-blue mt-1"
+          />
         </div>
         <button onClick={() => mut.mutate()} disabled={mut.isPending} className="btn-primary">
           {mut.isPending ? "Generating…" : "Generate Batch"}
@@ -55,7 +74,11 @@ function Batches() {
               Download .txt
             </button>
           </div>
-          <textarea readOnly value={keys.join("\n")} className="input-blue font-mono text-xs h-96 resize-none" />
+          <textarea
+            readOnly
+            value={keys.join("\n")}
+            className="input-blue font-mono text-xs h-96 resize-none"
+          />
         </div>
       )}
     </div>

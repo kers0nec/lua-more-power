@@ -4,13 +4,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function sha256Hex(s: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function randomApiKey() {
   const bytes = new Uint8Array(18);
   crypto.getRandomValues(bytes);
-  return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "").slice(0, 24);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/[+/=]/g, "")
+    .slice(0, 24);
 }
 
 export const listApiKeys = createServerFn({ method: "GET" })
@@ -27,7 +31,9 @@ export const listApiKeys = createServerFn({ method: "GET" })
 
 export const createApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { label: string }) => z.object({ label: z.string().trim().min(1).max(60) }).parse(input))
+  .inputValidator((input: { label: string }) =>
+    z.object({ label: z.string().trim().min(1).max(60) }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const raw = randomApiKey();
     const hash = await sha256Hex(raw);

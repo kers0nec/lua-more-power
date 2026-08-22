@@ -5,7 +5,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 function randomKey(prefix = "LM") {
   const bytes = new Uint8Array(18);
   crypto.getRandomValues(bytes);
-  const b64 = btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "").slice(0, 24);
+  const b64 = btoa(String.fromCharCode(...bytes))
+    .replace(/[+/=]/g, "")
+    .slice(0, 24);
   return `${prefix}-${b64.slice(0, 4)}-${b64.slice(4, 12)}-${b64.slice(12, 20)}`;
 }
 
@@ -14,7 +16,9 @@ export const listKeys = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("license_keys")
-      .select("id, key, script_id, panel_id, discord_id, hwid, note, expires_at, revoked, created_at")
+      .select(
+        "id, key, script_id, panel_id, discord_id, hwid, note, expires_at, revoked, created_at",
+      )
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(500);
@@ -24,20 +28,35 @@ export const listKeys = createServerFn({ method: "GET" })
 
 export const generateKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { scriptId?: string; panelId?: string; hours?: number; note?: string; discordId?: string }) =>
-    z
-      .object({
-        scriptId: z.string().uuid().optional(),
-        panelId: z.string().uuid().optional(),
-        hours: z.number().int().min(0).max(24 * 365).optional(),
-        note: z.string().max(200).optional(),
-        discordId: z.string().max(64).optional(),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      scriptId?: string;
+      panelId?: string;
+      hours?: number;
+      note?: string;
+      discordId?: string;
+    }) =>
+      z
+        .object({
+          scriptId: z.string().uuid().optional(),
+          panelId: z.string().uuid().optional(),
+          hours: z
+            .number()
+            .int()
+            .min(0)
+            .max(24 * 365)
+            .optional(),
+          note: z.string().max(200).optional(),
+          discordId: z.string().max(64).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const key = randomKey();
-    const expires_at = data.hours && data.hours > 0 ? new Date(Date.now() + data.hours * 3_600_000).toISOString() : null;
+    const expires_at =
+      data.hours && data.hours > 0
+        ? new Date(Date.now() + data.hours * 3_600_000).toISOString()
+        : null;
     const { data: row, error } = await context.supabase
       .from("license_keys")
       .insert({
@@ -58,16 +77,22 @@ export const generateKey = createServerFn({ method: "POST" })
 
 export const generateBatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { size: number; scriptId?: string; panelId?: string; hours?: number; note?: string }) =>
-    z
-      .object({
-        size: z.number().int().min(1).max(500),
-        scriptId: z.string().uuid().optional(),
-        panelId: z.string().uuid().optional(),
-        hours: z.number().int().min(0).max(24 * 365).optional(),
-        note: z.string().max(200).optional(),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: { size: number; scriptId?: string; panelId?: string; hours?: number; note?: string }) =>
+      z
+        .object({
+          size: z.number().int().min(1).max(500),
+          scriptId: z.string().uuid().optional(),
+          panelId: z.string().uuid().optional(),
+          hours: z
+            .number()
+            .int()
+            .min(0)
+            .max(24 * 365)
+            .optional(),
+          note: z.string().max(200).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: batch } = await context.supabase
@@ -91,7 +116,10 @@ export const generateBatch = createServerFn({ method: "POST" })
       batch_id: batch?.id ?? null,
       hours_valid: data.hours ?? null,
       note: data.note ?? null,
-      expires_at: data.hours && data.hours > 0 ? new Date(Date.now() + data.hours * 3_600_000).toISOString() : null,
+      expires_at:
+        data.hours && data.hours > 0
+          ? new Date(Date.now() + data.hours * 3_600_000).toISOString()
+          : null,
     }));
 
     const { data: inserted, error } = await context.supabase

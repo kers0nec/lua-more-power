@@ -17,7 +17,9 @@ export const listHwidBans = createServerFn({ method: "GET" })
 export const banHwid = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { hwid: string; reason?: string }) =>
-    z.object({ hwid: z.string().trim().min(3).max(128), reason: z.string().max(200).optional() }).parse(input),
+    z
+      .object({ hwid: z.string().trim().min(3).max(128), reason: z.string().max(200).optional() })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase

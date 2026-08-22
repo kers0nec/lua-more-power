@@ -24,17 +24,34 @@
 //     loop traps, Unicode-homoglyph string literals, hidden identifiers via
 //     `string.char` concatenation, minified whitespace.
 
-function rand(n: number): number { return Math.floor(Math.random() * n); }
-function randByte(): number { return 1 + rand(254); }
+function rand(n: number): number {
+  return Math.floor(Math.random() * n);
+}
+function randByte(): number {
+  return 1 + rand(254);
+}
 
-const HOMOGLYPHS = ["\u0430","\u0435","\u03bf","\u0440","\u0441","\u0445","\u0501","\u04bb","\u051b"];
+const HOMOGLYPHS = [
+  "\u0430",
+  "\u0435",
+  "\u03bf",
+  "\u0440",
+  "\u0441",
+  "\u0445",
+  "\u0501",
+  "\u04bb",
+  "\u051b",
+];
 function randName(used: Set<string>): string {
   const chars = "abcdefghijklmnopqrstuvwxyz";
   for (;;) {
     let s = "_";
     const len = 5 + rand(6);
     for (let i = 0; i < len; i++) s += chars[rand(chars.length)];
-    if (!used.has(s)) { used.add(s); return s; }
+    if (!used.has(s)) {
+      used.add(s);
+      return s;
+    }
   }
 }
 function homoglyphStr(): string {
@@ -64,11 +81,10 @@ function fnv1a(bytes: Uint8Array | number[]): number {
 function djb2(bytes: Uint8Array | number[]): number {
   let h = 5381;
   for (let i = 0; i < bytes.length; i++) {
-    h = ((h * 33) + bytes[i]) >>> 0;
+    h = (h * 33 + bytes[i]) >>> 0;
   }
   return h >>> 0;
 }
-
 
 function encodeEscaped(enc: Uint8Array | number[]): string {
   const parts: string[] = [];
@@ -136,7 +152,8 @@ function compress(src: Uint8Array): number[] {
         let r = 1;
         while (r < 3 && i + r < n && src[i + r] === src[i]) r++;
         if (r >= 3) break;
-        i++; lit++;
+        i++;
+        lit++;
       }
       out.push(lit - 1); // 0..127 → 1..128 literals
       for (let k = 0; k < lit; k++) out.push(src[start + k]);
@@ -147,10 +164,21 @@ function compress(src: Uint8Array): number[] {
 
 /** 4-round rotating XOR + RC4 with dynamic keys. */
 function encryptLayer(src: Uint8Array | number[]): {
-  ct: number[]; k1: number[]; k2: number[]; k3: number[]; k4: number[]; rc4: number[];
+  ct: number[];
+  k1: number[];
+  k2: number[];
+  k3: number[];
+  k4: number[];
+  rc4: number[];
 } {
-  const k1: number[] = [], k2: number[] = [], k3: number[] = [], k4: number[] = [];
-  const l1 = 17 + rand(16), l2 = 23 + rand(16), l3 = 31 + rand(16), l4 = 37 + rand(16);
+  const k1: number[] = [],
+    k2: number[] = [],
+    k3: number[] = [],
+    k4: number[] = [];
+  const l1 = 17 + rand(16),
+    l2 = 23 + rand(16),
+    l3 = 31 + rand(16),
+    l4 = 37 + rand(16);
   for (let i = 0; i < l1; i++) k1.push(randByte());
   for (let i = 0; i < l2; i++) k2.push(randByte());
   for (let i = 0; i < l3; i++) k3.push(randByte());
@@ -158,7 +186,10 @@ function encryptLayer(src: Uint8Array | number[]): {
   const xored: number[] = [];
   for (let i = 0; i < src.length; i++) {
     let b = src[i];
-    b ^= k1[i % l1]; b ^= k2[i % l2]; b ^= k3[i % l3]; b ^= k4[i % l4];
+    b ^= k1[i % l1];
+    b ^= k2[i % l2];
+    b ^= k3[i % l3];
+    b ^= k4[i % l4];
     xored.push(b & 0xff);
   }
   const rc4Len = 24 + rand(24);
@@ -171,10 +202,12 @@ function encryptLayer(src: Uint8Array | number[]): {
     j = (j + S[i] + rc4[i % rc4Len]) & 0xff;
     [S[i], S[j]] = [S[j], S[i]];
   }
-  let a = 0, b2 = 0;
+  let a = 0,
+    b2 = 0;
   const ct: number[] = [];
   for (let i = 0; i < xored.length; i++) {
-    a = (a + 1) & 0xff; b2 = (b2 + S[a]) & 0xff;
+    a = (a + 1) & 0xff;
+    b2 = (b2 + S[a]) & 0xff;
     [S[a], S[b2]] = [S[b2], S[a]];
     ct.push(xored[i] ^ S[(S[a] + S[b2]) & 0xff]);
   }
@@ -185,9 +218,11 @@ function permute(src: number[], seed: number): { out: number[]; seed: number } {
   const idx = src.map((_, i) => i);
   let s = seed >>> 0;
   const next = () => {
-    s ^= s << 13; s >>>= 0;
+    s ^= s << 13;
+    s >>>= 0;
     s ^= s >>> 17;
-    s ^= s << 5;  s >>>= 0;
+    s ^= s << 5;
+    s >>>= 0;
     return s;
   };
   for (let i = idx.length - 1; i > 0; i--) {
@@ -216,8 +251,14 @@ function minifyLua(src: string): string {
       const q = ch;
       let j = i + 1;
       while (j < s.length) {
-        if (s[j] === "\\") { j += 2; continue; }
-        if (s[j] === q) { j++; break; }
+        if (s[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (s[j] === q) {
+          j++;
+          break;
+        }
         j++;
       }
       out.push(s.slice(i, j));
@@ -247,29 +288,60 @@ function minifyLua(src: string): string {
  *  unpermute → RC4-undo → 4xor-undo → decompress → load. */
 function buildBootstrap(
   ciphertext: number[],
-  k1: number[], k2: number[], k3: number[], k4: number[],
+  k1: number[],
+  k2: number[],
+  k3: number[],
+  k4: number[],
   rc4Key: number[],
   permSeed: number,
   chunkName: string,
   extraGuards: string,
 ): string {
   const used = new Set<string>();
-  const G = randName(used), E = randName(used), FRAGS = randName(used);
-  const CT = randName(used), K1 = randName(used), K2 = randName(used);
-  const K3 = randName(used), K4 = randName(used), RC4K = randName(used);
-  const PERM = randName(used), XOR = randName(used), DEC = randName(used);
-  const SRC = randName(used), FN = randName(used), ERR = randName(used);
-  const SUM = randName(used), SIG = randName(used), I = randName(used);
-  const J = randName(used), T = randName(used), IDX = randName(used);
-  const S = randName(used), NXT = randName(used), OUT = randName(used);
-  const B = randName(used), L1 = randName(used), L2 = randName(used);
-  const L3 = randName(used), L4 = randName(used), RL = randName(used);
-  const SBOX = randName(used), AA = randName(used), BB = randName(used);
-  const STATE = randName(used), RG = randName(used);
-  const SBYTE = randName(used), SCHAR = randName(used);
-  const TCONCAT = randName(used), LOAD = randName(used);
-  const PLAIN = randName(used), TAG = randName(used), CNT = randName(used);
-  const BV = randName(used), P = randName(used);
+  const G = randName(used),
+    E = randName(used),
+    FRAGS = randName(used);
+  const CT = randName(used),
+    K1 = randName(used),
+    K2 = randName(used);
+  const K3 = randName(used),
+    K4 = randName(used),
+    RC4K = randName(used);
+  const PERM = randName(used),
+    XOR = randName(used),
+    DEC = randName(used);
+  const SRC = randName(used),
+    FN = randName(used),
+    ERR = randName(used);
+  const SUM = randName(used),
+    SIG = randName(used),
+    I = randName(used);
+  const J = randName(used),
+    T = randName(used),
+    IDX = randName(used);
+  const S = randName(used),
+    NXT = randName(used),
+    OUT = randName(used);
+  const B = randName(used),
+    L1 = randName(used),
+    L2 = randName(used);
+  const L3 = randName(used),
+    L4 = randName(used),
+    RL = randName(used);
+  const SBOX = randName(used),
+    AA = randName(used),
+    BB = randName(used);
+  const STATE = randName(used),
+    RG = randName(used);
+  const SBYTE = randName(used),
+    SCHAR = randName(used);
+  const TCONCAT = randName(used),
+    LOAD = randName(used);
+  const PLAIN = randName(used),
+    TAG = randName(used),
+    CNT = randName(used);
+  const BV = randName(used),
+    P = randName(used);
 
   const parts = 6 + rand(8);
   const frags = fragment(ciphertext, parts);
@@ -438,8 +510,11 @@ end
 
 function outerGuards(): string {
   const used = new Set<string>();
-  const _mt = randName(used), _g = randName(used), _dsm = randName(used);
-  const _ok = randName(used), _k = randName(used);
+  const _mt = randName(used),
+    _g = randName(used),
+    _dsm = randName(used);
+  const _ok = randName(used),
+    _k = randName(used);
   return `
 local ${_dsm}=(debug and debug.setmetatable) or nil
 local function ${_g}(t)
@@ -497,46 +572,58 @@ end)
 
 function junkBlock(): string {
   const used = new Set<string>();
-  const a = randName(used), b = randName(used), c = randName(used), d = randName(used), e = randName(used);
-  const n1 = 1 + rand(1e6), n2 = 1 + rand(1e6);
+  const a = randName(used),
+    b = randName(used),
+    c = randName(used),
+    d = randName(used),
+    e = randName(used);
+  const n1 = 1 + rand(1e6),
+    n2 = 1 + rand(1e6);
   const kind = rand(8);
-  if (kind === 0) return `local ${a}=${n1}
+  if (kind === 0)
+    return `local ${a}=${n1}
 local ${b}=function(x) return x*x+${n2} end
 local ${c}=${homoglyphStr()}
 if (${b}(${a})>=0) then local ${d}=${c} end
 if (${b}(${a})+1==0) then return error(${homoglyphStr()}) end
 `;
-  if (kind === 1) return `local ${a},${b}=${n1},${n2}
+  if (kind === 1)
+    return `local ${a},${b}=${n1},${n2}
 local ${c}=(${a}%2)*(${a}%2)+(${b}%2)*(${b}%2)
 if ${c}<0 then ${a}=${homoglyphStr()} end
 local ${d}=${homoglyphStr()}
 while false do ${d}=${d}..${d} end
 `;
-  if (kind === 2) return `local ${a}=function() return ${n1} end
+  if (kind === 2)
+    return `local ${a}=function() return ${n1} end
 local ${b}=${a}()*${a}()
 if ${b}~=${n1 * n1} then return error(${homoglyphStr()}) end
 local ${c}=${homoglyphStr()}
 repeat break until true
 `;
-  if (kind === 3) return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
+  if (kind === 3)
+    return `local ${a}={${homoglyphStr()},${homoglyphStr()},${homoglyphStr()}}
 local ${b}=#${a}
 if ${b}*${b}<0 then ${a}=nil end
 local ${c},${d}=${n1},${n2}
 if (${c}-${c})~=0 then return error(${homoglyphStr()}) end
 `;
-  if (kind === 4) return `local ${a},${b}=${n1},${n2}
+  if (kind === 4)
+    return `local ${a},${b}=${n1},${n2}
 while (${a}*${a}+1)==0 do
   ${b}=${b}+${a}
   while (${b}*${b}+7)<0 do ${a}=${a}*${b}; ${b}=${b}+1 end
   repeat ${a}=${a}+${b} until (${a}*${a})<0
 end
 `;
-  if (kind === 5) return `local function ${a}(x) return ${a}(x+1) end
+  if (kind === 5)
+    return `local function ${a}(x) return ${a}(x+1) end
 local ${b}=${n1}
 if (${b}%2)*(${b}%2)<0 then ${a}(${b}) end
 while (${b}-${b})~=0 do ${a}(${b}) end
 `;
-  if (kind === 6) return `local ${a},${b},${c}=${n1},${n2},0
+  if (kind === 6)
+    return `local ${a},${b},${c}=${n1},${n2},0
 while ${a}<${a} do
   while ${b}<${b} do
     while ${c}<${c} do ${c}=${c}+1 end
@@ -566,7 +653,17 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
   const enc = encryptLayer(compressed);
   const seed = 1 + rand(0xffffffff);
   const perm = permute(enc.ct, seed);
-  return buildBootstrap(perm.out, enc.k1, enc.k2, enc.k3, enc.k4, enc.rc4, perm.seed, chunk, guards);
+  return buildBootstrap(
+    perm.out,
+    enc.k1,
+    enc.k2,
+    enc.k3,
+    enc.k4,
+    enc.rc4,
+    perm.seed,
+    chunk,
+    guards,
+  );
 }
 
 /** Pick a VM nesting depth that keeps output within ~12 MB regardless of

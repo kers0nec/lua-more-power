@@ -1,4 +1,11 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  Link,
+  useNavigate,
+  useLocation,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   LayoutGrid,
@@ -79,7 +86,9 @@ function Layout() {
         className="flex items-center justify-between border-b px-5 py-4"
         style={{ borderColor: "var(--border)" }}
       >
-        <Link to="/"><Logo size={26} /></Link>
+        <Link to="/">
+          <Logo size={26} />
+        </Link>
         <button
           onClick={() => setOpen(false)}
           aria-label="Close menu"
@@ -96,7 +105,8 @@ function Layout() {
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active =
-                  loc.pathname === item.to || (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
+                  loc.pathname === item.to ||
+                  (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
                 return (
                   <Link
                     key={item.to}
@@ -132,8 +142,9 @@ function Layout() {
   );
 
   const currentLabel =
-    [...ALL_ITEMS].sort((a, b) => b.to.length - a.to.length).find((i) => loc.pathname.startsWith(i.to))?.label ??
-    "Dashboard";
+    [...ALL_ITEMS]
+      .sort((a, b) => b.to.length - a.to.length)
+      .find((i) => loc.pathname.startsWith(i.to))?.label ?? "Dashboard";
 
   return (
     <div className="flex min-h-screen w-full" style={{ background: "var(--background)" }}>
@@ -168,7 +179,11 @@ function Layout() {
           className="sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl md:hidden"
           style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.85)" }}
         >
-          <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost shrink-0 px-2 py-1">
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            className="btn-ghost shrink-0 px-2 py-1"
+          >
             <Menu size={20} />
           </button>
           <span className="truncate font-display text-lg">{currentLabel}</span>

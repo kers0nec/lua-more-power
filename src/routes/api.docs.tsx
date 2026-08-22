@@ -6,9 +6,16 @@ export const Route = createFileRoute("/api/docs")({
   head: () => ({
     meta: [
       { title: "API Docs — LuaMore Obfuscation API" },
-      { name: "description", content: "Integrate LuaMore's LuaMore VM v6 obfuscation into your own whitelisting system with a single HTTP call." },
+      {
+        name: "description",
+        content:
+          "Integrate LuaMore's LuaMore VM v6 obfuscation into your own whitelisting system with a single HTTP call.",
+      },
       { property: "og:title", content: "LuaMore API Docs" },
-      { property: "og:description", content: "Obfuscate Lua on demand from your own backend or whitelisting system." },
+      {
+        property: "og:description",
+        content: "Obfuscate Lua on demand from your own backend or whitelisting system.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -33,7 +40,15 @@ function Code({ children }: { children: string }) {
   );
 }
 
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
@@ -61,8 +76,8 @@ function ApiDocs() {
               Obfuscation API
             </h1>
             <p className="mt-5 max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
-              Plug LuaMore VM v6 into your own whitelisting or key system. One POST
-              request, back comes production-ready obfuscated Lua.
+              Plug LuaMore VM v6 into your own whitelisting or key system. One POST request, back
+              comes production-ready obfuscated Lua.
             </p>
           </div>
         </section>
@@ -70,12 +85,24 @@ function ApiDocs() {
         <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-10 px-6 py-14 md:grid-cols-[200px_1fr]">
           <aside className="hidden md:block">
             <nav className="sticky top-24 flex flex-col gap-1 text-sm">
-              <a href="#quickstart" className="text-muted-foreground hover:text-foreground">Quickstart</a>
-              <a href="#auth" className="text-muted-foreground hover:text-foreground">Authentication</a>
-              <a href="#obfuscate" className="text-muted-foreground hover:text-foreground">POST /obfuscate</a>
-              <a href="#examples" className="text-muted-foreground hover:text-foreground">Examples</a>
-              <a href="#errors" className="text-muted-foreground hover:text-foreground">Errors</a>
-              <a href="#limits" className="text-muted-foreground hover:text-foreground">Limits</a>
+              <a href="#quickstart" className="text-muted-foreground hover:text-foreground">
+                Quickstart
+              </a>
+              <a href="#auth" className="text-muted-foreground hover:text-foreground">
+                Authentication
+              </a>
+              <a href="#obfuscate" className="text-muted-foreground hover:text-foreground">
+                POST /obfuscate
+              </a>
+              <a href="#examples" className="text-muted-foreground hover:text-foreground">
+                Examples
+              </a>
+              <a href="#errors" className="text-muted-foreground hover:text-foreground">
+                Errors
+              </a>
+              <a href="#limits" className="text-muted-foreground hover:text-foreground">
+                Limits
+              </a>
             </nav>
           </aside>
 
@@ -83,8 +110,10 @@ function ApiDocs() {
             <Section id="quickstart" title="Quickstart">
               <p>
                 Create an API key from{" "}
-                <a href="/dashboard/api-keys" className="underline">Dashboard → API Keys</a>,
-                then POST the Lua source you want protected to:
+                <a href="/dashboard/api-keys" className="underline">
+                  Dashboard → API Keys
+                </a>
+                , then POST the Lua source you want protected to:
               </p>
               <Code>{`POST ${ENDPOINT}`}</Code>
               <p>The response returns the fully obfuscated Lua as a string.</p>
@@ -97,15 +126,22 @@ function ApiDocs() {
 X-API-Key: <YOUR_API_KEY>
 # or (JSON body field)
 { "api_key": "<YOUR_API_KEY>", "source": "..." }`}</Code>
-              <p>Keys are hashed at rest. If a key leaks, delete it from the dashboard — deleted keys stop working instantly.</p>
+              <p>
+                Keys are hashed at rest. If a key leaks, delete it from the dashboard — deleted keys
+                stop working instantly.
+              </p>
             </Section>
 
             <Section id="obfuscate" title="POST /api/public/obfuscate">
-              <p><strong>Request body</strong> (JSON):</p>
+              <p>
+                <strong>Request body</strong> (JSON):
+              </p>
               <Code>{`{
   "source": "print('hello world')"
 }`}</Code>
-              <p><strong>Successful response</strong> (200):</p>
+              <p>
+                <strong>Successful response</strong> (200):
+              </p>
               <Code>{`{
   "ok": true,
   "obfuscated": "--[[ LuaMore VM v6 ... ]] local ...",
@@ -114,19 +150,23 @@ X-API-Key: <YOUR_API_KEY>
   "engine": "LuaMore VM v6"
 }`}</Code>
               <p>
-                The <code>obfuscated</code> field is a self-contained Lua chunk. Serve it
-                verbatim from your whitelisting endpoint — no wrapping required.
+                The <code>obfuscated</code> field is a self-contained Lua chunk. Serve it verbatim
+                from your whitelisting endpoint — no wrapping required.
               </p>
             </Section>
 
             <Section id="examples" title="Examples">
-              <p><strong>cURL</strong></p>
+              <p>
+                <strong>cURL</strong>
+              </p>
               <Code>{`curl -X POST ${ENDPOINT} \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"source":"print(\\"hi\\")"}'`}</Code>
 
-              <p><strong>Node.js (fetch)</strong></p>
+              <p>
+                <strong>Node.js (fetch)</strong>
+              </p>
               <Code>{`const res = await fetch("${ENDPOINT}", {
   method: "POST",
   headers: {
@@ -138,14 +178,18 @@ X-API-Key: <YOUR_API_KEY>
 const { obfuscated } = await res.json();
 return new Response(obfuscated, { headers: { "Content-Type": "text/plain" } });`}</Code>
 
-              <p><strong>Python</strong></p>
+              <p>
+                <strong>Python</strong>
+              </p>
               <Code>{`import requests, os
 r = requests.post("${ENDPOINT}",
   headers={"Authorization": f"Bearer {os.environ['LUAMORE_KEY']}"},
   json={"source": open("script.lua").read()})
 print(r.json()["obfuscated"])`}</Code>
 
-              <p><strong>Lua whitelisting server (example)</strong></p>
+              <p>
+                <strong>Lua whitelisting server (example)</strong>
+              </p>
               <Code>{`-- Called by your loader after verifying the user's HWID/key.
 local http = require("coro-http")
 local json = require("json")
@@ -159,7 +203,9 @@ return json.decode(body).obfuscated`}</Code>
             </Section>
 
             <Section id="errors" title="Error responses">
-              <p>All errors return JSON with an <code>error</code> field:</p>
+              <p>
+                All errors return JSON with an <code>error</code> field:
+              </p>
               <Code>{`400  { "error": "missing 'source' string in body" }
 401  { "error": "missing api key — send Authorization: Bearer <key>" }
 401  { "error": "invalid api key" }
@@ -170,9 +216,17 @@ return json.decode(body).obfuscated`}</Code>
             <Section id="limits" title="Limits & notes">
               <ul className="list-disc space-y-1 pl-5">
                 <li>Max source size: 1,000,000,000 characters.</li>
-                <li>CORS is open (<code>*</code>) — safe to call from server or edge.</li>
-                <li>Every call is billed to the owning API key; <code>last_used_at</code> is updated on success.</li>
-                <li>Engine: triple-nested VM, 4× rotating XOR + RC4, keyed permutation, control-flow flattening, FNV-1a anti-tamper.</li>
+                <li>
+                  CORS is open (<code>*</code>) — safe to call from server or edge.
+                </li>
+                <li>
+                  Every call is billed to the owning API key; <code>last_used_at</code> is updated
+                  on success.
+                </li>
+                <li>
+                  Engine: triple-nested VM, 4× rotating XOR + RC4, keyed permutation, control-flow
+                  flattening, FNV-1a anti-tamper.
+                </li>
                 <li>Rebuild output on every call — each response is uniquely keyed.</li>
               </ul>
             </Section>

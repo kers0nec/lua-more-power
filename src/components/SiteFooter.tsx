@@ -29,13 +29,16 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
 
 export function SiteFooter() {
   return (
-    <footer className="border-t" style={{ background: "var(--secondary)", borderColor: "var(--border)" }}>
+    <footer
+      className="border-t"
+      style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
+    >
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
-            More Power, More Security, More Lua. Script hosting, licensing, and delivery
-            in a single monochrome control room.
+            More Power, More Security, More Lua. Script hosting, licensing, and delivery in a single
+            monochrome control room.
           </p>
         </div>
         {COLS.map((col) => (
@@ -45,11 +48,17 @@ export function SiteFooter() {
               {col.links.map((l) => (
                 <li key={l.label}>
                   {l.to ? (
-                    <Link to={l.to} className="transition-colors hover:text-[color:var(--foreground)]">
+                    <Link
+                      to={l.to}
+                      className="transition-colors hover:text-[color:var(--foreground)]"
+                    >
                       {l.label}
                     </Link>
                   ) : (
-                    <a href={l.href} className="transition-colors hover:text-[color:var(--foreground)]">
+                    <a
+                      href={l.href}
+                      className="transition-colors hover:text-[color:var(--foreground)]"
+                    >
                       {l.label}
                     </a>
                   )}

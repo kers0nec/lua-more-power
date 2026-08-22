@@ -22,7 +22,9 @@ function prettyError(e: unknown) {
         )
         .join(", ");
     }
-  } catch { /* not JSON */ }
+  } catch {
+    /* not JSON */
+  }
   return raw;
 }
 
@@ -80,20 +82,34 @@ function ScriptDetail() {
   const script = q.data?.script;
   const releases = q.data?.releases ?? [];
 
-
   return (
     <div className="p-8 max-w-6xl">
-      <Link to="/dashboard/scripts" className="text-sm" style={{ color: "var(--primary)" }}>← All scripts</Link>
+      <Link to="/dashboard/scripts" className="text-sm" style={{ color: "var(--primary)" }}>
+        ← All scripts
+      </Link>
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="input-blue text-xl font-bold max-w-md" />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="input-blue text-xl font-bold max-w-md"
+        />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={ffa} onChange={(e) => setFfa(e.target.checked)} /> FFA
         </label>
-        <label className="flex items-center gap-2 text-sm" title="Automatically re-obfuscate with the LuaMore VM v6 every time you save">
+        <label
+          className="flex items-center gap-2 text-sm"
+          title="Automatically re-obfuscate with the LuaMore VM v6 every time you save"
+        >
           <input type="checkbox" checked={autoObf} onChange={(e) => setAutoObf(e.target.checked)} />
           Auto-obfuscate on save
         </label>
-        <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="btn-outline">Save</button>
+        <button
+          onClick={() => saveMut.mutate()}
+          disabled={saveMut.isPending}
+          className="btn-outline"
+        >
+          Save
+        </button>
         <button onClick={() => obfMut.mutate()} disabled={obfMut.isPending} className="btn-primary">
           {obfMut.isPending ? "Obfuscating…" : "Obfuscate now"}
         </button>
@@ -101,18 +117,25 @@ function ScriptDetail() {
       {script && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="badge-blue">public id: {script.public_id}</span>
-          <code className="text-xs px-2 py-1 rounded break-all" style={{ background: "var(--accent-light)" }}>
+          <code
+            className="text-xs px-2 py-1 rounded break-all"
+            style={{ background: "var(--accent-light)" }}
+          >
             {`loadstring(game:HttpGet("https://luamore.app/api/public/r/${script.public_id}"))()`}
           </code>
-
         </div>
       )}
 
       <div className="mt-6">
         <div className="card-blue p-4">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <div className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>SOURCE CODE (Luau)</div>
-            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+            <div className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              SOURCE CODE (Luau)
+            </div>
+            <div
+              className="flex items-center gap-3 text-xs"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               <span>{code.length.toLocaleString()} chars</span>
               <label className="btn-outline text-xs cursor-pointer">
                 Upload file
@@ -120,7 +143,10 @@ function ScriptDetail() {
                   type="file"
                   accept=".lua,.luau,.txt,text/plain"
                   className="hidden"
-                  onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ""; }}
+                  onChange={(e) => {
+                    onUpload(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
                 />
               </label>
             </div>
@@ -130,24 +156,41 @@ function ScriptDetail() {
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); onUpload(e.dataTransfer.files?.[0]); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              onUpload(e.dataTransfer.files?.[0]);
+            }}
             placeholder="Paste your Luau code, or drop a .lua file here"
             className="input-blue font-mono text-sm h-[420px] resize-none"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="btn-primary">
+            <button
+              onClick={() => saveMut.mutate()}
+              disabled={saveMut.isPending}
+              className="btn-primary"
+            >
               {saveMut.isPending ? "Saving…" : "Save changes"}
             </button>
-            {status && <span className="text-sm" style={{ color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)" }}>{status}</span>}
+            {status && (
+              <span
+                className="text-sm"
+                style={{ color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)" }}
+              >
+                {status}
+              </span>
+            )}
           </div>
-
         </div>
       </div>
 
       <div className="mt-8">
         <h2 className="text-lg font-semibold">Release history</h2>
         <div className="mt-3 card-blue divide-y">
-          {releases.length === 0 && <div className="p-6 text-sm text-center" style={{ color: "var(--muted-foreground)" }}>No releases yet</div>}
+          {releases.length === 0 && (
+            <div className="p-6 text-sm text-center" style={{ color: "var(--muted-foreground)" }}>
+              No releases yet
+            </div>
+          )}
           {releases.map((r) => (
             <div key={r.id} className="p-4 flex items-center justify-between">
               <div>

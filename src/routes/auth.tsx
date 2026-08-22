@@ -7,9 +7,15 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — LuaMore" },
-      { name: "description", content: "Sign in or create your LuaMore account to host and protect Luau scripts." },
+      {
+        name: "description",
+        content: "Sign in or create your LuaMore account to host and protect Luau scripts.",
+      },
       { property: "og:title", content: "Sign in — LuaMore" },
-      { property: "og:description", content: "Access your LuaMore dashboard: script hosting, license keys, HWID protection." },
+      {
+        property: "og:description",
+        content: "Access your LuaMore dashboard: script hosting, license keys, HWID protection.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -46,12 +52,17 @@ function Auth() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null); setBusy(true);
+    setErr(null);
+    setBusy(true);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin, data: { display_name: displayName || email.split("@")[0] } },
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { display_name: displayName || email.split("@")[0] },
+          },
         });
         if (error) throw error;
       } else {
@@ -62,7 +73,9 @@ function Auth() {
       nav({ to: "/dashboard" });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   function discordLogin() {
@@ -100,18 +113,26 @@ function Auth() {
       <div className="relative flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
         <div className="rise w-full max-w-sm">
           <div className="mb-10 lg:hidden">
-            <Link to="/"><Logo size={32} /></Link>
+            <Link to="/">
+              <Logo size={32} />
+            </Link>
           </div>
 
           <h1 className="font-display text-4xl">
             {mode === "signin" ? (
-              <>Welcome <span style={{ fontStyle: "italic" }}>back</span></>
+              <>
+                Welcome <span style={{ fontStyle: "italic" }}>back</span>
+              </>
             ) : (
-              <>Create your <span style={{ fontStyle: "italic" }}>workspace</span></>
+              <>
+                Create your <span style={{ fontStyle: "italic" }}>workspace</span>
+              </>
             )}
           </h1>
           <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            {mode === "signin" ? "Sign in to continue to your dashboard." : "It only takes a moment."}
+            {mode === "signin"
+              ? "Sign in to continue to your dashboard."
+              : "It only takes a moment."}
           </p>
 
           <div className="mt-8">
@@ -120,13 +141,22 @@ function Auth() {
               onClick={discordLogin}
               className="btn-outline w-full flex items-center justify-center gap-2"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M20.317 4.369A19.79 19.79 0 0 0 15.885 3c-.2.36-.43.844-.59 1.23a18.27 18.27 0 0 0-5.49 0A12.6 12.6 0 0 0 9.2 3a19.74 19.74 0 0 0-4.43 1.372C1.96 8.588 1.196 12.7 1.578 16.752A19.9 19.9 0 0 0 7.68 19.86c.49-.67.928-1.383 1.304-2.13-.717-.27-1.4-.603-2.045-.99.172-.126.34-.257.5-.392 3.94 1.84 8.203 1.84 12.096 0 .163.135.33.266.5.392-.647.39-1.332.722-2.05.992.377.746.813 1.458 1.303 2.128a19.85 19.85 0 0 0 6.107-3.107c.448-4.7-.766-8.777-3.078-12.384ZM8.68 14.3c-1.19 0-2.17-1.09-2.17-2.43 0-1.34.957-2.43 2.17-2.43 1.223 0 2.203 1.1 2.183 2.43 0 1.34-.96 2.43-2.183 2.43Zm6.64 0c-1.19 0-2.17-1.09-2.17-2.43 0-1.34.957-2.43 2.17-2.43 1.222 0 2.202 1.1 2.182 2.43 0 1.34-.95 2.43-2.182 2.43Z" />
               </svg>
               Continue with Discord
             </button>
 
-            <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em]"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               <span className="h-px flex-1" style={{ background: "var(--border)" }} />
               or with email
               <span className="h-px flex-1" style={{ background: "var(--border)" }} />
@@ -148,29 +178,47 @@ function Auth() {
             <div>
               <label className="eyebrow">Email</label>
               <input
-                type="email" required value={email}
+                type="email"
+                required
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-blue mt-2" placeholder="you@example.com"
+                className="input-blue mt-2"
+                placeholder="you@example.com"
               />
             </div>
             <div>
               <label className="eyebrow">Password</label>
               <input
-                type="password" required minLength={6} value={password}
+                type="password"
+                required
+                minLength={6}
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input-blue mt-2" placeholder="••••••••"
+                className="input-blue mt-2"
+                placeholder="••••••••"
               />
             </div>
 
-            <label className="flex items-center gap-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+            <label
+              className="flex items-center gap-2 text-sm"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
               Remember me on this device
             </label>
 
             {err && (
               <div
                 className="rounded-md border p-3 text-sm"
-                style={{ borderColor: "var(--destructive)", color: "var(--destructive)", background: "rgba(220,38,38,0.06)" }}
+                style={{
+                  borderColor: "var(--destructive)",
+                  color: "var(--destructive)",
+                  background: "rgba(220,38,38,0.06)",
+                }}
               >
                 {err}
               </div>
@@ -183,14 +231,24 @@ function Auth() {
 
           <p className="mt-6 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
             {mode === "signin" ? (
-              <>New to LuaMore?{" "}
-                <button onClick={() => setMode("signup")} className="underline underline-offset-2" style={{ color: "var(--foreground)" }}>
+              <>
+                New to LuaMore?{" "}
+                <button
+                  onClick={() => setMode("signup")}
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Create an account
                 </button>
               </>
             ) : (
-              <>Already have an account?{" "}
-                <button onClick={() => setMode("signin")} className="underline underline-offset-2" style={{ color: "var(--foreground)" }}>
+              <>
+                Already have an account?{" "}
+                <button
+                  onClick={() => setMode("signin")}
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Sign in
                 </button>
               </>

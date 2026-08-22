@@ -7,7 +7,10 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
   head: () => ({
     meta: [
       { title: "Dashboard — LuaMore" },
-      { name: "description", content: "Your LuaMore workspace: scripts, license keys, panels, and releases at a glance." },
+      {
+        name: "description",
+        content: "Your LuaMore workspace: scripts, license keys, panels, and releases at a glance.",
+      },
     ],
   }),
   component: Dashboard,
@@ -25,10 +28,30 @@ function Dashboard() {
   ];
 
   const actions = [
-    { to: "/dashboard/scripts", icon: FileCode2, title: "Create a script", desc: "Upload Luau code and host it behind a secure loader." },
-    { to: "/dashboard/keys", icon: KeyRound, title: "Generate keys", desc: "Issue single or bulk license keys with expiry." },
-    { to: "/dashboard/panels", icon: PanelsTopLeft, title: "Build a panel", desc: "Ship redeem and HWID buttons straight to Discord." },
-    { to: "/dashboard/hwid", icon: Ban, title: "Manage HWIDs", desc: "Ban abusers or reset locked devices." },
+    {
+      to: "/dashboard/scripts",
+      icon: FileCode2,
+      title: "Create a script",
+      desc: "Upload Luau code and host it behind a secure loader.",
+    },
+    {
+      to: "/dashboard/keys",
+      icon: KeyRound,
+      title: "Generate keys",
+      desc: "Issue single or bulk license keys with expiry.",
+    },
+    {
+      to: "/dashboard/panels",
+      icon: PanelsTopLeft,
+      title: "Build a panel",
+      desc: "Ship redeem and HWID buttons straight to Discord.",
+    },
+    {
+      to: "/dashboard/hwid",
+      icon: Ban,
+      title: "Manage HWIDs",
+      desc: "Ban abusers or reset locked devices.",
+    },
   ];
 
   return (
@@ -42,9 +65,17 @@ function Dashboard() {
         Here's what's happening across your workspace.
       </p>
 
-      <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border lg:grid-cols-4" style={{ borderColor: "var(--border)", background: "var(--border)" }}>
+      <div
+        className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border lg:grid-cols-4"
+        style={{ borderColor: "var(--border)", background: "var(--border)" }}
+      >
         {cards.map((c) => (
-          <Link key={c.label} to={c.to} className="group block p-6 transition-colors hover:bg-[color:var(--muted)]" style={{ background: "var(--card)" }}>
+          <Link
+            key={c.label}
+            to={c.to}
+            className="group block p-6 transition-colors hover:bg-[color:var(--muted)]"
+            style={{ background: "var(--card)" }}
+          >
             <div className="flex items-center justify-between">
               <c.icon size={16} strokeWidth={1.6} style={{ color: "var(--muted-foreground)" }} />
               <ArrowUpRight
@@ -76,7 +107,9 @@ function Dashboard() {
               </div>
               <div className="min-w-0">
                 <h3 className="font-display text-xl">{a.title}</h3>
-                <p className="mt-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>{a.desc}</p>
+                <p className="mt-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  {a.desc}
+                </p>
               </div>
             </div>
           </Link>

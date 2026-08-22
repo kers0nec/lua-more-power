@@ -10,7 +10,6 @@
 // response body never contains plaintext source.
 import { obfuscateLua } from "@/lib/obfuscator.server";
 
-
 export async function handleLoaderRequest(params: { publicId: string }, request: Request) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const url = new URL(request.url);
@@ -21,7 +20,9 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   let key = url.searchParams.get("key")?.trim() || null;
   let { data: script } = await supabaseAdmin
     .from("scripts")
-    .select("id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count")
+    .select(
+      "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
+    )
     .eq("public_id", token)
     .maybeSingle();
 
@@ -35,7 +36,9 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     key = byKey.key;
     const { data: s2 } = await supabaseAdmin
       .from("scripts")
-      .select("id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count")
+      .select(
+        "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
+      )
       .eq("id", byKey.script_id)
       .maybeSingle();
     script = s2 ?? null;
@@ -54,9 +57,10 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   // Serve stored obfuscated_code when protection is enabled and a build exists;
   // otherwise obfuscate on the fly. Non-protected scripts still get VM-wrapped
   // so raw source never leaves the server.
-  const payload = (script.is_protected && script.obfuscated_code)
-    ? script.obfuscated_code
-    : obfuscateLua(script.code);
+  const payload =
+    script.is_protected && script.obfuscated_code
+      ? script.obfuscated_code
+      : obfuscateLua(script.code);
 
   if (script.ffa) {
     await bumpRuns();
@@ -69,7 +73,9 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
   if (!hwid) {
     const again = new URL(request.url);
     again.searchParams.set("hwid", "__HWID__");
-    const target = again.toString().replace("__HWID__", '"..game:GetService(\'RbxAnalyticsService\'):GetClientId().."');
+    const target = again
+      .toString()
+      .replace("__HWID__", "\"..game:GetService('RbxAnalyticsService'):GetClientId()..\"");
     return lua(`return loadstring(game:HttpGet("${target}"))()`);
   }
 
@@ -80,7 +86,8 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     .maybeSingle();
   if (!lic) return luaError("Invalid key");
   if (lic.revoked) return luaError("Key revoked");
-  if (lic.script_id && lic.script_id !== script.id) return luaError("Key not valid for this script");
+  if (lic.script_id && lic.script_id !== script.id)
+    return luaError("Key not valid for this script");
   if (lic.expires_at && new Date(lic.expires_at) < new Date()) return luaError("Key expired");
 
   const { data: banned } = await supabaseAdmin

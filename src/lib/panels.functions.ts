@@ -35,9 +35,18 @@ export const createPanel = createServerFn({ method: "POST" })
           scriptId: z.string().uuid().optional(),
           webhookUrl: z.string().url().optional(),
           roleId: z.string().max(64).optional(),
-          channelId: z.string().regex(/^\d{5,25}$/).optional(),
-          whitelistChannelId: z.string().regex(/^\d{5,25}$/).optional(),
-          adminRoleIds: z.array(z.string().regex(/^\d{5,25}$/)).max(20).optional(),
+          channelId: z
+            .string()
+            .regex(/^\d{5,25}$/)
+            .optional(),
+          whitelistChannelId: z
+            .string()
+            .regex(/^\d{5,25}$/)
+            .optional(),
+          adminRoleIds: z
+            .array(z.string().regex(/^\d{5,25}$/))
+            .max(20)
+            .optional(),
         })
         .parse(input),
   )
@@ -82,8 +91,15 @@ export const updatePanel = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        roleId: z.string().regex(/^\d{5,25}$/).nullable().optional(),
-        adminRoleIds: z.array(z.string().regex(/^\d{5,25}$/)).max(20).optional(),
+        roleId: z
+          .string()
+          .regex(/^\d{5,25}$/)
+          .nullable()
+          .optional(),
+        adminRoleIds: z
+          .array(z.string().regex(/^\d{5,25}$/))
+          .max(20)
+          .optional(),
       })
       .parse(input),
   )
@@ -110,10 +126,19 @@ async function discordGet(path: string, botToken: string) {
   return res.json();
 }
 
-async function userHasAdminInGuild(guildId: string, userId: string, botToken: string): Promise<boolean> {
-  const guild = await discordGet(`/guilds/${guildId}`, botToken) as { owner_id: string; roles: Array<{ id: string; permissions: string }> };
+async function userHasAdminInGuild(
+  guildId: string,
+  userId: string,
+  botToken: string,
+): Promise<boolean> {
+  const guild = (await discordGet(`/guilds/${guildId}`, botToken)) as {
+    owner_id: string;
+    roles: Array<{ id: string; permissions: string }>;
+  };
   if (guild.owner_id === userId) return true;
-  const member = await discordGet(`/guilds/${guildId}/members/${userId}`, botToken) as { roles: string[] };
+  const member = (await discordGet(`/guilds/${guildId}/members/${userId}`, botToken)) as {
+    roles: string[];
+  };
   const roleIds = new Set([guildId, ...member.roles]); // @everyone role id equals guild id
   let perms = 0n;
   for (const r of guild.roles) {
@@ -158,10 +183,14 @@ export const sendPanel = createServerFn({ method: "POST" })
 
     if (panel.channel_id && botToken) {
       if (!profile?.discord_id) {
-        throw new Error("Link your Discord account first (Continue with Discord on sign-in) so we can verify you have Administrator in that server.");
+        throw new Error(
+          "Link your Discord account first (Continue with Discord on sign-in) so we can verify you have Administrator in that server.",
+        );
       }
 
-      const channel = await discordGet(`/channels/${panel.channel_id}`, botToken) as { guild_id?: string };
+      const channel = (await discordGet(`/channels/${panel.channel_id}`, botToken)) as {
+        guild_id?: string;
+      };
       if (!channel.guild_id) throw new Error("That channel is not in a server the bot can see.");
 
       let isAdmin = false;
@@ -173,7 +202,9 @@ export const sendPanel = createServerFn({ method: "POST" })
         );
       }
       if (!isAdmin) {
-        throw new Error("You need the Administrator permission in that Discord server to send panels there.");
+        throw new Error(
+          "You need the Administrator permission in that Discord server to send panels there.",
+        );
       }
 
       const res = await fetch(`https://discord.com/api/v10/channels/${panel.channel_id}/messages`, {

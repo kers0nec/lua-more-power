@@ -47,19 +47,26 @@ export const Route = createFileRoute("/api/public/obfuscate")({
             body = (await request.json()) as Record<string, unknown>;
           } else {
             const text = await request.text();
-            try { body = JSON.parse(text) as Record<string, unknown>; }
-            catch { body = { source: text }; }
+            try {
+              body = JSON.parse(text) as Record<string, unknown>;
+            } catch {
+              body = { source: text };
+            }
           }
         } catch {
           return json({ error: "invalid body" }, 400);
         }
 
         const apiKey = extractKey(request, body);
-        if (!apiKey) return json({ error: "missing api key — send Authorization: Bearer <key>" }, 401);
+        if (!apiKey)
+          return json({ error: "missing api key — send Authorization: Bearer <key>" }, 401);
 
-        const source = typeof body?.["source"] === "string"
-          ? (body!["source"] as string)
-          : typeof body?.["code"] === "string" ? (body!["code"] as string) : "";
+        const source =
+          typeof body?.["source"] === "string"
+            ? (body!["source"] as string)
+            : typeof body?.["code"] === "string"
+              ? (body!["code"] as string)
+              : "";
         if (!source || source.trim().length === 0) {
           return json({ error: "missing 'source' string in body" }, 400);
         }

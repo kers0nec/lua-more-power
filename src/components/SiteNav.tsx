@@ -83,8 +83,12 @@ export function SiteNav() {
             ))}
           </nav>
           <div className="mt-4 flex flex-col gap-2">
-            <Link to="/auth" className="btn-outline">Sign in</Link>
-            <Link to="/auth" className="btn-primary">Get Started</Link>
+            <Link to="/auth" className="btn-outline">
+              Sign in
+            </Link>
+            <Link to="/auth" className="btn-primary">
+              Get Started
+            </Link>
           </div>
         </div>
       )}

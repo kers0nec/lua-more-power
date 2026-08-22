@@ -17,10 +17,7 @@ export function Logo({ size = 32 }: { size?: number }) {
       >
         <span>L</span>
       </div>
-      <span
-        className="font-display text-2xl tracking-tight"
-        style={{ color: "var(--foreground)" }}
-      >
+      <span className="font-display text-2xl tracking-tight" style={{ color: "var(--foreground)" }}>
         Lua<span style={{ color: "var(--primary)" }}>More</span>
       </span>
     </div>

@@ -7,9 +7,15 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const [scripts, keys, panels, releases, profile] = await Promise.all([
       supabase.from("scripts").select("id", { count: "exact", head: true }).eq("user_id", userId),
-      supabase.from("license_keys").select("id", { count: "exact", head: true }).eq("user_id", userId),
+      supabase
+        .from("license_keys")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId),
       supabase.from("panels").select("id", { count: "exact", head: true }).eq("user_id", userId),
-      supabase.from("script_releases").select("id", { count: "exact", head: true }).eq("user_id", userId),
+      supabase
+        .from("script_releases")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId),
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     ]);
     return {
