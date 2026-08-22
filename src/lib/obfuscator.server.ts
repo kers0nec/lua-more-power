@@ -569,26 +569,51 @@ function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
   return buildBootstrap(perm.out, enc.k1, enc.k2, enc.k3, enc.k4, enc.rc4, perm.seed, chunk, guards);
 }
 
+/** Pick a VM nesting depth that keeps output within ~12 MB regardless of
+ *  input size. Each layer expands the payload ~4× (bytes emitted as `\ddd`
+ *  escapes inside the bootstrap), so a raw 6-layer stack blows past 100 MB
+ *  once the source crosses ~50 KB. We shrink depth as input grows so any
+ *  script — from a one-liner to a full game source — completes without
+ *  OOM/timeout. Deep-nested strength is preserved for the tiny snippets
+ *  where a deobfuscator has the most to gain. */
+function pickLayers(bytes: number): number {
+  if (bytes <= 512) return 6;
+  if (bytes <= 4_000) return 5;
+  if (bytes <= 16_000) return 4;
+  if (bytes <= 80_000) return 3;
+  if (bytes <= 400_000) return 2;
+  return 1;
+}
+
+function pickJunk(bytes: number): number {
+  if (bytes <= 4_000) return 220 + rand(120);
+  if (bytes <= 40_000) return 120 + rand(60);
+  if (bytes <= 200_000) return 60 + rand(40);
+  if (bytes <= 1_000_000) return 24 + rand(16);
+  return 8 + rand(8);
+}
+
 export function obfuscateLua(source: string): string {
   const enc = new TextEncoder();
-  // 6 nested VM layers. Each layer independently compresses, XOR+RC4
-  // encrypts, permutes, dual-signs, and wraps in a flattened dispatcher.
-  // Deobfuscation requires unrolling all six in order — patching any
-  // single byte in any layer trips FNV-1a + djb2 verification.
-  const l1 = wrapLayer(enc.encode(source), "core", "");
-  const l2 = wrapLayer(enc.encode(l1), "vm1", "");
-  const l3 = wrapLayer(enc.encode(l2), "vm2", "");
-  const l4 = wrapLayer(enc.encode(l3), "vm3", "");
-  const l5 = wrapLayer(enc.encode(l4), "vm4", "");
-  const l6 = wrapLayer(enc.encode(l5), "vm5", outerGuards());
-  const minified = minifyLua(l6);
+  const layers = pickLayers(source.length);
+
+  let current: Uint8Array = enc.encode(source);
+  let wrapped = "";
+  for (let i = 0; i < layers; i++) {
+    const isLast = i === layers - 1;
+    const chunk = i === 0 ? "core" : `vm${i}`;
+    const guards = isLast ? outerGuards() : "";
+    wrapped = wrapLayer(current, chunk, guards);
+    if (!isLast) current = enc.encode(wrapped);
+  }
+  const minified = minifyLua(wrapped);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v7  //  build ${stamp}
+  LuaMore VM v8  //  build ${stamp}  //  ${layers}-layer nested VM
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
-  -> 6x-nested VM -> env-proxy -> minify
+  -> polymorphic nested VM -> env-proxy -> minify
   Luraph-grade anti-env-logger, anti-hook (hookfunction/hookmetamethod/
   getrawmetatable/getgc/getreg/decompile/getscriptbytecode/dumpstring/
   checkcaller), dual anti-tamper, anti-debug, anti-decompile.
@@ -596,7 +621,7 @@ export function obfuscateLua(source: string): string {
 ]]
 `;
   let junk = "";
-  const junkN = 200 + rand(120);
+  const junkN = pickJunk(source.length);
   for (let i = 0; i < junkN; i++) junk += "do\n" + junkBlock() + "end\n";
   return banner + minifyLua(junk) + "\n" + minified;
 }
