@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { obfuscateCode } from "@/lib/scripts.functions";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
