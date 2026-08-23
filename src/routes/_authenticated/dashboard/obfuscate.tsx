@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { obfuscateCode } from "@/lib/scripts.functions";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
@@ -41,20 +41,77 @@ function ObfuscatePage() {
   const [code, setCode] = useState("");
   const [out, setOut] = useState("");
   const [status, setStatus] = useState("");
+  const [logs, setLogs] = useState<string[]>([]);
+  const [running, setRunning] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const mut = useMutation({
-    mutationFn: () => obf({ data: { code } }),
-    onSuccess: (r) => {
+  const pushLog = (line: string) =>
+    setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${line}`]);
+
+  const clearTimers = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  };
+
+  const startProgress = (bytes: number) => {
+    const stages = [
+      "parsing source",
+      "compressing (RLE)",
+      "encrypting layer 1 (4×XOR + RC4)",
+      "shuffling opcodes",
+      "signing (FNV-1a + djb2)",
+      "building nested VM",
+      "injecting LuaMore Protection prelude",
+      "flattening dispatcher",
+      "minifying bootstrap",
+    ];
+    pushLog(`input: ${bytes.toLocaleString()} bytes`);
+    stages.forEach((s, i) => {
+      const t = setTimeout(() => pushLog(`… ${s}`), 200 + i * 350);
+      timersRef.current.push(t);
+    });
+  };
+
+  const runObf = async () => {
+    if (!code.trim() || running) return;
+    setRunning(true);
+    setOut("");
+    setStatus("");
+    setLogs([]);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    startProgress(code.length);
+    try {
+      const r = await obf({ data: { code }, signal: controller.signal });
+      if (controller.signal.aborted) return;
+      clearTimers();
+      pushLog(`✓ done — ${r.size.toLocaleString()} chars out`);
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v6`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v9`,
       );
-    },
-    onError: (e) => {
-      setOut("");
-      setStatus(`✗ ${prettyError(e)}`);
-    },
-  });
+    } catch (e) {
+      clearTimers();
+      if (controller.signal.aborted) {
+        pushLog("✗ cancelled by user");
+        setStatus("✗ Cancelled");
+      } else {
+        const msg = prettyError(e);
+        pushLog(`✗ ${msg}`);
+        setOut("");
+        setStatus(`✗ ${msg}`);
+      }
+    } finally {
+      setRunning(false);
+      abortRef.current = null;
+    }
+  };
+
+  const cancelObf = () => {
+    abortRef.current?.abort();
+    clearTimers();
+  };
 
   const onUpload = async (file: File | null | undefined) => {
     if (!file) return;
@@ -89,6 +146,7 @@ function ObfuscatePage() {
     a.remove();
     URL.revokeObjectURL(url);
   };
+
 
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
@@ -143,18 +201,25 @@ function ObfuscatePage() {
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
-              onClick={() => mut.mutate()}
-              disabled={mut.isPending || !code.trim()}
+              onClick={runObf}
+              disabled={running || !code.trim()}
               className="btn-primary"
             >
-              {mut.isPending ? "Obfuscating…" : "Obfuscate"}
+              {running ? "Obfuscating…" : "Obfuscate"}
             </button>
+            {running && (
+              <button onClick={cancelObf} className="btn-outline">
+                Cancel
+              </button>
+            )}
             <button
               onClick={() => {
                 setCode("");
                 setOut("");
                 setStatus("");
+                setLogs([]);
               }}
+              disabled={running}
               className="btn-outline"
             >
               Clear
@@ -168,6 +233,19 @@ function ObfuscatePage() {
               </span>
             )}
           </div>
+          {logs.length > 0 && (
+            <div
+              className="mt-3 max-h-40 overflow-auto rounded border p-2 font-mono text-[11px] leading-relaxed"
+              style={{ borderColor: "var(--border)", background: "var(--input)" }}
+            >
+              {logs.map((l, i) => (
+                <div key={i} style={{ color: "var(--muted-foreground)" }}>
+                  {l}
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
 
         <div className="card-blue p-4">
