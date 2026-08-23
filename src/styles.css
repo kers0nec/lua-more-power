@@ -136,12 +136,13 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #4a1315;
+    background: #333333;
     border-radius: 6px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #a30000;
+    background: #ffffff;
   }
+
 }
 
 @keyframes lm-rise {
