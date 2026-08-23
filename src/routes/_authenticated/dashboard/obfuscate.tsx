@@ -201,18 +201,25 @@ function ObfuscatePage() {
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
-              onClick={() => mut.mutate()}
-              disabled={mut.isPending || !code.trim()}
+              onClick={runObf}
+              disabled={running || !code.trim()}
               className="btn-primary"
             >
-              {mut.isPending ? "Obfuscating…" : "Obfuscate"}
+              {running ? "Obfuscating…" : "Obfuscate"}
             </button>
+            {running && (
+              <button onClick={cancelObf} className="btn-outline">
+                Cancel
+              </button>
+            )}
             <button
               onClick={() => {
                 setCode("");
                 setOut("");
                 setStatus("");
+                setLogs([]);
               }}
+              disabled={running}
               className="btn-outline"
             >
               Clear
@@ -226,6 +233,19 @@ function ObfuscatePage() {
               </span>
             )}
           </div>
+          {logs.length > 0 && (
+            <div
+              className="mt-3 max-h-40 overflow-auto rounded border p-2 font-mono text-[11px] leading-relaxed"
+              style={{ borderColor: "var(--border)", background: "var(--input)" }}
+            >
+              {logs.map((l, i) => (
+                <div key={i} style={{ color: "var(--muted-foreground)" }}>
+                  {l}
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
 
         <div className="card-blue p-4">
