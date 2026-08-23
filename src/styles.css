@@ -306,13 +306,14 @@
     box-shadow 0.15s ease;
   &:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(163, 0, 0, 0.3);
+    border-color: var(--foreground);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
   }
   &::placeholder {
-    color: #5a4a2c;
+    color: #4a4a4a;
   }
 }
+
 
 @utility badge-blue {
   display: inline-flex;
