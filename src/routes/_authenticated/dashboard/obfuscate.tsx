@@ -10,8 +10,15 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
       { title: "Obfuscator — LuaMore" },
       {
         name: "description",
-        content: "Protect any Luau snippet with the LuaMore VM v6 obfuscator.",
+        content: "Protect Luau source with LuaMore Obfuscation's independent dual-VM integrity layers.",
       },
+      { property: "og:title", content: "LuaMore Obfuscation — Dual VM" },
+      {
+        property: "og:description",
+        content: "Protect Luau source with independent dual-VM integrity layers.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ObfuscatePage,
