@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test:obfuscator": "bun test-obf.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import { obfuscateCode } from "@/lib/scripts.functions";
-
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
@@ -10,8 +10,15 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
       { title: "Obfuscator — LuaMore" },
       {
         name: "description",
-        content: "Protect any Luau snippet with the LuaMore VM v6 obfuscator.",
+        content: "Protect Luau source with LuaMore Obfuscation's independent dual-VM integrity layers.",
       },
+      { property: "og:title", content: "LuaMore Obfuscation — Dual VM" },
+      {
+        property: "og:description",
+        content: "Protect Luau source with independent dual-VM integrity layers.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ObfuscatePage,
@@ -43,6 +50,7 @@ function ObfuscatePage() {
   const [status, setStatus] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
+  const [dualVm, setDualVm] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -58,7 +66,8 @@ function ObfuscatePage() {
     const stages = [
       "parsing source",
       "compressing (RLE)",
-      "encrypting layer 1 (4×XOR + RC4)",
+      "VM1: encrypting + independent integrity signing",
+      ...(dualVm ? ["VM2: encrypting + independent integrity signing"] : []),
       "shuffling opcodes",
       "signing (FNV-1a + djb2)",
       "building nested VM",
@@ -83,13 +92,13 @@ function ObfuscatePage() {
     abortRef.current = controller;
     startProgress(code.length);
     try {
-      const r = await obf({ data: { code }, signal: controller.signal });
+      const r = await obf({ data: { code, dualVm }, signal: controller.signal });
       if (controller.signal.aborted) return;
       clearTimers();
       pushLog(`✓ done — ${r.size.toLocaleString()} chars out`);
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · LuaMore VM v9`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · ${r.dualVm ? "Dual VM" : "Single VM"}`,
       );
     } catch (e) {
       clearTimers();
@@ -156,9 +165,8 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore VM v6 — parse, optimize, compile to pseudo-bytecode, flatten control flow, shuffle
-          opcodes, RLE compress, 4× rotating XOR + RC4 encrypt, dual FNV-1a/djb2 sign, triple VM
-          bootstrap, minify. Hardened anti-env-logger, anti-tamper, anti-debug, anti-decompile.
+          LuaMore Obfuscation VM v10 — independent VM integrity gates, shuffled dispatchers,
+          RLE compression, 4× rotating XOR + RC4, FNV-1a/djb2 signatures, and runtime hardening.
         </p>
       </div>
 
@@ -199,6 +207,15 @@ function ObfuscatePage() {
             placeholder='print("hello luamore")'
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
+          <div className="mt-3 flex items-center justify-between gap-4 border-y py-3" style={{ borderColor: "var(--border)" }}>
+            <div>
+              <label htmlFor="dual-vm" className="text-sm font-semibold">Dual VM</label>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                Stack VM2 over VM1 with separate runtime and payload integrity checks.
+              </p>
+            </div>
+            <Switch id="dual-vm" checked={dualVm} onCheckedChange={setDualVm} disabled={running} />
+          </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
               onClick={runObf}
