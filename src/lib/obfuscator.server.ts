@@ -647,12 +647,54 @@ for _=1,0 do ${d}=${d}..${e} end
 `;
 }
 
-/** compress → encrypt → permute → bootstrap. */
-function wrapLayer(plain: Uint8Array, chunk: string, guards: string): string {
+function layerRuntimeGuards(layer: number): string {
+  const nonceA = 10_000 + rand(900_000);
+  const nonceB = 10_000 + rand(900_000);
+  const expected = (nonceA * 33 + nonceB) % 2147483647;
+  return `
+do
+  local _lm_fail=function() return error("[LuaMore] VM${layer} runtime integrity fault",0) end
+  local _lm_ok,_lm_value
+  if type(rawget)~="function" or type(rawset)~="function" or type(pcall)~="function" or type(xpcall)~="function" then _lm_fail() end
+  if type(string)~="table" or type(table)~="table" or type(math)~="table" then _lm_fail() end
+  if type(string.byte)~="function" or type(string.char)~="function" or type(string.sub)~="function" or type(table.concat)~="function" then _lm_fail() end
+  if string.byte(string.char(76,77),1)~=76 or string.sub("LuaMore",1,3)~="Lua" or table.concat({"V","M"})~="VM" then _lm_fail() end
+  if math.floor(7.75)~=7 or (${nonceA}*33+${nonceB})%2147483647~=${expected} then _lm_fail() end
+  _lm_ok=pcall(error,"LuaMore probe",0); if _lm_ok then _lm_fail() end
+  local _lm_probe={}
+  local _lm_mt={__index=function(_,k) if k=="layer" then return ${layer} end end,__metatable="LuaMore"}
+  setmetatable(_lm_probe,_lm_mt)
+  if _lm_probe.layer~=${layer} or getmetatable(_lm_probe)~="LuaMore" then _lm_fail() end
+  _lm_ok,_lm_value=pcall(function()
+    local gg=rawget(_G,"getgenv")
+    if type(gg)=="function" then return gg() end
+    return _G
+  end)
+  if not _lm_ok or type(_lm_value)~="table" then _lm_fail() end
+  if debug and type(debug.gethook)=="function" then
+    _lm_ok,_lm_value=pcall(debug.gethook)
+    if _lm_ok and _lm_value~=nil then _lm_fail() end
+  end
+end
+`;
+}
+
+/** compress → encrypt → permute → independently guarded bootstrap. */
+function wrapLayer(
+  plain: Uint8Array,
+  chunk: string,
+  layer: number,
+  outermost: boolean,
+  validationMarkers: boolean,
+): string {
   const compressed = compress(plain);
   const enc = encryptLayer(compressed);
   const seed = 1 + rand(0xffffffff);
   const perm = permute(enc.ct, seed);
+  const marker = validationMarkers
+    ? `if io and io.write then io.write("LUAMORE_VM${layer}_INTEGRITY_PASS\\n") end`
+    : "";
+  const guards = layerRuntimeGuards(layer) + (outermost ? outerGuards() : "") + marker;
   return buildBootstrap(
     perm.out,
     enc.k1,
@@ -830,24 +872,34 @@ end
 }
 
 export function obfuscateLua(source: string): string {
+  return obfuscateLuaWithOptions(source, { dualVm: true });
+}
+
+export type ObfuscationOptions = {
+  dualVm?: boolean;
+  validationMarkers?: boolean;
+};
+
+export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
   const enc = new TextEncoder();
   const guardedSource = luaMoreProtection(source) + "\n" + source;
-  const layers = pickLayers(guardedSource.length);
+  const dualVm = options.dualVm ?? true;
+  const layers = dualVm ? Math.max(2, pickLayers(guardedSource.length)) : 1;
 
   let current: Uint8Array = enc.encode(guardedSource);
   let wrapped = "";
   for (let i = 0; i < layers; i++) {
     const isLast = i === layers - 1;
-    const chunk = i === 0 ? "core" : `vm${i}`;
-    const guards = isLast ? outerGuards() : "";
-    wrapped = wrapLayer(current, chunk, guards);
+    const layer = i + 1;
+    const chunk = `vm${layer}`;
+    wrapped = wrapLayer(current, chunk, layer, isLast, options.validationMarkers ?? false);
     if (!isLast) current = enc.encode(wrapped);
   }
   const minified = minifyLua(wrapped);
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore VM v9  //  build ${stamp}  //  ${layers}-layer nested VM
+  LuaMore Obfuscation VM v10  //  build ${stamp}  //  ${layers}-layer ${dualVm ? "dual+" : "single"} VM
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
   -> polymorphic nested VM -> LuaMore Protection prelude -> env-proxy -> minify
