@@ -161,7 +161,7 @@ function Layout() {
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
             className="absolute inset-0 backdrop-blur-sm"
-            style={{ background: "rgba(10,10,10,0.35)" }}
+            style={{ background: "rgba(26,42,58,0.35)" }}
             onClick={() => setOpen(false)}
           />
           <aside

@@ -12,7 +12,7 @@ export function Logo({ size = 32 }: { size?: number }) {
           borderRadius: size * 0.25,
           lineHeight: 1,
           paddingBottom: size * 0.05,
-          boxShadow: "0 0 24px rgba(163, 0, 0, 0.45)",
+          boxShadow: "0 0 24px rgba(0, 170, 255, 0.35)",
         }}
       >
         <span>L</span>
