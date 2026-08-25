@@ -97,7 +97,7 @@ export const Route = createFileRoute("/api/public/obfuscate")({
             obfuscated: out,
             bytes_in: source.length,
             bytes_out: out.length,
-            engine: "LuaMore VM v6",
+            engine: "LuaMore VM v11",
           });
         } catch (e) {
           return json({ error: e instanceof Error ? e.message : "obfuscation failed" }, 500);
