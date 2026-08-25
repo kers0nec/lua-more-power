@@ -7,6 +7,9 @@ import {
   Fingerprint,
   ArrowRight,
   CheckCircle2,
+  ShieldCheck,
+  LockKeyhole,
+  Terminal,
   type LucideIcon,
 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
@@ -172,7 +175,7 @@ function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
         <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
-        <div className="relative mx-auto max-w-4xl px-6 pt-24 pb-24 text-center md:pt-36 md:pb-32">
+        <div className="relative mx-auto max-w-5xl px-6 pt-20 pb-16 text-center md:pt-32 md:pb-24">
           <div className="rise inline-flex">
             <span className="badge-blue">
               <span
@@ -184,10 +187,10 @@ function Home() {
           </div>
 
           <h1
-            className="rise mt-8 font-display text-6xl md:text-8xl"
+            className="rise mt-8 font-display text-6xl font-medium md:text-8xl"
             style={{ animationDelay: "60ms" }}
           >
-            Protect. <span style={{ fontStyle: "italic" }}>Monetize.</span> Earn.
+            Protect your code.<br /><span style={{ color: "var(--muted-foreground)" }}>Control every execution.</span>
           </h1>
 
           <p
@@ -203,11 +206,37 @@ function Home() {
             style={{ animationDelay: "240ms" }}
           >
             <Link to="/auth" className="btn-primary w-full sm:w-auto">
-              Enter the lab <ArrowRight size={16} />
+              Start protecting <ArrowRight size={16} />
             </Link>
             <a href="#how" className="btn-outline w-full sm:w-auto">
               How it works
             </a>
+          </div>
+
+          <div
+            className="rise mx-auto mt-16 max-w-4xl overflow-hidden rounded-lg border text-left"
+            style={{ background: "var(--card)", borderColor: "var(--border-strong)", animationDelay: "300ms" }}
+          >
+            <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: "var(--border)" }}>
+              <div className="flex items-center gap-2 text-xs font-medium"><Terminal size={14} /> LuaMore build pipeline</div>
+              <div className="flex items-center gap-2 font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--success)" }} /> ONLINE</div>
+            </div>
+            <div className="grid md:grid-cols-[1.1fr_0.9fr]">
+              <div className="border-b p-5 md:border-r md:border-b-0" style={{ borderColor: "var(--border)" }}>
+                <div className="mb-4 font-mono text-[10px] uppercase" style={{ color: "var(--muted-foreground)" }}>Protection sequence</div>
+                {["Parse and compile source", "Encrypt constants and payload", "Build independent VM layers", "Sign and verify loader"].map((label, index) => (
+                  <div key={label} className="flex items-center gap-3 border-t py-3 text-sm" style={{ borderColor: "var(--border)" }}>
+                    <span className="font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>0{index + 1}</span>
+                    <span className="flex-1">{label}</span>
+                    <CheckCircle2 size={14} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2">
+                <div className="border-r p-5" style={{ borderColor: "var(--border)" }}><ShieldCheck size={18} /><div className="mt-8 text-3xl font-display">2×</div><div className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>Independent VM integrity</div></div>
+                <div className="p-5"><LockKeyhole size={18} /><div className="mt-8 text-3xl font-display">Live</div><div className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>HWID & license enforcement</div></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

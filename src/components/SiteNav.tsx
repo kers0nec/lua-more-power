@@ -21,7 +21,7 @@ export function SiteNav() {
   return (
     <header
       className="sticky top-0 z-40 border-b backdrop-blur-xl"
-      style={{ background: "rgba(255,255,255,0.72)", borderColor: "var(--border)" }}
+      style={{ background: "color-mix(in srgb, var(--background) 82%, transparent)", borderColor: "var(--border)" }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link to="/" className="min-w-0">

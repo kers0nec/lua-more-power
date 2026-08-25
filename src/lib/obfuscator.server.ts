@@ -510,63 +510,16 @@ end
 
 function outerGuards(): string {
   const used = new Set<string>();
-  const _mt = randName(used),
-    _g = randName(used),
-    _dsm = randName(used);
   const _ok = randName(used),
-    _k = randName(used);
+    _value = randName(used),
+    _probe = randName(used);
   return `
-local ${_dsm}=(debug and debug.setmetatable) or nil
-local function ${_g}(t)
-  if type(t)~="table" then return end
-  local ${_mt}
-  pcall(function() ${_mt}=getmetatable(t) end)
-  if ${_mt} and (rawget(${_mt}, ${hiddenStr("__index")}) or rawget(${_mt}, ${hiddenStr("__newindex")})) then
-    if ${_dsm} then pcall(${_dsm}, t, nil) else pcall(setmetatable, t, nil) end
-  end
-end
-pcall(${_g}, _G)
-pcall(function()
-  local gg=rawget(_G, ${hiddenStr("getgenv")})
-  if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} then ${_g}(g) end end
+local ${_probe}={}
+local ${_ok},${_value}=pcall(function()
+  setmetatable(${_probe},{__index=function(_,k) if k=="lm" then return 731 end end,__metatable=false})
+  return ${_probe}.lm
 end)
-pcall(function() ${_g}(rawget(_G, ${hiddenStr("shared")})) end)
-pcall(function() ${_g}(_ENV) end)
-pcall(function()
-  local keys={${hiddenStr("__logger")},${hiddenStr("logger")},${hiddenStr("logs")},${hiddenStr("_ENV_LOG")},${hiddenStr("env_log")},${hiddenStr("hooks")},${hiddenStr("__log")},${hiddenStr("__ENV__")},${hiddenStr("__spy")},${hiddenStr("__trace")},${hiddenStr("senv")},${hiddenStr("__envlogger")},${hiddenStr("envlog")},${hiddenStr("__record")},${hiddenStr("__tap")},${hiddenStr("__probe")},${hiddenStr("__watch")},${hiddenStr("__sink")}}
-  for _,${_k} in ipairs(keys) do
-    pcall(rawset, _G, ${_k}, nil)
-    local gg=rawget(_G, ${hiddenStr("getgenv")})
-    if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} and type(g)=="table" then pcall(rawset, g, ${_k}, nil) end end
-  end
-end)
-pcall(function()
-  if debug and debug.sethook then
-    local ok, cur = pcall(debug.gethook)
-    if ok and cur then pcall(debug.sethook) end
-  end
-end)
-pcall(function()
-  local danger={${hiddenStr("hookfunction")},${hiddenStr("hookmetamethod")},${hiddenStr("getrawmetatable")},${hiddenStr("setrawmetatable")},${hiddenStr("getgc")},${hiddenStr("getreg")},${hiddenStr("getinstances")},${hiddenStr("getnilinstances")},${hiddenStr("decompile")},${hiddenStr("getscriptbytecode")},${hiddenStr("dumpstring")},${hiddenStr("getconstants")},${hiddenStr("getupvalues")},${hiddenStr("getprotos")},${hiddenStr("islclosure")},${hiddenStr("checkcaller")},${hiddenStr("getcallingscript")},${hiddenStr("getsenv")},${hiddenStr("getfunctionhash")}}
-  for _,${_k} in ipairs(danger) do
-    local fn=rawget(_G, ${_k})
-    if type(fn)=="function" then
-      pcall(rawset, _G, ${_k}, function() return nil end)
-      local gg=rawget(_G, ${hiddenStr("getgenv")})
-      if type(gg)=="function" then local ${_ok},g=pcall(gg) if ${_ok} and type(g)=="table" then pcall(rawset, g, ${_k}, function() return nil end) end end
-    end
-  end
-end)
-pcall(function()
-  local cc=rawget(_G, ${hiddenStr("checkcaller")})
-  if type(cc)=="function" then
-    local ok,is=pcall(cc)
-    if ok and is==false then
-      local hf=rawget(_G, ${hiddenStr("hookfunction")})
-      if type(hf)=="function" then return error("[LuaMore] hostile environment") end
-    end
-  end
-end)
+if not ${_ok} or ${_value}~=731 then return error("[LuaMore] runtime integrity fault",0) end
 `;
 }
 
@@ -732,141 +685,25 @@ function pickJunk(bytes: number): number {
   return 8 + rand(8);
 }
 
-/** LuaMore Protection — inline runtime guard prepended to the user script.
- *  Combines Aqua-style primitive/type/metatable integrity checks, sandbox
- *  fingerprint detectors, an env-logger trap suite (GuiService/TweenService/
- *  DataStore/StarterPlayer/ProximityPrompt/Teams/GroupService), and a live
- *  loader-side signature check that hard-locks on mismatch. All checks are
- *  wrapped in pcall so a legitimate exec silently continues; a hostile env
- *  either infinite-loops or aborts with an opaque error. */
+/** Compatibility-safe runtime guard prepended to the user script. Payload
+ * integrity is enforced over the complete encrypted body by each VM layer;
+ * this prelude only verifies primitives needed by the decoder. It never
+ * mutates executor globals, yields, creates Instances, or deliberately hangs. */
 function luaMoreProtection(userSource: string): string {
-  const sig = (fnv1a(new TextEncoder().encode(userSource)) ^ djb2(new TextEncoder().encode(userSource))) >>> 0;
-  return `-- LuaMore Protection v1
+  const sample = Array.from(new TextEncoder().encode(userSource.slice(0, 128)));
+  const sampleDjb = djb2(sample);
+  return `-- LuaMore Protection v2
 do
-  local _hlk=function() while true do end end
   local _die=function() return error("[LuaMore] protection tripped",0) end
-  local _ok,_v
-  -- primitive integrity
-  if type(string)~="table" or type(math)~="table" or type(table)~="table" then _hlk() end
-  if type(string.byte)~="function" or type(string.char)~="function" then _hlk() end
-  if string.byte("A")~=65 or math.floor(3.9)~=3 or math.floor(math.pi)~=3 then _hlk() end
-  if type(pcall)~="function" or type(rawget)~="function" or type(rawset)~="function" then _hlk() end
-  if type(setmetatable)~="function" or type(getmetatable)~="function" then _hlk() end
-  if bit32 and type(bit32.bxor)=="function" and bit32.bxor(85,170)~=255 then _hlk() end
-  -- self-eq / arithmetic invariants
-  local _w=7
-  if _w~=_w or _w*0~=0 or _w<0 then _hlk() end
-  -- error() must actually throw
-  _ok=pcall(error,"x",0); if _ok then _die() end
-  -- game must not be a plain table
-  if type(game)==type({}) then _die() end
-  if type(typeof)=="function" and typeof(game)=="table" then _die() end
-  _ok,_v=pcall(getmetatable,game); if _ok and type(_v)==type({}) then _die() end
-  -- sandbox fingerprints
-  local _ZJ="00000000-0000-0000-0000-000000000000"
-  local _SP=8916037983
-  _ok,_v=pcall(function() return game.JobId end); if _ok and _v==_ZJ then _hlk() end
-  _ok,_v=pcall(function() return game.PlaceId end); if _ok and _v==_SP then _hlk() end
-  _ok,_v=pcall(function() return game.GameId end); if _ok and _v==_SP then _hlk() end
-  _ok,_v=pcall(function() return game:GetService("Players").LocalPlayer end)
-  if _ok and _v then
-    local _u; _u=pcall(function() return _v.UserId end)
-    local _n; _n=pcall(function() return _v.Name end)
-    if _v.UserId==123456789 then _hlk() end
-    if _v.Name=="vole7vin" or _v.DisplayName=="vole7vin" then _hlk() end
-    if _v.CharacterAppearanceId==123456789 then _hlk() end
-  end
-  _ok,_v=pcall(function() return game:GetService("Lighting") end)
-  if _ok and _v then
-    if _v.GeographicLatitude==41.7 and _v.FogEnd==100000 then _hlk() end
-    if _v.TimeOfDay=="12:00:00" and _v.GeographicLatitude==41.7 then _hlk() end
-  end
-  _ok,_v=pcall(function() return game:GetService("SoundService") end)
-  if _ok and _v and _v.DistanceFactor==3.33 and _v.RolloffScale==1 then _hlk() end
-  -- env-logger traps (workspace / GuiService / TweenService / DataStore /
-  -- StarterPlayer / ProximityPrompt / Teams / GroupService)
-  pcall(function()
-    local Players=game:GetService("Players")
-    local ok,p=pcall(function() return Players:GetPlayerFromCharacter(workspace) end)
-    if ok and p==nil then else _hlk() end
-  end)
-  pcall(function()
-    local GuiService=game:GetService("GuiService")
-    local orig=GuiService.SelectedObject
-    GuiService.SelectedObject=nil; task.wait()
-    if GuiService.SelectedObject~=nil then _hlk() end
-    local fake=Instance.new("Part")
-    local setOk=pcall(function() GuiService.SelectedObject=fake end)
-    if setOk then _hlk() end
-    GuiService.SelectedObject=orig
-  end)
-  pcall(function()
-    local TS=game:GetService("TweenService")
-    local prt=Instance.new("Part")
-    local badGoal={Position="x",CFrame=true,Transparency="y"}
-    local tOk=pcall(function() TS:Create(prt,TweenInfo.new(1),badGoal) end)
-    if tOk then _hlk() end
-  end)
-  pcall(function()
-    local DS=game:GetService("DataStoreService")
-    local dsOk,store=pcall(DS.GetDataStore,DS,"logger_trap//invalid@chars","scope")
-    if dsOk and store then _hlk() end
-    local gOk=pcall(DS.GetGlobalDataStore,DS)
-    if not gOk then _hlk() end
-  end)
-  pcall(function()
-    local SP=game:GetService("StarterPlayer")
-    local sps=SP:FindFirstChild("StarterPlayerScripts")
-    if not sps then _hlk() end
-    local ls=Instance.new("LocalScript"); ls.Source="x"; ls.Parent=sps
-    local still=sps:FindFirstChild(ls.Name); ls:Destroy()
-    if not still then _hlk() end
-  end)
-  pcall(function()
-    local PS=game:GetService("ProximityPromptService")
-    local shown,hidden=false,false
-    local c1=PS.PromptShown:Connect(function() shown=true end)
-    local c2=PS.PromptHidden:Connect(function() hidden=true end)
-    local prt=Instance.new("Part"); prt.Parent=workspace
-    local pr=Instance.new("ProximityPrompt"); pr.Parent=prt
-    task.wait(); c1:Disconnect(); c2:Disconnect(); pr:Destroy(); prt:Destroy()
-    if shown and hidden then _hlk() end
-  end)
-  pcall(function()
-    local Teams=game:GetService("Teams")
-    local n=Teams:FindFirstChild("Neutral")
-    if n and n.TeamColor~=BrickColor.new("Medium stone grey") then _hlk() end
-  end)
-  pcall(function()
-    local GS=game:GetService("GroupService")
-    local ok,gs=pcall(function() return GS:GetGroupsAsync(game.Players.LocalPlayer.UserId) end)
-    if not ok then _hlk() end
-    if ok and gs and #gs<1 then else _hlk() end
-  end)
-  -- hostile executor probes
-  pcall(function()
-    local cc=rawget(_G,"checkcaller")
-    if type(cc)=="function" then
-      local ok,is=pcall(cc)
-      if ok and is==false then
-        local hf=rawget(_G,"hookfunction")
-        if type(hf)=="function" then _die() end
-      end
-    end
-  end)
-  -- loader-side signature over user source (compile-time constant baked in)
-  local _S=${sig}
-  local _b={${Array.from(new TextEncoder().encode(userSource.slice(0, 256))).join(",")}}
-  local _h=2166136261
-  for _i=1,#_b do
-    _h=bit32 and bit32.bxor(_h,_b[_i]) or ((_h - _h%1) + _b[_i])
-    _h=(_h*16777619)%4294967296
-  end
+  if type(string)~="table" or type(math)~="table" or type(table)~="table" then _die() end
+  if type(string.byte)~="function" or type(string.char)~="function" or type(table.concat)~="function" then _die() end
+  if type(pcall)~="function" or type(rawget)~="function" or type(setmetatable)~="function" then _die() end
+  if string.byte(string.char(76,77),1)~=76 or table.concat({"L","M"})~="LM" or math.floor(9.75)~=9 then _die() end
+  local _ok=pcall(error,"LuaMore probe",0); if _ok then _die() end
+  local _b={${sample.join(",")}}
   local _h2=5381
   for _i=1,#_b do _h2=(_h2*33+_b[_i])%4294967296 end
-  local _combined=bit32 and bit32.bxor(_h,_h2) or ((_h+_h2)%4294967296)
-  -- soft check; the *inner* dual FNV/djb2 check in the VM bootstrap is authoritative
-  if false and _combined~=_S then _die() end
+  if _h2~=${sampleDjb} then _die() end
 end
 `;
 }
@@ -899,13 +736,12 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
 
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore Obfuscation VM v10  //  build ${stamp}  //  ${layers}-layer ${dualVm ? "dual+" : "single"} VM
+  LuaMore Obfuscation VM v11  //  build ${stamp}  //  ${layers}-layer ${dualVm ? "dual+" : "single"} VM
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
   -> polymorphic nested VM -> LuaMore Protection prelude -> env-proxy -> minify
-  LuaMore Protection: primitive integrity, sandbox fingerprint, env-logger
-  traps (GuiService/TweenService/DataStore/StarterPlayer/ProximityPrompt/
-  Teams/GroupService), anti-hook, dual anti-tamper, anti-debug.
+  LuaMore Protection: compatibility-safe runtime checks, isolated execution
+  environment, and independent per-layer ciphertext integrity verification.
   do not edit — integrity guards will refuse to run
 ]]
 `;
