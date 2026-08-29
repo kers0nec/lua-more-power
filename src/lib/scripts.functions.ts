@@ -58,18 +58,6 @@ export const createScript = createServerFn({ method: "POST" })
     }) => z.object({ ...metaShape, code: z.string().max(1_000_000_000).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { data: profile } = await context.supabase
-      .from("profiles")
-      .select("max_scripts")
-      .eq("id", context.userId)
-      .maybeSingle();
-    const { count } = await context.supabase
-      .from("scripts")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", context.userId);
-    if (profile && count !== null && count >= profile.max_scripts) {
-      throw new Error(`Script limit reached (${profile.max_scripts})`);
-    }
     const { data: row, error } = await context.supabase
       .from("scripts")
       .insert({

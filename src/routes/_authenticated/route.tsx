@@ -70,6 +70,11 @@ function Layout() {
   const nav = useNavigate();
   const loc = useLocation();
   const [open, setOpen] = useState(false);
+  const { user } = Route.useRouteContext();
+  const labelName =
+    (typeof user.user_metadata?.display_name === "string" && user.user_metadata.display_name) ||
+    user.email ||
+    "Account";
 
   useEffect(() => {
     setOpen(false);
@@ -133,7 +138,14 @@ function Layout() {
         ))}
       </nav>
 
-      <div className="border-t p-3" style={{ borderColor: "var(--border)" }}>
+      <div className="border-t p-3 space-y-1" style={{ borderColor: "var(--border)" }}>
+        <Link
+          to="/dashboard/settings"
+          className="block truncate rounded-md px-3 py-2 text-xs"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          {labelName}
+        </Link>
         <button onClick={signOut} className="btn-ghost w-full justify-start text-sm">
           <LogOut size={16} strokeWidth={1.7} /> Sign out
         </button>
@@ -177,7 +189,10 @@ function Layout() {
         {/* Mobile top bar */}
         <header
           className="sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl md:hidden"
-          style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.85)" }}
+          style={{
+            borderColor: "var(--border)",
+            background: "color-mix(in srgb, var(--background) 88%, transparent)",
+          }}
         >
           <button
             onClick={() => setOpen(true)}

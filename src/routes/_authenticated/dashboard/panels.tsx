@@ -178,7 +178,7 @@ function Page() {
         <div
           className="mt-4 text-sm rounded-md px-3 py-2"
           style={{
-            background: status.startsWith("✓") ? "#e6fff4" : "#ffecec",
+            background: status.startsWith("✓") ? "rgba(52,211,153,0.12)" : "rgba(244,63,94,0.12)",
             color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
           }}
         >

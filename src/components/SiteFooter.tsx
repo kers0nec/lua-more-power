@@ -1,44 +1,45 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
+import { DISCORD_INVITE, DISCORD_SUPPORT } from "@/lib/site";
 
 const COLS: { title: string; links: { label: string; to?: string; href?: string }[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "Home", to: "/" },
+      { label: "Features", to: "/features" },
+      { label: "How it works", to: "/how" },
+      { label: "Key system", to: "/keys" },
       { label: "Dashboard", to: "/dashboard" },
-      { label: "Get started", to: "/auth" },
     ],
   },
   {
     title: "Resources",
     links: [
+      { label: "Docs", to: "/docs" },
+      { label: "Loading screens", to: "/docs/loading" },
       { label: "Commands", to: "/commands" },
-      { label: "Support", href: "#" },
+      { label: "API", to: "/api/docs" },
     ],
   },
   {
-    title: "Community",
+    title: "Legal",
     links: [
-      { label: "Discord", href: "#" },
-      { label: "GitHub", href: "#" },
-      { label: "Twitter", href: "#" },
+      { label: "Terms of Service", to: "/tos" },
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Discord", href: DISCORD_INVITE },
+      { label: "Support", href: DISCORD_SUPPORT },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer
-      className="border-t"
-      style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
-    >
+    <footer className="border-t" style={{ background: "var(--secondary)", borderColor: "var(--border)" }}>
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
-            More Power, More Security, More Lua. Script hosting, licensing, and delivery in one
-            clean dashboard.
+            LuaMore is free. Store scripts, issue keys, and copy a loader — no billing, no paywalls.
           </p>
         </div>
         {COLS.map((col) => (
@@ -48,15 +49,14 @@ export function SiteFooter() {
               {col.links.map((l) => (
                 <li key={l.label}>
                   {l.to ? (
-                    <Link
-                      to={l.to}
-                      className="transition-colors hover:text-[color:var(--foreground)]"
-                    >
+                    <Link to={l.to} className="transition-colors hover:text-[color:var(--foreground)]">
                       {l.label}
                     </Link>
                   ) : (
                     <a
                       href={l.href}
+                      target={l.href?.startsWith("http") ? "_blank" : undefined}
+                      rel={l.href?.startsWith("http") ? "noreferrer" : undefined}
                       className="transition-colors hover:text-[color:var(--foreground)]"
                     >
                       {l.label}
@@ -72,7 +72,7 @@ export function SiteFooter() {
         className="border-t py-5 text-center font-mono text-[11px] uppercase tracking-[0.18em]"
         style={{ color: "var(--muted-foreground)", borderColor: "var(--border)" }}
       >
-        © {new Date().getFullYear()} LuaMore — All rights reserved
+        © {new Date().getFullYear()} LuaMore
       </div>
     </footer>
   );

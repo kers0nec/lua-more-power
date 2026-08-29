@@ -20,6 +20,7 @@ function Scripts() {
   const [category, setCategory] = useState("");
   const [tags, setTags] = useState("");
   const [ffa, setFfa] = useState(false);
+  const [code, setCode] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
   const createMut = useMutation({
@@ -29,6 +30,7 @@ function Scripts() {
       description?: string;
       category?: string;
       tags?: string[];
+      code?: string;
     }) => create({ data: v }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scripts"] });
@@ -36,6 +38,7 @@ function Scripts() {
       setDescription("");
       setCategory("");
       setTags("");
+      setCode("");
       setFfa(false);
       setErr(null);
     },
@@ -65,6 +68,7 @@ function Scripts() {
               .split(",")
               .map((t) => t.trim())
               .filter(Boolean),
+            code: code.trim() || undefined,
           });
         }}
         className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-2 items-end"
@@ -111,6 +115,18 @@ function Scripts() {
             onChange={(e) => setTags(e.target.value)}
             className="input-blue mt-1"
             placeholder="roblox, premium"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            SOURCE (optional — you can also paste later)
+          </label>
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="input-blue mt-1 font-mono text-sm h-32 resize-y"
+            placeholder="Paste Luau here to save it with the script"
+            spellCheck={false}
           />
         </div>
         <div className="flex items-center gap-4">

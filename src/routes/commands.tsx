@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
+import { DISCORD_INVITE } from "@/lib/site";
 
 export const Route = createFileRoute("/commands")({
   head: () => ({
@@ -60,7 +61,11 @@ function Commands() {
               Slash commands
             </h1>
             <p className="mt-5 max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
-              Point your bot's Interactions Endpoint URL at{" "}
+              Invite the bot from{" "}
+              <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="underline">
+                Discord
+              </a>
+              . Point your bot&apos;s Interactions Endpoint URL at{" "}
               <code
                 className="rounded px-1.5 py-0.5 text-sm"
                 style={{ background: "var(--muted)", border: "1px solid var(--border)" }}

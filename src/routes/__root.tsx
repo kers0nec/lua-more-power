@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LuaMore — Luau Script Hosting & Protection" },
+      { title: "LuaMore — Control who can run your scripts." },
       {
         name: "description",
         content: "LuaMore is an advanced Lua script hosting and protection platform.",
