@@ -40,11 +40,7 @@ export const Route = createFileRoute("/api/public/discord/interactions")({
         if (!ok) return new Response("invalid signature", { status: 401 });
 
         const body = JSON.parse(raw) as Json & { type: number };
-        // Trigger background slash commands sync if needed
-        void autoRegisterDiscordCommands().catch(() => undefined);
         if (body.type === 1) {
-          // Force immediate command sync on Discord endpoint validation PING
-          void autoRegisterDiscordCommands({ force: true }).catch(() => undefined);
           return json({ type: 1 }); // PING → PONG
         }
         if (body.type === 2) return json(await handleCommand(body));
