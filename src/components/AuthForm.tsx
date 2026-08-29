@@ -26,18 +26,46 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   }, [initialMode]);
 
   useEffect(() => {
-    const oauthErr = new URLSearchParams(window.location.search).get("error");
+    const params = new URLSearchParams(window.location.search);
+    const oauthErr = params.get("error_description") || params.get("error");
     if (oauthErr) setErr(oauthErr);
-    try {
-      supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          if (data?.session) nav({ to: "/dashboard" });
-        })
-        .catch(() => undefined);
-    } catch {
-      /* ignore */
+
+    async function checkCurrentSession() {
+      try {
+        if (typeof window !== "undefined" && window.location.search.includes("code=")) {
+          const code = params.get("code");
+          if (code) {
+            setBusy(true);
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (!error && data?.session) {
+              persistRemember(true);
+              nav({ to: "/dashboard" });
+              return;
+            }
+          }
+        }
+
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          nav({ to: "/dashboard" });
+        }
+      } catch {
+        /* ignore */
+      }
     }
+
+    void checkCurrentSession();
+
+    const { data: authSub } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        persistRemember(true);
+        nav({ to: "/dashboard" });
+      }
+    });
+
+    return () => {
+      authSub?.subscription?.unsubscribe();
+    };
   }, [nav]);
 
   function persistRemember(value: boolean) {
@@ -105,16 +133,21 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
 
   async function googleLogin() {
     persistRemember(remember);
+    setErr(null);
+    setBusy(true);
     try {
+      const redirectUrl =
+        typeof window !== "undefined" ? `${window.location.origin}/dashboard` : "/dashboard";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirectUrl,
         },
       });
       if (error) throw error;
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed to initiate Google sign-in");
+      setBusy(false);
     }
   }
 

@@ -35,15 +35,19 @@ export const syncDiscordCommands = createServerFn({ method: "POST" })
 export const listPanels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    // Proactively register slash commands in the background on panel listing
-    void autoRegisterDiscordCommands().catch(() => undefined);
-    const { data, error } = await context.supabase
-      .from("panels")
-      .select("*")
-      .eq("user_id", context.userId)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    try {
+      // Proactively register slash commands in the background on panel listing
+      void autoRegisterDiscordCommands().catch(() => undefined);
+      const { data, error } = await context.supabase
+        .from("panels")
+        .select("*")
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return data ?? [];
+    } catch {
+      return [];
+    }
   });
 
 export const createPanel = createServerFn({ method: "POST" })

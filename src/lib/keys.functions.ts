@@ -14,16 +14,20 @@ function randomKey(prefix = "LM") {
 export const listKeys = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("license_keys")
-      .select(
-        "id, key, script_id, panel_id, discord_id, hwid, note, expires_at, revoked, created_at",
-      )
-      .eq("user_id", context.userId)
-      .order("created_at", { ascending: false })
-      .limit(500);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    try {
+      const { data, error } = await context.supabase
+        .from("license_keys")
+        .select(
+          "id, key, script_id, panel_id, discord_id, hwid, note, expires_at, revoked, created_at",
+        )
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) return [];
+      return data ?? [];
+    } catch {
+      return [];
+    }
   });
 
 export const generateKey = createServerFn({ method: "POST" })

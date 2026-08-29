@@ -14,15 +14,19 @@ const metaShape = {
 export const listScripts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("scripts")
-      .select(
-        "id, name, public_id, ffa, description, category, tags, is_active, run_count, last_run_at, updated_at, created_at",
-      )
-      .eq("user_id", context.userId)
-      .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    try {
+      const { data, error } = await context.supabase
+        .from("scripts")
+        .select(
+          "id, name, public_id, ffa, description, category, tags, is_active, run_count, last_run_at, updated_at, created_at",
+        )
+        .eq("user_id", context.userId)
+        .order("updated_at", { ascending: false });
+      if (error) return [];
+      return data ?? [];
+    } catch {
+      return [];
+    }
   });
 
 export const getScript = createServerFn({ method: "POST" })

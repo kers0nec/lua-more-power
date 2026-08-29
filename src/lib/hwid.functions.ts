@@ -5,13 +5,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const listHwidBans = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("hwid_bans")
-      .select("*")
-      .eq("user_id", context.userId)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    try {
+      const { data, error } = await context.supabase
+        .from("hwid_bans")
+        .select("*")
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return data ?? [];
+    } catch {
+      return [];
+    }
   });
 
 export const banHwid = createServerFn({ method: "POST" })

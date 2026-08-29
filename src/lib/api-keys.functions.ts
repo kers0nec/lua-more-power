@@ -20,13 +20,17 @@ function randomApiKey() {
 export const listApiKeys = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("api_keys")
-      .select("id, label, prefix, last_used_at, created_at")
-      .eq("user_id", context.userId)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    try {
+      const { data, error } = await context.supabase
+        .from("api_keys")
+        .select("id, label, prefix, last_used_at, created_at")
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return data ?? [];
+    } catch {
+      return [];
+    }
   });
 
 export const createApiKey = createServerFn({ method: "POST" })
