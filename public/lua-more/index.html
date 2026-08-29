@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LuaMore — Control who can run your Lua scripts</title>
   <meta name="description" content="Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free." />
-  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);else{document.documentElement.setAttribute("data-accent","gold");localStorage.setItem("lm_prefs",JSON.stringify({accent:"gold"}));}}catch(e){document.documentElement.setAttribute("data-accent","gold");}</script>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body data-page="home">

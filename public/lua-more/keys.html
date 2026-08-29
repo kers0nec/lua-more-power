@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Key system — LuaMore</title>
   <meta name="description" content="LuaMore's key system: durations, HWID binding, limits, and instant revocation. Free for every account." />
-  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);else{document.documentElement.setAttribute("data-accent","gold");localStorage.setItem("lm_prefs",JSON.stringify({accent:"gold"}));}}catch(e){document.documentElement.setAttribute("data-accent","gold");}</script>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body data-page="keys">
