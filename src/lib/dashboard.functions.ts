@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { USERNAME_RE } from "@/lib/site";
 
 export const getDashboardStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -23,8 +25,36 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       keys: keys.count ?? 0,
       panels: panels.count ?? 0,
       releases: releases.count ?? 0,
-      profile: profile.data,
+      profile: profile.data
+        ? { ...profile.data, plan: "free", max_scripts: 999999999, max_panels: 999999999 }
+        : profile.data,
     };
+  });
+
+export const updateProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { display_name: string }) =>
+    z
+      .object({
+        display_name: z
+          .string()
+          .trim()
+          .regex(USERNAME_RE, "Use 3–24 letters or numbers only"),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("profiles")
+      .update({
+        display_name: data.display_name,
+        plan: "free",
+        max_scripts: 999999999,
+        max_panels: 999999999,
+      })
+      .eq("id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
   });
 
 // Public site counters — aggregated counts only, safe to expose.

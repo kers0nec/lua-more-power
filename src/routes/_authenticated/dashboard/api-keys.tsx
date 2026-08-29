@@ -59,7 +59,7 @@ function Page() {
       </div>
 
       {newKey && (
-        <div className="mt-4 card-blue p-4" style={{ background: "#e6fff4" }}>
+        <div className="mt-4 card-blue p-4" style={{ background: "rgba(52,211,153,0.12)" }}>
           <div className="text-sm font-semibold" style={{ color: "var(--success)" }}>
             Copy this key now — it won't be shown again:
           </div>

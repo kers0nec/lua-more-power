@@ -2,12 +2,14 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/commands", label: "Commands" },
-  { to: "/api/docs", label: "API" },
-  { to: "/dashboard", label: "Dashboard" },
+  { to: "/features", label: "Features" },
+  { to: "/how", label: "How" },
+  { to: "/pricing", label: "Pricing" },
+  { to: "/docs", label: "Docs" },
+  { to: "/keys", label: "Keys" },
 ];
 
 export function SiteNav() {
@@ -21,7 +23,10 @@ export function SiteNav() {
   return (
     <header
       className="sticky top-0 z-40 border-b backdrop-blur-xl"
-      style={{ background: "color-mix(in srgb, var(--background) 82%, transparent)", borderColor: "var(--border)" }}
+      style={{
+        background: "color-mix(in srgb, var(--background) 82%, transparent)",
+        borderColor: "var(--border)",
+      }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link to="/" className="min-w-0">
@@ -30,7 +35,7 @@ export function SiteNav() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
-            const active = loc.pathname === l.to;
+            const active = loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
             return (
               <Link
                 key={l.to}
@@ -48,11 +53,20 @@ export function SiteNav() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link to="/auth" className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+          <a
+            href={DISCORD_INVITE}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            Discord
+          </a>
+          <Link to="/login" className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Sign in
           </Link>
-          <Link to="/auth" className="btn-primary py-2 text-sm">
-            Get Started
+          <Link to="/register" className="btn-primary py-2 text-sm">
+            Get started
           </Link>
         </div>
 
@@ -81,13 +95,21 @@ export function SiteNav() {
                 {l.label}
               </Link>
             ))}
+            <a
+              href={DISCORD_INVITE}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-md px-3 py-2 text-sm hover:bg-[color:var(--muted)]"
+            >
+              Discord
+            </a>
           </nav>
           <div className="mt-4 flex flex-col gap-2">
-            <Link to="/auth" className="btn-outline">
+            <Link to="/login" className="btn-outline">
               Sign in
             </Link>
-            <Link to="/auth" className="btn-primary">
-              Get Started
+            <Link to="/register" className="btn-primary">
+              Get started
             </Link>
           </div>
         </div>

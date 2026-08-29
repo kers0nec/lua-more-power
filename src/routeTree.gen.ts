@@ -13,7 +13,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommandsRouteImport } from './routes/commands'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as HowRouteImport } from './routes/how'
+import { Route as KeysRouteImport } from './routes/keys'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as TosRouteImport } from './routes/tos'
 import { Route as ApiDocsRouteImport } from './routes/api.docs'
+import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
@@ -51,10 +61,60 @@ const CommandsRoute = CommandsRouteImport.update({
   path: '/commands',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowRoute = HowRouteImport.update({
+  id: '/how',
+  path: '/how',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KeysRoute = KeysRouteImport.update({
+  id: '/keys',
+  path: '/keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TosRoute = TosRouteImport.update({
+  id: '/tos',
+  path: '/tos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDocsRoute = ApiDocsRouteImport.update({
   id: '/api/docs',
   path: '/api/docs',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DocsLoadingRoute = DocsLoadingRouteImport.update({
+  id: '/loading',
+  path: '/loading',
+  getParentRoute: () => DocsRoute,
 } as any)
 const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
@@ -160,7 +220,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/docs': typeof DocsRouteWithChildren
+  '/features': typeof FeaturesRoute
+  '/how': typeof HowRoute
+  '/keys': typeof KeysRoute
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
+  '/docs/loading': typeof DocsLoadingRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -183,7 +253,17 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/docs': typeof DocsRouteWithChildren
+  '/features': typeof FeaturesRoute
+  '/how': typeof HowRoute
+  '/keys': typeof KeysRoute
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
+  '/docs/loading': typeof DocsLoadingRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -208,7 +288,17 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/commands': typeof CommandsRoute
+  '/docs': typeof DocsRouteWithChildren
+  '/features': typeof FeaturesRoute
+  '/how': typeof HowRoute
+  '/keys': typeof KeysRoute
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
+  '/docs/loading': typeof DocsLoadingRoute
   '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -233,7 +323,17 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
+    | '/docs'
+    | '/features'
+    | '/how'
+    | '/keys'
+    | '/login'
+    | '/pricing'
+    | '/privacy'
+    | '/register'
+    | '/tos'
     | '/api/docs'
+    | '/docs/loading'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -256,7 +356,17 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/commands'
+    | '/docs'
+    | '/features'
+    | '/how'
+    | '/keys'
+    | '/login'
+    | '/pricing'
+    | '/privacy'
+    | '/register'
+    | '/tos'
     | '/api/docs'
+    | '/docs/loading'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -280,7 +390,17 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/commands'
+    | '/docs'
+    | '/features'
+    | '/how'
+    | '/keys'
+    | '/login'
+    | '/pricing'
+    | '/privacy'
+    | '/register'
+    | '/tos'
     | '/api/docs'
+    | '/docs/loading'
     | '/_authenticated/dashboard/api-keys'
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
@@ -305,6 +425,15 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CommandsRoute: typeof CommandsRoute
+  DocsRoute: typeof DocsRouteWithChildren
+  FeaturesRoute: typeof FeaturesRoute
+  HowRoute: typeof HowRoute
+  KeysRoute: typeof KeysRoute
+  LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RegisterRoute: typeof RegisterRoute
+  TosRoute: typeof TosRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
@@ -345,12 +474,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommandsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how': {
+      id: '/how'
+      path: '/how'
+      fullPath: '/how'
+      preLoaderRoute: typeof HowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/keys': {
+      id: '/keys'
+      path: '/keys'
+      fullPath: '/keys'
+      preLoaderRoute: typeof KeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tos': {
+      id: '/tos'
+      path: '/tos'
+      fullPath: '/tos'
+      preLoaderRoute: typeof TosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/docs': {
       id: '/api/docs'
       path: '/api/docs'
       fullPath: '/api/docs'
       preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/docs/loading': {
+      id: '/docs/loading'
+      path: '/loading'
+      fullPath: '/docs/loading'
+      preLoaderRoute: typeof DocsLoadingRouteImport
+      parentRoute: typeof DocsRoute
     }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
@@ -504,11 +703,30 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface DocsRouteChildren {
+  DocsLoadingRoute: typeof DocsLoadingRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsLoadingRoute: DocsLoadingRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CommandsRoute: CommandsRoute,
+  DocsRoute: DocsRouteWithChildren,
+  FeaturesRoute: FeaturesRoute,
+  HowRoute: HowRoute,
+  KeysRoute: KeysRoute,
+  LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  RegisterRoute: RegisterRoute,
+  TosRoute: TosRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,

@@ -62,7 +62,7 @@ function Dashboard() {
         {stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
       </h1>
       <p className="mt-3 max-w-lg text-sm" style={{ color: "var(--muted-foreground)" }}>
-        Here's what's happening across your workspace.
+        Here's what's happening across your workspace. Everything is free — save scripts, issue keys, ship loaders.
       </p>
 
       <div

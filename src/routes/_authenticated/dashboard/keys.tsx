@@ -114,7 +114,7 @@ function Keys() {
             {k.revoked && (
               <span
                 className="badge-blue"
-                style={{ background: "#ffe0e0", color: "var(--destructive)" }}
+                style={{ background: "rgba(244,63,94,0.15)", color: "var(--destructive)" }}
               >
                 revoked
               </span>
