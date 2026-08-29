@@ -30,29 +30,23 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
+const DEFAULT_SUPABASE_URL = "https://pbuakztqfvvgooabtjkf.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_CO_vJ2OOKf7G6FK1KEe3Mg_77ZDDmCb";
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
+  // Fall back to process.env for SSR (server-side rendering), and project defaults
   const SUPABASE_URL =
     import.meta.env.VITE_SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
     process.env.SUPABASE_URL ||
-    "https://placeholder-project.supabase.co";
+    DEFAULT_SUPABASE_URL;
+
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_PUBLISHABLE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder";
-
-  const isConfigured =
-    (import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL) &&
-    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY);
-
-  if (!isConfigured) {
-    if (typeof window !== "undefined") {
-      console.warn(
-        "[Supabase] Notice: VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is not defined in the current environment.",
-      );
-    }
-  }
+    DEFAULT_SUPABASE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {

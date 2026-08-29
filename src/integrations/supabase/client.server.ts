@@ -32,27 +32,21 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
+const DEFAULT_SUPABASE_URL = "https://pbuakztqfvvgooabtjkf.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_CO_vJ2OOKf7G6FK1KEe3Mg_77ZDDmCb";
+
 function createSupabaseAdminClient() {
   const SUPABASE_URL =
     process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
     import.meta.env?.VITE_SUPABASE_URL ||
-    "https://placeholder-project.supabase.co";
+    DEFAULT_SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder";
-
-  const isConfigured = Boolean(
-    process.env.SUPABASE_URL &&
-    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY),
-  );
-
-  if (!isConfigured) {
-    console.warn(
-      "[Supabase Admin] Notice: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not defined in the server environment.",
-    );
-  }
+    DEFAULT_SUPABASE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     global: {
