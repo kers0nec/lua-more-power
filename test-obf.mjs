@@ -9,7 +9,13 @@ local function fib(n) if n<2 then return n end return fib(n-1)+fib(n-2) end
 if fib(10) ~= 55 then error("payload failed") end
 print("LUAMORE_PAYLOAD_PASS")
 `;
-const output = obfuscateLuaWithOptions(source, { dualVm: true, validationMarkers: true });
+// antiLogger:false — the Rscripts trap is Roblox-only (calls `game:GetService`)
+// and would error under plain `lua`; the plain-Lua harness must disable it.
+const output = obfuscateLuaWithOptions(source, {
+  dualVm: true,
+  validationMarkers: true,
+  antiLogger: false,
+});
 const dir = mkdtempSync(join(tmpdir(), "luamore-obf-"));
 const file = join(dir, "dual-vm.lua");
 writeFileSync(file, output);
