@@ -30,6 +30,11 @@
 
 const TAMPER_MSG = "you cant deobfuscate luamore dumbass ";
 
+/** Hard input budget. Each VM layer re-emits the payload ~4× as `\ddd`
+ *  escapes, so past ~2 MB of source the intermediate strings push the
+ *  worker past its memory limit. Fail fast instead of OOMing mid-build. */
+const MAX_SOURCE_BYTES = 2_000_000;
+
 function rand(n: number): number {
   return Math.floor(Math.random() * n);
 }
@@ -271,10 +276,10 @@ function minifyLua(src: string): string {
       i = j;
       continue;
     }
-    if (/\s/.test(ch)) {
+    if (ch === " " || ch === "\n" || ch === "\t" || ch === "\r") {
       // walk whitespace
       let j = i;
-      while (j < s.length && /\s/.test(s[j])) j++;
+      while (j < s.length && (s[j] === " " || s[j] === "\n" || s[j] === "\t" || s[j] === "\r")) j++;
       const prev = out.length ? out[out.length - 1].slice(-1) : "";
       const nextCh = s[j] ?? "";
       // keep a separator when both sides are identifier/keyword/number chars
@@ -283,8 +288,12 @@ function minifyLua(src: string): string {
       i = j;
       continue;
     }
-    out.push(ch);
-    i++;
+    // push a whole non-whitespace run in one go (memory-safe for multi-MB
+    // payloads — per-char pushing OOM'd the worker on large sources)
+    let j = i;
+    while (j < s.length && s[j] !== " " && s[j] !== "\n" && s[j] !== "\t" && s[j] !== "\r" && s[j] !== '"' && s[j] !== "'") j++;
+    out.push(s.slice(i, j));
+    i = j;
   }
   return out.join("");
 }
@@ -970,6 +979,9 @@ export type ObfuscationOptions = {
 };
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
+  if (source.length > MAX_SOURCE_BYTES) {
+    throw new Error(`source too large for the LuaMore VM — max ${MAX_SOURCE_BYTES / 1_000_000} MB per build`);
+  }
   const enc = new TextEncoder();
   const antiLogger = options.antiLogger ?? true;
   const antiTamper = options.antiTamper ?? true;
@@ -979,9 +991,17 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   const payload = prelude + source;
   const guardedSource = luaMoreProtection(source) + "\n" + payload;
   const dualVm = options.dualVm ?? true;
-  const layers = dualVm
-    ? Math.max(2, pickLayers(guardedSource.length), options.vmDepth ?? 0)
+  let layers = dualVm
+    ? Math.max(pickLayers(guardedSource.length), options.vmDepth ?? 0)
     : 1;
+  // Output budget: each layer re-emits the payload ~4.4× as `\ddd` escapes.
+  // Shrink the stack until the build fits under ~12 MB of output, so a big
+  // source degrades to fewer layers instead of OOMing the worker.
+  const EST_LAYER_GROWTH = 4.4;
+  const MAX_OUT_BYTES = 12_000_000;
+  while (layers > 1 && guardedSource.length * Math.pow(EST_LAYER_GROWTH, layers) > MAX_OUT_BYTES) {
+    layers--;
+  }
 
   let current: Uint8Array = enc.encode(guardedSource);
   let wrapped = "";

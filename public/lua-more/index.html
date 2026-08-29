@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LuaMore — Control who can run your Lua scripts</title>
+  <meta name="description" content="Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free." />
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-page="home">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav class="nav-links">
+        <a href="features.html">Features</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm" href="login.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="register.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- hero -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="hero-badge"><span class="dot"></span> Free forever · no card required</span>
+          <h1>Control who can run your Lua scripts.</h1>
+          <p class="lede">Add a script, choose how access works — keys, Discord, ad links, or keyless — then copy the loader. Everything is free, everything lives in one dashboard.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary btn-lg" href="register.html">Create account</a>
+            <a class="btn btn-ghost btn-lg" href="#how">How it works</a>
+          </div>
+        </div>
+        <div class="code-window">
+          <div class="code-titlebar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="fname">loader.lua</span>
+            <button class="copy" data-copy="#hero-loader">Copy</button>
+          </div>
+          <pre class="code" data-lang="lua" id="hero-loader">_G.script_key = "LM-A7X2-9KQM-4RPL"
+local loader = game:HttpGet(
+	"https://luamore.win/v1/load/demo"
+)
+loadstring(loader)()</pre>
+          <div class="code-foot">
+            <span class="chip"><span class="pulse"></span> encrypted route · 42 ms</span>
+            <span class="chip">signed load marker</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- live keys strip -->
+    <section style="padding: 6px 0 10px;">
+      <div class="wrap">
+        <div class="code-window" style="box-shadow:none;">
+          <div class="code-titlebar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="fname">keys · live from your dashboard</span>
+            <a class="copy" href="keys.html" style="text-decoration:none;">Key system →</a>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;padding:14px 16px;">
+            <div class="key-row"><span>LM-A7X2-9KQM-4RPL</span><span class="status status-active">active</span></div>
+            <div class="key-row"><span>LM-B3N8-2WXT-7HJD</span><span class="status status-used">used</span></div>
+            <div class="key-row"><span>LM-C9P1-5LMQ-8VZK</span><span class="status status-active">active</span></div>
+            <div class="key-row"><span>LM-D4R6-1YHN-3QWB</span><span class="status status-expired">expired</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- features -->
+    <section class="section" id="what">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">The parts you actually use</div>
+          <h2>Four tools. One free dashboard.</h2>
+        </div>
+        <div class="grid grid-4">
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+            <h3>Scripts</h3>
+            <p>Store a script, choose protection, and copy its loader in seconds.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></div>
+            <h3>Keys</h3>
+            <p>Create timed or permanent keys and bind them to a device.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <h3>Discord</h3>
+            <p>Post key panels and manage users with slash commands.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+            <h3>Ad links</h3>
+            <p>Give a key after a visitor completes your chosen link.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- setup -->
+    <section class="section" id="how" style="padding-top:10px;">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Setup</div>
+          <h2>Four steps, then you are done</h2>
+        </div>
+        <div class="steps">
+          <div class="step"><div class="num"></div><h4>Create a project</h4><p>Add the script you want to deliver.</p></div>
+          <div class="step"><div class="num"></div><h4>Choose access</h4><p>Use keys, Discord, an ad link, or keyless mode.</p></div>
+          <div class="step"><div class="num"></div><h4>Copy the loader</h4><p>Paste the loader where your users can find it.</p></div>
+          <div class="step"><div class="num"></div><h4>Check activity</h4><p>See runs, errors, and active devices.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- free -->
+    <section class="section" style="padding-top:10px;">
+      <div class="wrap">
+        <div class="free-band">
+          <div>
+            <div class="eyebrow">Pricing — the short version</div>
+            <h2>There is no pricing. Everything is free.</h2>
+            <p class="lede" style="font-size:15.5px;">No tiers, no card on file, no “trial ends soon”. Unlimited projects, scripts, keys, obfuscations, and every loading preset — for everyone, forever.</p>
+            <a class="btn btn-primary" href="register.html">Get started — it’s free</a>
+          </div>
+          <div>
+            <div class="price">$0 <small>/mo · forever</small></div>
+            <ul class="card" style="padding:0;border:none;background:none;">
+              <ul class="plain" style="list-style:none;padding:0;margin:0;">
+                <li>Unlimited projects, scripts &amp; keys</li>
+                <li>Two obfuscation engines — LuaMore VM + 00fuscator</li>
+                <li>Full key system — HWID, durations, revocation</li>
+                <li>Discord panels &amp; slash commands</li>
+                <li>Every loading-screen preset</li>
+              </ul>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- cta -->
+    <section class="section" style="padding-top:8px;">
+      <div class="wrap">
+        <div class="cta-band">
+          <h2>Start with one project.</h2>
+          <p>It costs nothing, and it takes two minutes.</p>
+          <div class="hero-ctas" style="justify-content:center;">
+            <a class="btn btn-primary btn-lg" href="register.html">Create account</a>
+            <a class="btn btn-ghost btn-lg" href="features.html">Read the docs</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav>
+        <a href="features.html">Docs</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="tos.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <span class="copy-line">© 2026 LuaMore · More Power, More Security, More Lua</span>
+    </div>
+  </footer>
+
+  <script src="assets/supabase.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

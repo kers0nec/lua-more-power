@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — LuaMore</title>
+  <meta name="description" content="Sign in to your free LuaMore dashboard — scripts, keys, Discord, and ad links in one place." />
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-page="login">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav class="nav-links">
+        <a href="features.html">Features</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm" href="login.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="register.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap auth-layout">
+      <div>
+        <h1 style="font-size:34px;font-weight:850;">Sign in</h1>
+        <p class="lede" style="font-size:16.5px;color:var(--text-2);">Scripts, keys, and access. Manage scripts, keys, Discord, and ad links in one place.</p>
+        <div class="card" style="margin-top:26px;">
+          <p style="margin:0;font-size:14px;color:var(--text-2);">Every sign-in runs through <b style="color:var(--accent-2);">LuaMore Verify</b> — a quick human check that keeps automated accounts and key-grabbers out of your dashboard.</p>
+        </div>
+      </div>
+
+      <div class="auth-card" id="auth-card-main">
+        <div id="verify-login"></div>
+
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="login-id">Email</label>
+            <input class="input" id="login-id" type="email" autocomplete="email" placeholder="you@example.com" />
+            <div class="err">Enter your email.</div>
+          </div>
+          <div class="field">
+            <label for="login-pw">Password</label>
+            <input class="input" id="login-pw" type="password" autocomplete="current-password" placeholder="Your password" />
+            <div class="err">Enter your password.</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin:-6px 0 16px;">
+            <a href="#" id="forgot-link" class="small">Forgot password?</a>
+          </div>
+          <button class="btn btn-primary btn-block btn-lg" type="submit">Sign in</button>
+        </form>
+
+        <p class="small muted" style="text-align:center;margin:18px 0 0;">New here? <a href="register.html">Create your free account</a></p>
+      </div>
+
+      <!-- forgot password -->
+      <div class="auth-card hidden" id="forgot-box">
+        <h2 style="font-size:22px;">Reset your password</h2>
+        <p class="muted small" style="margin-bottom:16px;">Enter the email on your account and we'll send a reset link.</p>
+        <form id="forgot-form">
+          <div class="field">
+            <label for="forgot-email">Email</label>
+            <input class="input" id="forgot-email" type="email" autocomplete="email" placeholder="you@example.com" />
+            <div class="err">No account found with that email.</div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Send reset email</button>
+        </form>
+        <div id="forgot-sent" class="hidden" style="margin-top:14px;">
+          <div class="card" style="padding:14px;border-color:rgba(61,220,151,.4);">
+            <p class="small" style="margin:0;color:var(--text-2);">Reset link sent. Open your inbox and click it — it opens a secure page where you set a new password. If nothing arrives in a few minutes, check spam.</p>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-block btn-sm" id="forgot-back" style="margin-top:14px;">← Back to sign in</button>
+      </div>
+
+      <!-- choose new password -->
+      <div class="auth-card hidden" id="reset-box">
+        <h2 style="font-size:22px;">Pick a new password</h2>
+        <p class="muted small" style="margin-bottom:16px;">Setting a new password for <b id="reset-username" style="color:var(--text);"></b>.</p>
+        <form id="reset-form">
+          <div class="field">
+            <label for="reset-pw">New password</label>
+            <input class="input" id="reset-pw" type="password" autocomplete="new-password" placeholder="At least 8 characters" />
+            <div class="err">Use at least 8 characters.</div>
+          </div>
+          <div class="field">
+            <label for="reset-pw2">Repeat new password</label>
+            <input class="input" id="reset-pw2" type="password" autocomplete="new-password" placeholder="Repeat it" />
+            <div class="err">Passwords don't match.</div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Update password</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav>
+        <a href="features.html">Docs</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="tos.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <span class="copy-line">© 2026 LuaMore · More Power, More Security, More Lua</span>
+    </div>
+  </footer>
+
+  <script src="assets/supabase.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -70,8 +70,8 @@ export const Route = createFileRoute("/api/public/obfuscate")({
         if (!source || source.trim().length === 0) {
           return json({ error: "missing 'source' string in body" }, 400);
         }
-        if (source.length > 1_000_000_000) {
-          return json({ error: "source too large" }, 413);
+        if (source.length > 2_000_000) {
+          return json({ error: "source too large — the LuaMore VM accepts up to 2 MB per build" }, 413);
         }
 
         const hash = await sha256Hex(apiKey);
