@@ -19,7 +19,10 @@ export function CopyCode({ code, label }: { code: string; label?: string }) {
         className="flex items-center justify-between gap-3 border-b px-3 py-2"
         style={{ borderColor: "var(--border)", background: "var(--muted)" }}
       >
-        <span className="font-mono text-[11px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+        <span
+          className="font-mono text-[11px] uppercase tracking-wider"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           {label ?? "code"}
         </span>
         <button type="button" onClick={copy} className="btn-ghost px-2 py-1 text-xs">

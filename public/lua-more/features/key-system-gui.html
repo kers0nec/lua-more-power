@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>In-Game Key System GUI Showcase — LuaMore</title>
+  <meta name="description" content="Custom in-game Roblox GUI for Key validation, HWID checking, and seamless script execution. 100% Free on LuaMore." />
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <style>
+    .key-modal {
+      width: 360px;
+      background: #090e18;
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(59,130,246,0.2);
+    }
+  </style>
+</head>
+<body data-page="features">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="../index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav class="nav-links">
+        <a href="../features.html" class="active">Features</a>
+        <a href="../keys.html">Keys</a>
+        <a href="../obfuscators.html">Obfuscators</a>
+        <a href="../loading-screens.html">Loading screens</a>
+        <a href="../settings.html">Settings</a>
+      </nav>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm" href="../login.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="../register.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" style="padding-bottom:20px;">
+      <div class="wrap" style="max-width:960px;">
+        <div class="eyebrow">GUI Feature · In-Game Key Prompt</div>
+        <h1 style="font-size:clamp(32px,4.6vw,46px);">In-Game Key System GUI</h1>
+        <p class="lede">Provide players with a clean in-game popup modal to enter license keys, auto-check HWID binding, and stream protected payloads instantly.</p>
+      </div>
+    </section>
+
+    <section style="padding: 0 0 60px;">
+      <div class="wrap" style="max-width:960px;">
+        
+        <div class="grid grid-2" style="gap:24px;align-items:center;">
+          <!-- Live Interactive UI Mockup -->
+          <div style="background:#04070e;border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;justify-content:center;align-items:center;min-height:360px;">
+            <div class="key-modal" id="keyModal">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="brand-mark" style="width:24px;height:24px;font-size:10px;">LM</span>
+                  <b style="font-size:14px;color:var(--text-1);">LuaMore Access</b>
+                </div>
+                <span class="chip" style="font-size:10px;">v2.4 Active</span>
+              </div>
+              <p class="small muted" style="margin-bottom:14px;">Please enter your license key to verify hardware and launch script.</p>
+              <input type="text" id="keyInput" class="input" placeholder="LM-XXXX-XXXX-XXXX" value="LM-9K42-X7VP-Q8MR" style="margin-bottom:12px;font-family:monospace;font-weight:bold;letter-spacing:1px;" />
+              
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm" style="flex:1;" onclick="validateKey()">Submit Key</button>
+                <button class="btn btn-ghost btn-sm" onclick="getFreeKey()">Get Key</button>
+              </div>
+
+              <div id="keyResponse" style="margin-top:14px;font-size:11px;font-family:monospace;color:var(--gold-2);display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Documentation & Features -->
+          <div>
+            <h3 style="font-size:22px;margin-bottom:8px;">Key System GUI Specifications</h3>
+            <p class="muted small" style="margin-bottom:18px;">Designed for high performance across Synapse, Wave, Solara, Swift, Fluxus, and mobile executors without fps lag.</p>
+            
+            <div class="grid" style="gap:12px;">
+              <div class="card" style="padding:12px 16px;">
+                <b style="color:var(--text-1);font-size:13px;">Auto-Paste & Clipboard Detection</b>
+                <p class="muted small" style="margin:2px 0 0;">Detects copied keys in player clipboard and populates field automatically.</p>
+              </div>
+              <div class="card" style="padding:12px 16px;">
+                <b style="color:var(--text-1);font-size:13px;">Device Fingerprint Lock (HWID)</b>
+                <p class="muted small" style="margin:2px 0 0;">Binds user hardware to the key on first submit, preventing unauthorized sharing.</p>
+              </div>
+              <div class="card" style="padding:12px 16px;">
+                <b style="color:var(--text-1);font-size:13px;">Discord Bot Reset Command</b>
+                <p class="muted small" style="margin:2px 0 0;">Allow buyers to reset their hardware locks via <code>/resethwid</code> on your Discord.</p>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;display:flex;gap:12px;">
+              <a href="../keys.html" class="btn btn-primary">Try Key System Simulator</a>
+              <a href="../loading-screens.html" class="btn btn-ghost">View Loading Screens</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="../index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <span class="copy-line">© 2026 LuaMore · Free Script Monetization & Protection</span>
+    </div>
+  </footer>
+
+  <script>
+    function validateKey() {
+      const resp = document.getElementById('keyResponse');
+      const val = document.getElementById('keyInput').value.trim();
+      resp.style.display = 'block';
+      if(val.startsWith('LM-') && val.length >= 14) {
+        resp.style.color = '#34d399';
+        resp.innerText = '✓ Key valid! HWID bound. Initializing payload...';
+      } else {
+        resp.style.color = '#f43f5e';
+        resp.innerText = '✗ Invalid license key format. Key must match LM-XXXX-XXXX-XXXX';
+      }
+    }
+    function getFreeKey() {
+      const resp = document.getElementById('keyResponse');
+      resp.style.display = 'block';
+      resp.style.color = '#60a5fa';
+      resp.innerText = '→ Redirecting to Discord / Key panel checkpoint...';
+    }
+  </script>
+</body>
+</html>

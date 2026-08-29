@@ -7,9 +7,11 @@ import {
   deletePanel,
   listPanels,
   sendPanel,
+  syncDiscordCommands,
   updatePanel,
 } from "@/lib/panels.functions";
 import { listScripts } from "@/lib/scripts.functions";
+import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
   head: () => ({ meta: [{ title: "Panels — LuaMore" }] }),
@@ -22,10 +24,15 @@ function Page() {
   const del = useServerFn(deletePanel);
   const send = useServerFn(sendPanel);
   const upd = useServerFn(updatePanel);
+  const syncCmds = useServerFn(syncDiscordCommands);
   const scripts = useServerFn(listScripts);
+  const getStats = useServerFn(getDashboardStats);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["panels"], queryFn: () => list() });
   const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() });
+  const statsQ = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => getStats() });
+  const isOwner = Boolean(statsQ.data?.isOwner);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [scriptId, setScriptId] = useState("");
@@ -33,6 +40,20 @@ function Page() {
   const [channelId, setChannelId] = useState("");
   const [whitelistChannelId, setWhitelistChannelId] = useState("");
   const [status, setStatus] = useState<string>("");
+
+  const syncMut = useMutation({
+    mutationFn: () => syncCmds(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        setStatus(
+          `✓ Auto-registered ${res.count ?? 5} slash commands with Discord (/help, /login, /setup, /whitelist, /resethwid)`,
+        );
+      } else {
+        setStatus(`✗ ${res.message}`);
+      }
+    },
+    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to sync commands"}`),
+  });
 
   const createMut = useMutation({
     mutationFn: () =>
@@ -85,13 +106,45 @@ function Page() {
 
   return (
     <div className="p-8 max-w-6xl">
-      <h1 className="text-3xl font-bold">Discord Panels</h1>
-      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>
-        Create control panels with redeem / script / role / HWID / stats buttons and post them
-        straight to a Discord channel.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Discord Panels</h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
+            Create control panels with redeem / script / role / HWID / stats buttons and post them
+            straight to a Discord channel.
+          </p>
+        </div>
+        {isOwner && (
+          <button
+            onClick={() => syncMut.mutate()}
+            disabled={syncMut.isPending}
+            className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
+          >
+            <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
+          </button>
+        )}
+      </div>
 
-      <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-2 items-end">
+      {/* Auto-registration info badge (Owner Only) */}
+      {isOwner && (
+        <div
+          className="card-blue p-4 mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+          style={{ borderColor: "rgba(59, 130, 246, 0.3)", background: "rgba(6, 14, 29, 0.8)" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold text-white">Slash Commands Auto-Registered:</span>
+            <span className="font-mono" style={{ color: "var(--primary)" }}>
+              /help, /login, /setup, /whitelist, /resethwid
+            </span>
+          </div>
+          <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            Authorized Owner Control Active.
+          </span>
+        </div>
+      )}
+
+      <div className="card-blue p-5 mt-4 grid gap-3 md:grid-cols-2 items-end">
         <div>
           <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
             NAME

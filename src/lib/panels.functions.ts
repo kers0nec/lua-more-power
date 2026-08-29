@@ -2,10 +2,41 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { buildPanelComponents, buildPanelEmbed } from "@/lib/discord-panel";
+import { autoRegisterDiscordCommands } from "@/lib/discord-commands.server";
+import { isOwnerAccount } from "@/lib/site";
+
+export const syncDiscordCommands = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const userEmail = (context.claims as { email?: string })?.email;
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("email, display_name")
+      .eq("id", context.userId)
+      .maybeSingle();
+
+    const isOwner =
+      isOwnerAccount(userEmail) ||
+      isOwnerAccount(profile?.email) ||
+      isOwnerAccount(profile?.display_name);
+
+    if (!isOwner) {
+      return {
+        ok: false,
+        message:
+          "Unauthorized: Discord slash command manual synchronization is restricted to the owner account.",
+      };
+    }
+
+    const result = await autoRegisterDiscordCommands({ force: true });
+    return result;
+  });
 
 export const listPanels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    // Proactively register slash commands in the background on panel listing
+    void autoRegisterDiscordCommands().catch(() => undefined);
     const { data, error } = await context.supabase
       .from("panels")
       .select("*")
@@ -51,6 +82,8 @@ export const createPanel = createServerFn({ method: "POST" })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
+    // Automatically trigger Discord slash commands registration
+    void autoRegisterDiscordCommands().catch(() => undefined);
     const { data: row, error } = await context.supabase
       .from("panels")
       .insert({

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { USERNAME_RE } from "@/lib/site";
+import { isOwnerAccount, USERNAME_RE } from "@/lib/site";
 
 export const getDashboardStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -20,11 +20,19 @@ export const getDashboardStats = createServerFn({ method: "GET" })
         .eq("user_id", userId),
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     ]);
+
+    const userEmail = (context.claims as { email?: string })?.email;
+    const isOwner =
+      isOwnerAccount(userEmail) ||
+      isOwnerAccount(profile.data?.email) ||
+      isOwnerAccount(profile.data?.display_name);
+
     return {
       scripts: scripts.count ?? 0,
       keys: keys.count ?? 0,
       panels: panels.count ?? 0,
       releases: releases.count ?? 0,
+      isOwner: Boolean(isOwner),
       profile: profile.data
         ? { ...profile.data, plan: "free", max_scripts: 999999999, max_panels: 999999999 }
         : profile.data,
@@ -36,10 +44,7 @@ export const updateProfile = createServerFn({ method: "POST" })
   .inputValidator((input: { display_name: string }) =>
     z
       .object({
-        display_name: z
-          .string()
-          .trim()
-          .regex(USERNAME_RE, "Use 3–24 letters or numbers only"),
+        display_name: z.string().trim().regex(USERNAME_RE, "Use 3–24 letters or numbers only"),
       })
       .parse(input),
   )

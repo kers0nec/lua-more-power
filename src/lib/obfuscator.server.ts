@@ -291,7 +291,16 @@ function minifyLua(src: string): string {
     // push a whole non-whitespace run in one go (memory-safe for multi-MB
     // payloads — per-char pushing OOM'd the worker on large sources)
     let j = i;
-    while (j < s.length && s[j] !== " " && s[j] !== "\n" && s[j] !== "\t" && s[j] !== "\r" && s[j] !== '"' && s[j] !== "'") j++;
+    while (
+      j < s.length &&
+      s[j] !== " " &&
+      s[j] !== "\n" &&
+      s[j] !== "\t" &&
+      s[j] !== "\r" &&
+      s[j] !== '"' &&
+      s[j] !== "'"
+    )
+      j++;
     out.push(s.slice(i, j));
     i = j;
   }
@@ -980,7 +989,9 @@ export type ObfuscationOptions = {
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
   if (source.length > MAX_SOURCE_BYTES) {
-    throw new Error(`source too large for the LuaMore VM — max ${MAX_SOURCE_BYTES / 1_000_000} MB per build`);
+    throw new Error(
+      `source too large for the LuaMore VM — max ${MAX_SOURCE_BYTES / 1_000_000} MB per build`,
+    );
   }
   const enc = new TextEncoder();
   const antiLogger = options.antiLogger ?? true;
@@ -991,9 +1002,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   const payload = prelude + source;
   const guardedSource = luaMoreProtection(source) + "\n" + payload;
   const dualVm = options.dualVm ?? true;
-  let layers = dualVm
-    ? Math.max(pickLayers(guardedSource.length), options.vmDepth ?? 0)
-    : 1;
+  let layers = dualVm ? Math.max(pickLayers(guardedSource.length), options.vmDepth ?? 0) : 1;
   // Output budget: each layer re-emits the payload ~4.4× as `\ddd` escapes.
   // Shrink the stack until the build fits under ~12 MB of output, so a big
   // source degrades to fewer layers instead of OOMing the worker.
@@ -1031,4 +1040,3 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   for (let i = 0; i < junkN; i++) junk += "do\n" + junkBlock() + "end\n";
   return banner + minifyLua(junk) + "\n" + minified;
 }
-

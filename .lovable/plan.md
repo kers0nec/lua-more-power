@@ -1,4 +1,3 @@
-
 # LuaMore — Build Plan
 
 ## Stack decisions
@@ -12,6 +11,7 @@
 ## Design system (white + blue)
 
 `src/styles.css` tokens:
+
 ```
 --background: #ffffff;  --bg-secondary: #f5f9ff;  --bg-input: #f8faff;
 --border: #d0e4ff;  --border-strong: #4d94ff;
@@ -21,11 +21,13 @@
 --shadow-card: 0 4px 20px rgba(0,100,200,0.08);
 --shadow-hover: 0 8px 32px rgba(0,100,200,0.15);
 ```
+
 Button variants: `primary` (blue bg / white text), `outline` (white bg / blue border), `ghost`. Card variant with blue border + shadow. All colors go through tokens — no hardcoded hex in components.
 
 ## Routes
 
 Public:
+
 - `/` — Homepage: hero, features (6), how-it-works (3 steps), stats, pricing (Free/Pro/Enterprise), footer
 - `/demo` — Standalone obfuscation playground (calls Larph via server fn, no auth required for demo — rate-limited)
 - `/auth` — Sign in / sign up (email + Discord)
@@ -33,6 +35,7 @@ Public:
 - `/api/public/discord/interactions` — Discord slash command webhook
 
 Authenticated (`_authenticated/`):
+
 - `/dashboard` — Overview + stats
 - `/dashboard/scripts` — List, create, edit, obfuscate scripts
 - `/dashboard/scripts/$id` — Detail: releases, obfuscation panel (Light/Standard/Advanced), download
@@ -72,12 +75,14 @@ All tables: `GRANT`s for `authenticated` + `service_role`, RLS policies scoping 
 ## Larph integration
 
 `src/lib/larph.server.ts`:
+
 - `obfuscateWithLarph(code, { scramble, skidProtection })` → POST `${LARPH_API_URL}/api/obfuscate`
 - `validateWithLarph(code)` → POST `${LARPH_API_URL}/api/validate`
 - Reads `process.env.LARPH_API_URL` (default `http://78.154.103.2:9919`) inside handlers.
 - Modes: `light` (scramble=false), `standard` (scramble=true), `advanced` (scramble=true + skidProtection=true).
 
 Server functions in `src/lib/*.functions.ts`:
+
 - `obfuscateScript({ scriptId, mode })`, `obfuscatePreview({ code, mode })`
 - `validateSyntax({ code })`, `downloadObfuscated({ scriptId, mode })`
 - `createScript`, `listScripts`, `updateScript`, `deleteScript`
@@ -89,6 +94,7 @@ Server functions in `src/lib/*.functions.ts`:
 ## Discord HTTP interactions
 
 `/api/public/discord/interactions` (server route):
+
 - Verify Ed25519 signature (`DISCORD_PUBLIC_KEY`) — reject if bad
 - Handle PING (type 1) → PONG
 - Dispatch slash commands: `/create-script`, `/login`, `/limits`, `/panel`, `/generatekey`, `/whitelist`, `/blacklist`, `/deletekey`, `/resethwid`, `/forceresethwid`, `/banuser`, `/unbanuser`, `/banhwid`, `/unbanhwid`, `/loader`, `/keys`, `/setup`, `/help`, `/validate`
@@ -101,6 +107,7 @@ Panel buttons (Redeem Key / Get Script / Get Role / Reset HWID / Get Stats) hand
 ## Secrets
 
 Requested after backend is scaffolded:
+
 - `LARPH_API_URL` (default provided, override optional)
 - `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_GUILD_ID`, `OWNER_DISCORD_ID`
 - `DISCORD_CLIENT_SECRET` for OAuth (also configured in Cloud Auth provider)

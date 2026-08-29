@@ -10,7 +10,8 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
       { title: "Obfuscator — LuaMore" },
       {
         name: "description",
-        content: "Protect Luau source with LuaMore Obfuscation's independent dual-VM integrity layers.",
+        content:
+          "Protect Luau source with LuaMore Obfuscation's independent dual-VM integrity layers.",
       },
       { property: "og:title", content: "LuaMore Obfuscation — Dual VM" },
       {
@@ -156,7 +157,6 @@ function ObfuscatePage() {
     URL.revokeObjectURL(url);
   };
 
-
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div>
@@ -165,8 +165,8 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore Obfuscation VM v10 — independent VM integrity gates, shuffled dispatchers,
-          RLE compression, 4× rotating XOR + RC4, FNV-1a/djb2 signatures, and runtime hardening.
+          LuaMore Obfuscation VM v10 — independent VM integrity gates, shuffled dispatchers, RLE
+          compression, 4× rotating XOR + RC4, FNV-1a/djb2 signatures, and runtime hardening.
         </p>
       </div>
 
@@ -207,9 +207,14 @@ function ObfuscatePage() {
             placeholder='print("hello luamore")'
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
-          <div className="mt-3 flex items-center justify-between gap-4 border-y py-3" style={{ borderColor: "var(--border)" }}>
+          <div
+            className="mt-3 flex items-center justify-between gap-4 border-y py-3"
+            style={{ borderColor: "var(--border)" }}
+          >
             <div>
-              <label htmlFor="dual-vm" className="text-sm font-semibold">Dual VM</label>
+              <label htmlFor="dual-vm" className="text-sm font-semibold">
+                Dual VM
+              </label>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Stack VM2 over VM1 with separate runtime and payload integrity checks.
               </p>
@@ -217,11 +222,7 @@ function ObfuscatePage() {
             <Switch id="dual-vm" checked={dualVm} onCheckedChange={setDualVm} disabled={running} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button
-              onClick={runObf}
-              disabled={running || !code.trim()}
-              className="btn-primary"
-            >
+            <button onClick={runObf} disabled={running || !code.trim()} className="btn-primary">
               {running ? "Obfuscating…" : "Obfuscate"}
             </button>
             {running && (
@@ -262,7 +263,6 @@ function ObfuscatePage() {
               ))}
             </div>
           )}
-
         </div>
 
         <div className="card-blue p-4">

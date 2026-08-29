@@ -83,15 +83,39 @@ function FeaturesPage() {
           </section>
         ))}
       </div>
-      <div className="mt-14 card-blue p-6">
-        <h3 className="font-display text-xl">Adding a loading screen?</h3>
-        <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-          A wide loading bar that works on mobile and desktop. Add your loader URL, then tweak it if
-          you want.
-        </p>
-        <Link to="/loading-screens" className="btn-primary mt-4">
-          Loading screen guide
-        </Link>
+      <div className="mt-14 grid gap-6 md:grid-cols-2">
+        <div className="card-blue p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="font-display text-2xl font-bold">In-Game Loading Screens</h3>
+            <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+              Wide responsive loading bars with breathing dot animations that keep player experience
+              smooth during script decryption and authorization.
+            </p>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link to="/loading-screens" className="btn-primary">
+              View Loading Guides
+            </Link>
+          </div>
+        </div>
+
+        <div className="card-blue p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="font-display text-2xl font-bold">Advanced Key System</h3>
+            <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+              HWID device locking, self-serve Discord bot panels, anti-bypass protection, and
+              time-based key durations.
+            </p>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link to="/keys" className="btn-primary">
+              Key System Simulator
+            </Link>
+            <Link to="/obfuscators" className="btn-outline">
+              Obfuscation Engine
+            </Link>
+          </div>
+        </div>
       </div>
     </PageShell>
   );

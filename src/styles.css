@@ -45,55 +45,61 @@
 :root {
   --radius: 0.625rem;
 
-  --background: #05070c;
-  --foreground: #e8eef8;
+  /* Deep midnight navy into pitch black theme matching brand photo */
+  --background: #01040a;
+  --foreground: #f0f6fc;
 
-  --card: #0b1018;
-  --card-foreground: #e8eef8;
+  --card: #060e1d;
+  --card-foreground: #f0f6fc;
 
-  --popover: #0b1018;
-  --popover-foreground: #e8eef8;
+  --popover: #060e1d;
+  --popover-foreground: #f0f6fc;
 
   --primary: #3b82f6;
-  --primary-foreground: #05070c;
-  --primary-dark: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-dark: #1d4ed8;
 
-  --secondary: #0a1220;
-  --secondary-foreground: #e8eef8;
+  --secondary: #0a172e;
+  --secondary-foreground: #f0f6fc;
 
-  --muted: #0e1624;
-  --muted-foreground: #8b9bb4;
+  --muted: #0c1626;
+  --muted-foreground: #8ea2c6;
 
-  --accent: #132238;
-  --accent-foreground: #dbeafe;
-  --accent-light: #132238;
+  --accent: #0e2246;
+  --accent-foreground: #ffffff;
+  --accent-light: #0d1e3d;
 
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
   --success: #34d399;
   --warning: #fbbf24;
 
-  --border: #1c2b44;
+  --border: #162947;
   --border-strong: #3b82f6;
-  --input: #0a1018;
+  --input: #040a15;
   --ring: #3b82f6;
 
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
-  --shadow-hover: 0 16px 48px rgba(37, 99, 235, 0.22);
+  --shadow-card: 0 10px 35px rgba(0, 0, 0, 0.7);
+  --shadow-hover: 0 16px 48px rgba(37, 99, 235, 0.3);
 
   --gradient-primary: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
-  --gradient-hero: radial-gradient(80% 60% at 50% -10%, #10203a 0%, #05070c 62%);
+  --gradient-hero: radial-gradient(
+    85% 65% at 50% 0%,
+    #0d2855 0%,
+    #06152e 35%,
+    #020612 70%,
+    #000206 100%
+  );
 
-  --sidebar: #070b12;
-  --sidebar-foreground: #e8eef8;
+  --sidebar: #02060f;
+  --sidebar-foreground: #f0f6fc;
   --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #05070c;
-  --sidebar-accent: #132238;
-  --sidebar-accent-foreground: #dbeafe;
-  --sidebar-border: #1c2b44;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0c1b35;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #14243e;
   --sidebar-ring: #3b82f6;
 }
-
 
 @layer base {
   * {
@@ -145,7 +151,6 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #3b82f6;
   }
-
 }
 
 @keyframes lm-rise {
@@ -184,7 +189,6 @@
     linear-gradient(to bottom, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
   background-size: 64px 64px;
 }
-
 
 @utility mask-fade {
   mask-image: radial-gradient(120% 70% at 50% 0%, #000 30%, transparent 78%);
@@ -316,7 +320,6 @@
     color: #6b7c94;
   }
 }
-
 
 @utility badge-blue {
   display: inline-flex;

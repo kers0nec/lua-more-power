@@ -17,12 +17,12 @@ export const Route = createFileRoute("/settings")({
 });
 
 const settingGroups = [
-  ["Profile", "Update your display name and account details."],
-  ["Email", "Keep account recovery and delivery notices current."],
-  ["Password", "Change your password without leaving LuaMore."],
-  ["Security", "Review access and protect your dashboard with MFA."],
-  ["Appearance", "Keep the LuaMore dark blue and black workspace consistent."],
-  ["Sessions", "Review where your account is signed in."],
+  ["Profile", "Update your display name, username, and account details."],
+  ["Email & Discord", "Keep account recovery, notices, and Discord panel sync current."],
+  ["Password & Security", "Change your password and manage Human Check security challenges."],
+  ["Script Protection", "Review PlaceId whitelisting, Luau VM bytecode caching, and loaders."],
+  ["Key Hub & HWID", "Configure lifetime/timed key duration settings and hardware binding."],
+  ["Data & Backups", "Export complete user metadata and script backup JSON files."],
 ];
 
 function SettingsPage() {
@@ -41,9 +41,9 @@ function SettingsPage() {
 
   return (
     <PageShell
-      eyebrow="Account"
+      eyebrow="Account Settings"
       title="Your account, in one place."
-      subtitle="Profile, password, security, and appearance settings for your LuaMore workspace."
+      subtitle="Profile, password, security, and script authorization settings for your LuaMore workspace."
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {settingGroups.map(([title, description], index) => (
@@ -51,7 +51,7 @@ function SettingsPage() {
             <span className="font-mono text-xs" style={{ color: "var(--primary)" }}>
               0{index + 1}
             </span>
-            <h2 className="mt-3 font-display text-xl">{title}</h2>
+            <h2 className="mt-3 font-display text-xl font-bold">{title}</h2>
             <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
               {description}
             </p>

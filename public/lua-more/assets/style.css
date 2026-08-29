@@ -2,37 +2,33 @@
    LuaMore — dark blue & black theme (blue by default, optional accents)
    ============================================================ */
 :root {
-  --bg-0: #04060c;
-  --bg-1: #070b14;
-  --bg-2: #0b1120;
-  --card: #0c1322;
-  --card-2: #101a30;
-  --code-bg: #060a13;
-  --border: #1b2a45;
-  --border-soft: #131e36;
-  --text: #e9effb;
-  --text-2: #a9b7d3;
-  --muted: #7186a9;
-  --accent: #4d9fff;
-  --accent-2: #38bdf8;
-  --accent-ink: #041220;
-  --accent-glow: rgba(77, 159, 255, 0.38);
-  --gold: #f6c453;
-  --gold-2: #ffdf8e;
-  --gold-ink: #241a04;
-  --gold-glow: rgba(246, 196, 83, 0.3);
-  --ok: #3ddc97;
-  --err: #ff6b6b;
+  --bg-0: #000206;
+  --bg-1: #020612;
+  --bg-2: #06132b;
+  --card: #060e1d;
+  --card-2: #0b172e;
+  --code-bg: #030710;
+  --border: #162947;
+  --border-soft: #0e1c33;
+  --text: #f0f6fc;
+  --text-2: #8ea2c6;
+  --muted: #62779c;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --accent-ink: #ffffff;
+  --accent-glow: rgba(59, 130, 246, 0.4);
+  --gold: #3b82f6;
+  --gold-2: #60a5fa;
+  --gold-ink: #ffffff;
+  --gold-glow: rgba(59, 130, 246, 0.35);
+  --ok: #34d399;
+  --err: #f43f5e;
   --warn: #fbbf24;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --radius: 14px;
-  --shadow: 0 18px 50px rgba(2, 8, 20, 0.55);
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --radius: 12px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
 }
-html[data-accent="gold"] { --accent: #f6c453; --accent-2: #ffdf8e; --accent-ink: #241a04; --accent-glow: rgba(246, 196, 83, 0.32); }
-html[data-accent="cyan"] { --accent: #22d3ee; --accent-2: #67e8f9; --accent-ink: #042026; --accent-glow: rgba(34, 211, 238, 0.32); }
-html[data-accent="violet"] { --accent: #a78bfa; --accent-2: #c4b5fd; --accent-ink: #160a2e; --accent-glow: rgba(167, 139, 250, 0.32); }
-html[data-accent="green"] { --accent: #34d399; --accent-2: #6ee7b7; --accent-ink: #042016; --accent-glow: rgba(52, 211, 153, 0.3); }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -41,10 +37,8 @@ body {
   font-family: var(--sans);
   color: var(--text);
   background:
-    radial-gradient(1100px 520px at 78% -10%, rgba(56, 110, 255, 0.16), transparent 60%),
-    radial-gradient(900px 480px at 8% 4%, rgba(28, 60, 140, 0.22), transparent 55%),
-    radial-gradient(1000px 600px at 50% 115%, rgba(246, 196, 83, 0.05), transparent 60%),
-    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    radial-gradient(1100px 550px at 50% 0%, #0d2855 0%, #06152e 35%, #020612 70%, #000206 100%),
+    #000206;
   background-attachment: fixed;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;

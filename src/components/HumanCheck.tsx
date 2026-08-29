@@ -25,42 +25,58 @@ export function HumanCheck({
 
   return (
     <div
-      className="rounded-lg border p-4 space-y-3"
-      style={{ borderColor: "var(--border)", background: "var(--card)" }}
+      className="rounded-xl border p-4 space-y-3.5 transition-all"
+      style={{
+        borderColor: ok ? "rgba(59, 130, 246, 0.4)" : "var(--border)",
+        background: "linear-gradient(180deg, rgba(11, 23, 44, 0.6) 0%, rgba(6, 14, 29, 0.8) 100%)",
+        boxShadow: ok ? "0 0 15px rgba(59, 130, 246, 0.15)" : "none",
+      }}
     >
-      <label className="flex items-start gap-3 text-sm cursor-pointer">
+      <label className="flex items-start gap-3 text-sm cursor-pointer select-none">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => setChecked(e.target.checked)}
-          className="mt-0.5"
+          className="mt-0.5 accent-blue-500 rounded cursor-pointer"
         />
         <span>
-          <span className="font-medium">Verify you are human</span>
+          <span className="font-semibold text-white tracking-tight flex items-center gap-2">
+            Human Verification
+            {value && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-normal">
+                ✓ Passed
+              </span>
+            )}
+          </span>
           <span className="block text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Check the box and solve the challenge to continue.
+            Check the box and enter the challenge sum to proceed.
           </span>
         </span>
       </label>
-      <div>
-        <label className="eyebrow">
-          {pair ? `What is ${pair[0]} + ${pair[1]}?` : "Loading challenge…"}
+
+      <div className="pt-1">
+        <label className="eyebrow block">
+          {pair
+            ? `Security Challenge: What is ${pair[0]} + ${pair[1]}?`
+            : "Generating security challenge…"}
         </label>
-        <input
-          inputMode="numeric"
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value.replace(/[^\d]/g, ""))}
-          className="input-blue mt-2 max-w-[8rem]"
-          placeholder="Answer"
-          autoComplete="off"
-          disabled={!pair}
-        />
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            inputMode="numeric"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value.replace(/[^\d]/g, ""))}
+            className="input-blue max-w-[9rem] text-center font-mono font-semibold"
+            placeholder="Sum"
+            autoComplete="off"
+            disabled={!pair}
+          />
+          {value && (
+            <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+              ✓ Verified
+            </span>
+          )}
+        </div>
       </div>
-      {value ? (
-        <p className="text-xs" style={{ color: "var(--success)" }}>
-          Verified
-        </p>
-      ) : null}
     </div>
   );
 }

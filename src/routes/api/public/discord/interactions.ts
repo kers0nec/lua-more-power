@@ -8,6 +8,7 @@ import {
   formatDuration,
   parseDuration,
 } from "@/lib/discord-panel";
+import { autoRegisterDiscordCommands } from "@/lib/discord-commands.server";
 
 // Discord HTTP Interactions endpoint.
 // Configure in the Discord developer portal:
@@ -39,6 +40,8 @@ export const Route = createFileRoute("/api/public/discord/interactions")({
         if (!ok) return new Response("invalid signature", { status: 401 });
 
         const body = JSON.parse(raw) as Json & { type: number };
+        // Trigger background slash commands sync if needed
+        void autoRegisterDiscordCommands().catch(() => undefined);
         if (body.type === 1) return json({ type: 1 }); // PING → PONG
         if (body.type === 2) return json(await handleCommand(body));
         if (body.type === 3) return json(await handleComponent(body));

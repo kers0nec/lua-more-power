@@ -132,7 +132,7 @@ http://78.154.103.2:9919
 
 async function obfuscateWithLarph(code, options = { scramble: true, skidProtection: false }) {
 
-  try {
+try {
 
     const response = await fetch('http://78.154.103.2:9919/api/obfuscate', {
 
@@ -176,13 +176,13 @@ async function obfuscateWithLarph(code, options = { scramble: true, skidProtecti
 
     };
 
-  } catch (error) {
+} catch (error) {
 
     console.error('Larph API error:', error);
 
     throw error;
 
-  }
+}
 
 }
 
@@ -190,7 +190,7 @@ async function obfuscateWithLarph(code, options = { scramble: true, skidProtecti
 
 async function validateWithLarph(code) {
 
-  try {
+try {
 
     const response = await fetch('http://78.154.103.2:9919/api/validate', {
 
@@ -212,11 +212,11 @@ async function validateWithLarph(code) {
 
     return { valid: true };
 
-  } catch (error) {
+} catch (error) {
 
     return { valid: false, error: error.message };
 
-  }
+}
 
 }
 
@@ -250,17 +250,15 @@ async function validateWithLarph(code) {
 
 app.post('/api/obfuscate-script', requireAuth, async (req, res) => {
 
-  const { scriptId } = req.body;
+const { scriptId } = req.body;
 
-  const mode = req.body.mode || 'standard';
+const mode = req.body.mode || 'standard';
 
-  
+const script = db.prepare('SELECT * FROM scripts WHERE id = ? AND user_id = ?').get(scriptId, req.session.user.id);
 
-  const script = db.prepare('SELECT * FROM scripts WHERE id = ? AND user_id = ?').get(scriptId, req.session.user.id);
+if (!script) return res.status(404).json({ error: 'Script not found' });
 
-  if (!script) return res.status(404).json({ error: 'Script not found' });
-
-  try {
+try {
 
     const options = {
 
@@ -270,25 +268,25 @@ app.post('/api/obfuscate-script', requireAuth, async (req, res) => {
 
     };
 
-    
+
 
     const result = await obfuscateWithLarph(script.code || '', options);
 
     const obfuscatedCode = result.output;
 
-    
+
 
     db.prepare(`UPDATE scripts SET obfuscated_code = ?, obfuscator = ?, compress_mode = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
 
       .run(obfuscatedCode, `larph-${mode}`, scriptId);
 
-    createScriptRelease({ 
+    createScriptRelease({
 
-      scriptId, 
+      scriptId,
 
-      userId: req.session.user.id, 
+      userId: req.session.user.id,
 
-      obfuscatedCode, 
+      obfuscatedCode,
 
       obfuscator: `larph-${mode}`,
 
@@ -300,11 +298,11 @@ app.post('/api/obfuscate-script', requireAuth, async (req, res) => {
 
     res.json({ success: true, obfuscatedCode, protected: result.protected, hash: result.hash });
 
-  } catch (error) {
+} catch (error) {
 
     res.status(500).json({ error: `Obfuscation failed: ${error.message}` });
 
-  }
+}
 
 });
 
@@ -312,15 +310,13 @@ app.post('/api/obfuscate-script', requireAuth, async (req, res) => {
 
 app.post('/api/obfuscate-preview', requireAuth, async (req, res) => {
 
-  const code = String(req.body.code || '');
+const code = String(req.body.code || '');
 
-  const mode = req.body.mode || 'standard';
+const mode = req.body.mode || 'standard';
 
-  
+if (!code.trim()) return res.status(400).json({ error: 'Code is required' });
 
-  if (!code.trim()) return res.status(400).json({ error: 'Code is required' });
-
-  try {
+try {
 
     const options = {
 
@@ -330,13 +326,13 @@ app.post('/api/obfuscate-preview', requireAuth, async (req, res) => {
 
     };
 
-    
+
 
     const result = await obfuscateWithLarph(code, options);
 
-    res.json({ 
+    res.json({
 
-      success: true, 
+      success: true,
 
       obfuscatedCode: result.output,
 
@@ -346,11 +342,11 @@ app.post('/api/obfuscate-preview', requireAuth, async (req, res) => {
 
     });
 
-  } catch (error) {
+} catch (error) {
 
     res.status(500).json({ error: `Obfuscation failed: ${error.message}` });
 
-  }
+}
 
 });
 
@@ -358,21 +354,21 @@ app.post('/api/obfuscate-preview', requireAuth, async (req, res) => {
 
 app.post('/api/validate-syntax', requireAuth, async (req, res) => {
 
-  const code = String(req.body.code || '');
+const code = String(req.body.code || '');
 
-  if (!code.trim()) return res.status(400).json({ error: 'Code is required' });
+if (!code.trim()) return res.status(400).json({ error: 'Code is required' });
 
-  try {
+try {
 
     const result = await validateWithLarph(code);
 
     res.json({ success: true, valid: result.valid });
 
-  } catch (error) {
+} catch (error) {
 
     res.status(500).json({ error: `Validation failed: ${error.message}` });
 
-  }
+}
 
 });
 
@@ -380,17 +376,15 @@ app.post('/api/validate-syntax', requireAuth, async (req, res) => {
 
 app.post('/api/scripts/:id/obfuscate-download', requireAuth, async (req, res) => {
 
-  const { id } = req.params;
+const { id } = req.params;
 
-  const mode = req.body.mode || 'standard';
+const mode = req.body.mode || 'standard';
 
-  
+const script = db.prepare('SELECT * FROM scripts WHERE id = ? AND user_id = ?').get(id, req.session.user.id);
 
-  const script = db.prepare('SELECT * FROM scripts WHERE id = ? AND user_id = ?').get(id, req.session.user.id);
+if (!script) return res.status(404).json({ error: 'Script not found' });
 
-  if (!script) return res.status(404).json({ error: 'Script not found' });
-
-  try {
+try {
 
     const options = {
 
@@ -400,7 +394,7 @@ app.post('/api/scripts/:id/obfuscate-download', requireAuth, async (req, res) =>
 
     };
 
-    
+
 
     const result = await obfuscateWithLarph(script.code, options);
 
@@ -410,13 +404,13 @@ app.post('/api/scripts/:id/obfuscate-download', requireAuth, async (req, res) =>
 
       .run(obfuscatedText, `larph-${mode}`, id);
 
-    createScriptRelease({ 
+    createScriptRelease({
 
-      scriptId: id, 
+      scriptId: id,
 
-      userId: req.session.user.id, 
+      userId: req.session.user.id,
 
-      obfuscatedCode: obfuscatedText, 
+      obfuscatedCode: obfuscatedText,
 
       obfuscator: `larph-${mode}`,
 
@@ -436,11 +430,11 @@ app.post('/api/scripts/:id/obfuscate-download', requireAuth, async (req, res) =>
 
     res.send(obfuscatedText);
 
-  } catch (error) {
+} catch (error) {
 
     res.status(500).json({ error: `Obfuscation failed: ${error.message}` });
 
-  }
+}
 
 });
 

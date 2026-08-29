@@ -62,17 +62,28 @@ function Commands() {
             </h1>
             <p className="mt-5 max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
               Invite the bot from{" "}
-              <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="underline">
+              <a
+                href={DISCORD_INVITE}
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-semibold"
+                style={{ color: "var(--primary)" }}
+              >
                 Discord
               </a>
               . Point your bot&apos;s Interactions Endpoint URL at{" "}
               <code
                 className="rounded px-1.5 py-0.5 text-sm"
-                style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
+                style={{
+                  background: "var(--muted)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
               >
                 /api/public/discord/interactions
-              </code>{" "}
-              and every command become available in your server.
+              </code>
+              . All slash commands are <strong>automatically registered</strong> with Discord
+              instantly — zero manual setup or CLI tools required.
             </p>
           </div>
         </section>

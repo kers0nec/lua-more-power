@@ -43,7 +43,11 @@ function HowPage() {
     >
       <ol className="space-y-8">
         {steps.map((s) => (
-          <li key={s.n} className="grid gap-2 border-t pt-6 md:grid-cols-[80px_1fr]" style={{ borderColor: "var(--border)" }}>
+          <li
+            key={s.n}
+            className="grid gap-2 border-t pt-6 md:grid-cols-[80px_1fr]"
+            style={{ borderColor: "var(--border)" }}
+          >
             <div className="font-mono text-sm" style={{ color: "var(--muted-foreground)" }}>
               {s.n}
             </div>

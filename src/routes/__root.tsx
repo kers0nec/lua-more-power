@@ -145,9 +145,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // "Remember me": when the user opted out, end the session on a new browser session.
+  // Handle "Remember me" session lifecycle
   useEffect(() => {
     try {
+      document.documentElement.removeAttribute("data-accent");
       const remember = localStorage.getItem("lm_remember");
       const active = sessionStorage.getItem("lm_session_active");
       if (remember === "0" && !active) {

@@ -24,7 +24,9 @@ export function PageShell({
           <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative mx-auto w-full max-w-5xl px-6 py-16 md:py-20">
             {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
-            <h1 className="mt-3 font-display text-4xl font-medium tracking-tight md:text-6xl">{title}</h1>
+            <h1 className="mt-3 font-display text-4xl font-medium tracking-tight md:text-6xl">
+              {title}
+            </h1>
             {subtitle ? (
               <p className="mt-5 max-w-2xl text-base" style={{ color: "var(--muted-foreground)" }}>
                 {subtitle}

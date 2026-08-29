@@ -6,7 +6,10 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — LuaMore" },
-      { name: "description", content: "LuaMore is free. Unlimited scripts, keys, and obfuscation." },
+      {
+        name: "description",
+        content: "LuaMore is free. Unlimited scripts, keys, and obfuscation.",
+      },
     ],
   }),
   component: PricingPage,
@@ -34,7 +37,10 @@ function PricingPage() {
           <h2 className="font-display text-2xl">Free</h2>
           <div className="mt-4 font-display text-6xl">
             $0
-            <span className="font-sans text-sm font-normal" style={{ color: "var(--muted-foreground)" }}>
+            <span
+              className="font-sans text-sm font-normal"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {" "}
               /mo
             </span>
@@ -42,7 +48,11 @@ function PricingPage() {
           <ul className="mt-8 space-y-3 text-sm">
             {perks.map((p) => (
               <li key={p} className="flex items-start gap-2.5">
-                <CheckCircle2 size={15} className="mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
+                <CheckCircle2
+                  size={15}
+                  className="mt-0.5 shrink-0"
+                  style={{ color: "var(--primary)" }}
+                />
                 <span style={{ color: "var(--muted-foreground)" }}>{p}</span>
               </li>
             ))}
