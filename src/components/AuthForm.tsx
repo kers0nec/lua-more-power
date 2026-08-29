@@ -183,30 +183,6 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
     }
   }
 
-  async function googleLogin() {
-    persistRemember(remember);
-    setErr(null);
-    setNotice(null);
-    setBusy(true);
-    try {
-      const redirectUrl =
-        typeof window !== "undefined" ? `${window.location.origin}/dashboard` : "/dashboard";
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: redirectUrl,
-        },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed to initiate Google sign-in");
-      setBusy(false);
-    }
-  }
-
   return (
     <div className="relative flex min-h-screen">
       <div
@@ -253,43 +229,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
               : "Free to start. Protect your first script whenever you're ready."}
           </p>
 
-          <div className="mt-8">
-            <button
-              type="button"
-              onClick={googleLogin}
-              className="btn-outline w-full flex items-center justify-center gap-3 py-2.5 font-medium transition-all hover:bg-white/5"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.4s.2-1.6.4-2.4L1.6 7c-.8 1.6-1.3 3.4-1.3 5.3s.5 3.7 1.3 5.3l3.7-2.9z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.4-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z"
-                />
-              </svg>
-              Continue with Google
-            </button>
-            <div
-              className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em]"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              <span className="h-px flex-1" style={{ background: "var(--border)" }} />
-              or with email
-              <span className="h-px flex-1" style={{ background: "var(--border)" }} />
-            </div>
-          </div>
-
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="mt-8 space-y-4">
             {mode === "signin" && (
               <div
                 className="flex rounded-lg border p-1"

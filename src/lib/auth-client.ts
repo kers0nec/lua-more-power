@@ -44,11 +44,14 @@ export async function handleIncomingAuth(): Promise<AuthResult> {
         };
       }
 
-      // 1. Email OTP / Token Hash Verification (token_hash + type)
+      // 1. Email OTP / Token Hash Verification (token_hash or token + type/email)
       const tokenHash = searchParams.get("token_hash") || hashParams.get("token_hash");
-      const otpType = (searchParams.get("type") || hashParams.get("type")) as EmailOtpType | null;
+      const token = searchParams.get("token") || hashParams.get("token");
+      const emailParam = searchParams.get("email") || hashParams.get("email");
+      const rawType = searchParams.get("type") || hashParams.get("type");
+      const otpType = (rawType || "email") as EmailOtpType;
 
-      if (tokenHash && otpType) {
+      if (tokenHash) {
         const { data, error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: otpType,
@@ -68,7 +71,31 @@ export async function handleIncomingAuth(): Promise<AuthResult> {
           return {
             success: true,
             user: data.session?.user || data.user,
-            type: otpType,
+            type: rawType,
+          };
+        }
+      } else if (token && emailParam) {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: emailParam,
+          token: token,
+          type: otpType,
+        });
+
+        if (error) {
+          cleanAuthUrlParams();
+          return {
+            success: false,
+            user: null,
+            error: error.message || "Failed to verify email token. The link may have expired.",
+          };
+        }
+
+        if (data.session?.user || data.user) {
+          cleanAuthUrlParams();
+          return {
+            success: true,
+            user: data.session?.user || data.user,
+            type: rawType,
           };
         }
       }
