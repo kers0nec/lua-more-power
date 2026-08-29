@@ -12,7 +12,7 @@ export const Route = createFileRoute("/tos")({
   component: TosPage,
 });
 
-function TosPage() {
+export function TosPage() {
   return (
     <PageShell eyebrow="Legal" title="Terms of Service" subtitle="Last updated: August 29, 2026">
       <article

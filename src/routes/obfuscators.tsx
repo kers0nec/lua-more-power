@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 
 type LocalObfuscator = {
+  obfuscateLua: (source: string) => string;
   obfuscateLuaWithOptions: (
     source: string,
     options?: {
       vmDepth?: number;
       antiTamper?: boolean;
-      antiLogger?: boolean;
+      antiHook?: boolean;
       dualVm?: boolean;
     },
   ) => string;
@@ -73,7 +74,8 @@ function ObfuscatorsPage() {
   const [apiKey, setApiKey] = useState("");
   const [depth, setDepth] = useState("0");
   const [antiTamper, setAntiTamper] = useState(true);
-  const [antiLogger, setAntiLogger] = useState(true);
+  const [antiHook, setAntiHook] = useState(true);
+  const [dualVm, setDualVm] = useState(true);
   const [status, setStatus] = useState("");
   const [apiStatus, setApiStatus] = useState("");
   const [engineReady, setEngineReady] = useState(false);
@@ -111,17 +113,17 @@ function ObfuscatorsPage() {
   async function runLocal() {
     if (!source.trim() || running) return;
     setRunning(true);
-    setStatus("Building LuaMore VM…");
+    setStatus("Building LuaMore v13 VM…");
     try {
       const engine = await loadLocalEngine();
       const result = engine.obfuscateLuaWithOptions(source, {
         vmDepth: Number(depth),
         antiTamper,
-        antiLogger,
-        dualVm: true,
+        antiHook,
+        dualVm,
       });
       setOutput(result);
-      setStatus(`Done · ${result.length.toLocaleString()} output characters`);
+      setStatus(`Done · ${result.length.toLocaleString()} output characters (Anti-Hook active)`);
     } catch (error) {
       setOutput("");
       setStatus(error instanceof Error ? error.message : "Obfuscation failed");
@@ -210,44 +212,40 @@ function ObfuscatorsPage() {
               <div className="eyebrow">In-browser</div>
               <h2 className="mt-2 font-display text-2xl">LuaMore Obfuscator</h2>
             </div>
-            <span className="badge-solid">VM v11</span>
+            <span className="badge-blue">VM v13 Anti-Hook</span>
           </div>
           <p className="mt-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            Quad-nested virtual machine, compression, rotating encryption, dual signatures, and
-            runtime hardening. Source stays in this browser tab.
+            Layered virtual machine with Silent Entropy Poisoning anti-hook shield, rotating 4-key
+            XOR, RC4 stream cipher, and dual FNV-1a/djb2 integrity verification. Source stays 100%
+            inside your browser.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <label className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-              VM depth
-              <select
-                value={depth}
-                onChange={(event) => setDepth(event.target.value)}
-                className="input-blue mt-2"
-              >
-                <option value="0">Auto</option>
-                <option value="1">1 layer</option>
-                <option value="2">2 layers</option>
-                <option value="3">3 layers</option>
-                <option value="4">4 layers</option>
-                <option value="5">5 layers</option>
-              </select>
-            </label>
             <div className="space-y-3 pt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={antiHook}
+                  onChange={(event) => setAntiHook(event.target.checked)}
+                />{" "}
+                Anti-Hook Shield (Silent Poison)
+              </label>
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={antiTamper}
                   onChange={(event) => setAntiTamper(event.target.checked)}
                 />{" "}
-                Anti-tamper prelude
+                Anti-Tamper Primitives
               </label>
+            </div>
+            <div className="space-y-3 pt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={antiLogger}
-                  onChange={(event) => setAntiLogger(event.target.checked)}
+                  checked={dualVm}
+                  onChange={(event) => setDualVm(event.target.checked)}
                 />{" "}
-                Anti-logger trap
+                Dual-VM Multi-Layer Wrapping
               </label>
             </div>
           </div>
@@ -258,9 +256,9 @@ function ObfuscatorsPage() {
             onClick={runLocal}
           >
             {running
-              ? "Obfuscating…"
+              ? "Obfuscating with Anti-Hook…"
               : engineReady
-                ? "Obfuscate with LuaMore VM"
+                ? "Obfuscate with LuaMore v13"
                 : "Loading local VM…"}
           </button>
           {status ? (

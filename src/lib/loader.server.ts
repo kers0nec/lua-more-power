@@ -9,6 +9,20 @@
 // Every served script is passed through the LuaMore VM obfuscator so the
 // response body never contains plaintext source.
 import { obfuscateLua } from "@/lib/obfuscator.server";
+import { getScriptByPublicId, bumpScriptRuns } from "@/lib/scripts-store.server";
+
+interface ScriptRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  code: string | null;
+  obfuscated_code?: string | null;
+  is_protected?: boolean;
+  ffa?: boolean;
+  public_id: string;
+  is_active?: boolean;
+  run_count?: number;
+}
 
 export async function handleLoaderRequest(params: { publicId: string }, request: Request) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -18,41 +32,64 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
 
   // Resolve the token: script public_id first, then license key.
   let key = url.searchParams.get("key")?.trim() || null;
-  let { data: script } = await supabaseAdmin
-    .from("scripts")
-    .select(
-      "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
-    )
-    .eq("public_id", token)
-    .maybeSingle();
+  let script: ScriptRecord | null = null;
 
-  if (!script) {
-    const { data: byKey } = await supabaseAdmin
-      .from("license_keys")
-      .select("key, script_id")
-      .eq("key", token)
-      .maybeSingle();
-    if (!byKey?.script_id) return luaError("Script not found");
-    key = byKey.key;
-    const { data: s2 } = await supabaseAdmin
+  try {
+    const { data: dbScript } = await supabaseAdmin
       .from("scripts")
       .select(
         "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
       )
-      .eq("id", byKey.script_id)
+      .eq("public_id", token)
       .maybeSingle();
-    script = s2 ?? null;
+    if (dbScript) script = dbScript;
+  } catch {
+    // ignore
+  }
+
+  if (!script) {
+    const local = getScriptByPublicId(token);
+    if (local) script = local;
+  }
+
+  if (!script) {
+    try {
+      const { data: byKey } = await supabaseAdmin
+        .from("license_keys")
+        .select("key, script_id")
+        .eq("key", token)
+        .maybeSingle();
+      if (byKey?.script_id) {
+        key = byKey.key;
+        const { data: s2 } = await supabaseAdmin
+          .from("scripts")
+          .select(
+            "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
+          )
+          .eq("id", byKey.script_id)
+          .maybeSingle();
+        script = s2 ?? null;
+      }
+    } catch {
+      // ignore
+    }
   }
 
   if (!script) return luaError("Script not found");
   if (!script.is_active) return luaError("Script is disabled");
   if (!script.code) return luaError("Script has no code yet");
 
-  const bumpRuns = () =>
-    supabaseAdmin
-      .from("scripts")
-      .update({ run_count: (script!.run_count ?? 0) + 1, last_run_at: new Date().toISOString() })
-      .eq("id", script!.id);
+  const bumpRuns = () => {
+    bumpScriptRuns(script.id);
+    try {
+      supabaseAdmin
+        .from("scripts")
+        .update({ run_count: (script.run_count ?? 0) + 1, last_run_at: new Date().toISOString() })
+        .eq("id", script.id);
+    } catch {
+      // ignore
+    }
+  };
 
   // Serve stored obfuscated_code when protection is enabled and a build exists;
   // otherwise obfuscate on the fly. Non-protected scripts still get VM-wrapped

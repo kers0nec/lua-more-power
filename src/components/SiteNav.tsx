@@ -6,9 +6,15 @@ import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
   { to: "/features", label: "Features" },
+  { to: "/how", label: "How It Works" },
   { to: "/keys", label: "Keys" },
   { to: "/obfuscators", label: "Obfuscators" },
-  { to: "/loading-screens", label: "Loading screens" },
+  { to: "/loading-screens", label: "Loading Screens" },
+  { to: "/commands", label: "Commands" },
+  { to: "/docs", label: "Docs" },
+  { to: "/pricing", label: "Pricing" },
+  { to: "/faq", label: "FAQ" },
+  { to: "/changelog", label: "Changelog" },
   { to: "/settings", label: "Settings" },
 ];
 

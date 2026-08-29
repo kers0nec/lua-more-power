@@ -9,6 +9,7 @@ import {
   parseDuration,
 } from "@/lib/discord-panel";
 import { autoRegisterDiscordCommands } from "@/lib/discord-commands.server";
+import { getScriptByPublicId, getAllScripts } from "@/lib/scripts-store.server";
 
 // Discord HTTP Interactions endpoint.
 // Configure in the Discord developer portal:
@@ -129,11 +130,23 @@ async function handleCommand(body: any) {
         if (scriptPublicId) {
           // Look up the script by public_id ACROSS ALL OWNERS so an admin in
           // another server can post someone else's script panel (with the ID).
-          const { data: script } = await supabaseAdmin
-            .from("scripts")
-            .select("id, name, description, user_id")
-            .eq("public_id", scriptPublicId)
-            .maybeSingle();
+          let script: any = null;
+          try {
+            const { data: dbScript } = await supabaseAdmin
+              .from("scripts")
+              .select("id, name, description, user_id")
+              .eq("public_id", scriptPublicId)
+              .maybeSingle();
+            if (dbScript) script = dbScript;
+          } catch {
+            // ignore
+          }
+
+          if (!script) {
+            const local = getScriptByPublicId(scriptPublicId);
+            if (local) script = local;
+          }
+
           if (!script) return errorReply("Script not found — check its public ID");
 
           // Invoker must own the script OR have Administrator in this guild.
@@ -153,12 +166,24 @@ async function handleCommand(body: any) {
             "Account not linked. Use `/login <api_key>` first, or pass `script_id:<public_id>`.",
           );
 
-        const { data: scripts } = await supabaseAdmin
-          .from("scripts")
-          .select("id, name, public_id")
-          .eq("user_id", profile.id)
-          .order("created_at", { ascending: false })
-          .limit(25);
+        let scripts: any[] = [];
+        try {
+          const { data: dbScripts } = await supabaseAdmin
+            .from("scripts")
+            .select("id, name, public_id")
+            .eq("user_id", profile.id)
+            .order("created_at", { ascending: false })
+            .limit(25);
+          if (dbScripts && dbScripts.length > 0) scripts = dbScripts;
+        } catch {
+          // ignore
+        }
+
+        if (!scripts.length) {
+          const localList = getAllScripts(profile.id);
+          if (localList.length > 0) scripts = localList;
+        }
+
         if (!scripts?.length)
           return errorReply("You have no scripts yet — create one on the dashboard.");
 
