@@ -52,24 +52,41 @@ export const getDashboardStats = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { display_name: string }) =>
+  .inputValidator((input: { display_name: string; discord_id?: string }) =>
     z
       .object({
         display_name: z.string().trim().regex(USERNAME_RE, "Use 3–24 letters or numbers only"),
+        discord_id: z.string().trim().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const updatePayload: Record<string, unknown> = {
+      display_name: data.display_name,
+      plan: "free",
+      max_scripts: 999999999,
+      max_panels: 999999999,
+    };
+    if (data.discord_id !== undefined) {
+      updatePayload.discord_id = data.discord_id || null;
+    }
+
     const { error } = await context.supabase
       .from("profiles")
-      .update({
-        display_name: data.display_name,
-        plan: "free",
-        max_scripts: 999999999,
-        max_panels: 999999999,
-      })
+      .update(updatePayload)
       .eq("id", context.userId);
     if (error) throw new Error(error.message);
+
+    if (data.discord_id) {
+      const { setDiscordSession } = await import("@/lib/discord-auth-store.server");
+      setDiscordSession(data.discord_id, {
+        userId: context.userId,
+        discordId: data.discord_id,
+        username: data.display_name,
+        linkedAt: new Date().toISOString(),
+      });
+    }
+
     return { ok: true as const };
   });
 

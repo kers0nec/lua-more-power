@@ -1,20 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { generateSignedApiKey } from "@/lib/discord-auth-store.server";
 
 async function sha256Hex(s: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-function randomApiKey() {
-  const bytes = new Uint8Array(18);
-  crypto.getRandomValues(bytes);
-  return btoa(String.fromCharCode(...bytes))
-    .replace(/[+/=]/g, "")
-    .slice(0, 24);
 }
 
 export const listApiKeys = createServerFn({ method: "GET" })
@@ -39,12 +32,12 @@ export const createApiKey = createServerFn({ method: "POST" })
     z.object({ label: z.string().trim().min(1).max(60) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const raw = randomApiKey();
+    const raw = generateSignedApiKey(context.userId);
     const hash = await sha256Hex(raw);
     const { error } = await context.supabase.from("api_keys").insert({
       user_id: context.userId,
       label: data.label,
-      prefix: raw.slice(0, 4),
+      prefix: raw.slice(0, 7),
       key_hash: hash,
     });
     if (error) throw new Error(error.message);

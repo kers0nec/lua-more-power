@@ -34,6 +34,7 @@ function Page() {
 
   const [activeTab, setActiveTab] = useState<"profile" | "security" | "backup">("profile");
   const [name, setName] = useState("");
+  const [discordId, setDiscordId] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -41,12 +42,19 @@ function Page() {
 
   useEffect(() => {
     if (p?.display_name) setName(p.display_name);
-  }, [p?.display_name]);
+    if (p?.discord_id) setDiscordId(p.discord_id);
+  }, [p?.display_name, p?.discord_id]);
 
   const saveMut = useMutation({
-    mutationFn: () => save({ data: { display_name: name.trim() } }),
+    mutationFn: () =>
+      save({
+        data: {
+          display_name: name.trim(),
+          discord_id: discordId.trim() || undefined,
+        },
+      }),
     onSuccess: () => {
-      setStatus("✓ Profile updated successfully");
+      setStatus("✓ Profile and Discord link updated successfully");
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
     onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to update profile"}`),
@@ -223,7 +231,7 @@ function Page() {
 
             <div>
               <label className="eyebrow flex items-center gap-1.5">
-                <Bot size={13} /> Discord Bot Binding
+                <Bot size={13} /> Discord Account Binding
               </label>
               <div
                 className="mt-2 rounded-lg border p-4 text-sm"
@@ -231,13 +239,23 @@ function Page() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">
-                    {p?.discord_id ? `Linked Discord ID: ${p.discord_id}` : "Not linked yet"}
+                    {discordId ? `Linked Discord ID: ${discordId}` : "Not linked yet"}
                   </span>
-                  <span className="badge-solid">{p?.discord_id ? "Linked" : "Available"}</span>
+                  <span className="badge-solid">{discordId ? "Linked" : "Available"}</span>
+                </div>
+                <div className="mt-3">
+                  <label className="text-xs text-muted-foreground">Discord User ID</label>
+                  <input
+                    value={discordId}
+                    onChange={(e) => setDiscordId(e.target.value)}
+                    placeholder="e.g. 1535400459962032258"
+                    className="input-blue mt-1 font-mono text-sm w-full"
+                  />
                 </div>
                 <p className="mt-2 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  Use <code className="font-mono text-[11px]">/login &lt;api_key&gt;</code> on
-                  Discord to bind your bot panel.
+                  Enter your Discord User ID here and click <strong>Save Profile</strong>, or run{" "}
+                  <code className="font-mono text-[11px]">/login api_key:&lt;key&gt;</code> directly
+                  in Discord.
                 </p>
               </div>
             </div>
