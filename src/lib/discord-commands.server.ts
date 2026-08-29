@@ -76,14 +76,20 @@ let registrationPromise: Promise<{ ok: boolean; message: string; count?: number 
 export async function autoRegisterDiscordCommands(options?: {
   force?: boolean;
 }): Promise<{ ok: boolean; message: string; count?: number; status?: number }> {
-  const token = process.env.DISCORD_BOT_TOKEN;
-  const clientId = process.env.DISCORD_CLIENT_ID;
-  const guildId = process.env.DISCORD_GUILD_ID;
+  const token = (process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN || "").trim();
+  const clientId = (
+    process.env.DISCORD_CLIENT_ID ||
+    process.env.DISCORD_APPLICATION_ID ||
+    process.env.DISCORD_APP_ID ||
+    ""
+  ).trim();
+  const guildId = (process.env.DISCORD_GUILD_ID || process.env.DISCORD_SERVER_ID || "").trim();
 
   if (!token || !clientId) {
     return {
       ok: false,
-      message: "DISCORD_BOT_TOKEN or DISCORD_CLIENT_ID is not configured.",
+      message:
+        "DISCORD_BOT_TOKEN and DISCORD_CLIENT_ID (or DISCORD_APPLICATION_ID) must be configured in environment variables.",
     };
   }
 

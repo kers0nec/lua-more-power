@@ -15,19 +15,29 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   const [human, setHuman] = useState(false);
   const onHuman = useCallback((ok: boolean) => setHuman(ok), []);
   const [err, setErr] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const nav = useNavigate();
 
   useEffect(() => {
     setMode(initialMode);
+    setErr(null);
+    setNotice(null);
   }, [initialMode]);
 
   useEffect(() => {
     const oauthErr = new URLSearchParams(window.location.search).get("error");
     if (oauthErr) setErr(oauthErr);
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) nav({ to: "/dashboard" });
-    });
+    try {
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (data?.session) nav({ to: "/dashboard" });
+        })
+        .catch(() => undefined);
+    } catch {
+      /* ignore */
+    }
   }, [nav]);
 
   function persistRemember(value: boolean) {
@@ -42,6 +52,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    setNotice(null);
     if (mode === "signup") {
       if (!USERNAME_RE.test(username)) {
         setErr(USERNAME_HINT);
@@ -59,7 +70,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -68,14 +79,25 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
           },
         });
         if (error) throw error;
+        if (data.session) {
+          persistRemember(remember);
+          nav({ to: "/dashboard" });
+          return;
+        } else {
+          setNotice(
+            "Account created! Please check your email inbox to confirm your email, or sign in now.",
+          );
+          setMode("signin");
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        persistRemember(remember);
+        nav({ to: "/dashboard" });
       }
-      persistRemember(remember);
-      nav({ to: "/dashboard" });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed");
+      setErr(e instanceof Error ? e.message : "Authentication request failed");
     } finally {
       setBusy(false);
     }
@@ -275,6 +297,18 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
               />
               Remember me on this device
             </label>
+
+            {notice && (
+              <div
+                className="rounded-md border p-3 text-sm text-emerald-300"
+                style={{
+                  borderColor: "rgba(16, 185, 129, 0.4)",
+                  background: "rgba(16, 185, 129, 0.1)",
+                }}
+              >
+                {notice}
+              </div>
+            )}
 
             {err && (
               <div

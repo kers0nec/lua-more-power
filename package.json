@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "discord:register": "node scripts/register-discord-commands.mjs",
     "test:obfuscator": "node test-obf.mjs",
     "format": "prettier --write ."
   },

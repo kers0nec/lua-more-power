@@ -2,6 +2,14 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { autoRegisterDiscordCommands } from "./lib/discord-commands.server";
+
+// Automatically register Discord slash commands when the server starts up (e.g. on Wasmer / GitHub deployment)
+if (typeof process !== "undefined" && process.env) {
+  setTimeout(() => {
+    void autoRegisterDiscordCommands().catch(() => undefined);
+  }, 1000);
+}
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {

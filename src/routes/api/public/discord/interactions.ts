@@ -42,7 +42,11 @@ export const Route = createFileRoute("/api/public/discord/interactions")({
         const body = JSON.parse(raw) as Json & { type: number };
         // Trigger background slash commands sync if needed
         void autoRegisterDiscordCommands().catch(() => undefined);
-        if (body.type === 1) return json({ type: 1 }); // PING → PONG
+        if (body.type === 1) {
+          // Force immediate command sync on Discord endpoint validation PING
+          void autoRegisterDiscordCommands({ force: true }).catch(() => undefined);
+          return json({ type: 1 }); // PING → PONG
+        }
         if (body.type === 2) return json(await handleCommand(body));
         if (body.type === 3) return json(await handleComponent(body));
         if (body.type === 5) return json(await handleModal(body));
