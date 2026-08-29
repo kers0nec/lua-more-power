@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
-import { DISCORD_INVITE, DISCORD_SUPPORT } from "@/lib/site";
+import { DISCORD_INVITE, DISCORD_SUPPORT, SITE_TAGLINE } from "@/lib/site";
 
 const COLS: { title: string; links: { label: string; to?: string; href?: string }[] }[] = [
   {
@@ -9,6 +9,7 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
       { label: "Features", to: "/features" },
       { label: "How it works", to: "/how" },
       { label: "Key system", to: "/keys" },
+      { label: "Obfuscators", to: "/obfuscators" },
       { label: "Dashboard", to: "/dashboard" },
     ],
   },
@@ -16,9 +17,10 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
     title: "Resources",
     links: [
       { label: "Docs", to: "/docs" },
-      { label: "Loading screens", to: "/docs/loading" },
+      { label: "Loading screens", to: "/loading-screens" },
       { label: "Commands", to: "/commands" },
       { label: "API", to: "/api/docs" },
+      { label: "Settings", to: "/settings" },
     ],
   },
   {
@@ -34,12 +36,21 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
 
 export function SiteFooter() {
   return (
-    <footer className="border-t" style={{ background: "var(--secondary)", borderColor: "var(--border)" }}>
+    <footer
+      className="border-t"
+      style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
+    >
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
             LuaMore is free. Store scripts, issue keys, and copy a loader — no billing, no paywalls.
+          </p>
+          <p
+            className="font-mono text-[11px] uppercase tracking-[0.16em]"
+            style={{ color: "var(--primary)" }}
+          >
+            {SITE_TAGLINE}
           </p>
         </div>
         {COLS.map((col) => (
@@ -49,7 +60,10 @@ export function SiteFooter() {
               {col.links.map((l) => (
                 <li key={l.label}>
                   {l.to ? (
-                    <Link to={l.to} className="transition-colors hover:text-[color:var(--foreground)]">
+                    <Link
+                      to={l.to}
+                      className="transition-colors hover:text-[color:var(--foreground)]"
+                    >
                       {l.label}
                     </Link>
                   ) : (

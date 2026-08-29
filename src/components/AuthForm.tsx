@@ -196,11 +196,24 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
                 className="input-blue mt-2"
                 placeholder="••••••••"
               />
+              {mode === "signin" ? (
+                <div
+                  className="mt-2 text-right text-xs"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  <Link to="/reset-password" className="underline underline-offset-2">
+                    Forgot password?
+                  </Link>
+                </div>
+              ) : null}
             </div>
 
             {mode === "signup" && (
               <>
-                <label className="flex items-start gap-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                <label
+                  className="flex items-start gap-2 text-sm"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   <input
                     type="checkbox"
                     className="mt-0.5"
@@ -223,8 +236,15 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
               </>
             )}
 
-            <label className="flex items-center gap-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+            <label
+              className="flex items-center gap-2 text-sm"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
               Remember me on this device
             </label>
 
@@ -250,14 +270,22 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
             {mode === "signin" ? (
               <>
                 New to LuaMore?{" "}
-                <Link to="/register" className="underline underline-offset-2" style={{ color: "var(--foreground)" }}>
+                <Link
+                  to="/register"
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Create an account
                 </Link>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <Link to="/login" className="underline underline-offset-2" style={{ color: "var(--foreground)" }}>
+                <Link
+                  to="/login"
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Sign in
                 </Link>
               </>

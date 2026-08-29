@@ -5,19 +5,32 @@ export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
       { title: "Documentation — LuaMore" },
-      { name: "description", content: "Feature reference for scripts, keys, Discord, and loading screens." },
+      {
+        name: "description",
+        content: "Feature reference for scripts, keys, Discord, and loading screens.",
+      },
     ],
   }),
   component: DocsPage,
 });
 
 const guides = [
-  { to: "/docs/loading", title: "Loading screen", desc: "Wide loading bar while LuaMore loads your script · four presets, loader URL, mobile-wide layout." },
+  {
+    to: "/loading-screens",
+    title: "Loading screen",
+    desc: "Wide loading bar while LuaMore loads your script · four presets, loader URL, mobile-wide layout.",
+  },
   { to: "/keys", title: "Keys", desc: "Duration, HWID, limits, Discord mapping." },
   { to: "/features", title: "Protection", desc: "LuaMore VM, cached builds, game routing." },
+  {
+    to: "/obfuscators",
+    title: "Obfuscators",
+    desc: "Run the local VM or build through the authenticated API.",
+  },
   { to: "/commands", title: "Discord", desc: "Setup, roles, loaders, HWID recovery." },
   { to: "/api/docs", title: "API", desc: "Obfuscate Luau from your own backend." },
   { to: "/how", title: "How it works", desc: "Four steps from script to loader." },
+  { to: "/settings", title: "Settings", desc: "Manage your account, security, and appearance." },
 ];
 
 function DocsPage() {

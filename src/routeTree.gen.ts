@@ -17,10 +17,14 @@ import { Route as DocsRouteImport } from './routes/docs'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as HowRouteImport } from './routes/how'
 import { Route as KeysRouteImport } from './routes/keys'
+import { Route as LoadingScreensRouteImport } from './routes/loading-screens'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ObfuscatorsRouteImport } from './routes/obfuscators'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TosRouteImport } from './routes/tos'
 import { Route as ApiDocsRouteImport } from './routes/api.docs'
 import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
@@ -81,9 +85,19 @@ const KeysRoute = KeysRouteImport.update({
   path: '/keys',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoadingScreensRoute = LoadingScreensRouteImport.update({
+  id: '/loading-screens',
+  path: '/loading-screens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObfuscatorsRoute = ObfuscatorsRouteImport.update({
+  id: '/obfuscators',
+  path: '/obfuscators',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -99,6 +113,16 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TosRoute = TosRouteImport.update({
@@ -224,10 +248,14 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
+  '/loading-screens': typeof LoadingScreensRoute
   '/login': typeof LoginRoute
+  '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -257,10 +285,14 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
+  '/loading-screens': typeof LoadingScreensRoute
   '/login': typeof LoginRoute
+  '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -292,10 +324,14 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
+  '/loading-screens': typeof LoadingScreensRoute
   '/login': typeof LoginRoute
+  '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -327,10 +363,14 @@ export interface FileRouteTypes {
     | '/features'
     | '/how'
     | '/keys'
+    | '/loading-screens'
     | '/login'
+    | '/obfuscators'
     | '/pricing'
     | '/privacy'
     | '/register'
+    | '/reset-password'
+    | '/settings'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -360,10 +400,14 @@ export interface FileRouteTypes {
     | '/features'
     | '/how'
     | '/keys'
+    | '/loading-screens'
     | '/login'
+    | '/obfuscators'
     | '/pricing'
     | '/privacy'
     | '/register'
+    | '/reset-password'
+    | '/settings'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -394,10 +438,14 @@ export interface FileRouteTypes {
     | '/features'
     | '/how'
     | '/keys'
+    | '/loading-screens'
     | '/login'
+    | '/obfuscators'
     | '/pricing'
     | '/privacy'
     | '/register'
+    | '/reset-password'
+    | '/settings'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -429,10 +477,14 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   HowRoute: typeof HowRoute
   KeysRoute: typeof KeysRoute
+  LoadingScreensRoute: typeof LoadingScreensRoute
   LoginRoute: typeof LoginRoute
+  ObfuscatorsRoute: typeof ObfuscatorsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
   TosRoute: typeof TosRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
@@ -502,11 +554,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KeysRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/loading-screens': {
+      id: '/loading-screens'
+      path: '/loading-screens'
+      fullPath: '/loading-screens'
+      preLoaderRoute: typeof LoadingScreensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/obfuscators': {
+      id: '/obfuscators'
+      path: '/obfuscators'
+      fullPath: '/obfuscators'
+      preLoaderRoute: typeof ObfuscatorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -528,6 +594,20 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tos': {
@@ -722,10 +802,14 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   HowRoute: HowRoute,
   KeysRoute: KeysRoute,
+  LoadingScreensRoute: LoadingScreensRoute,
   LoginRoute: LoginRoute,
+  ObfuscatorsRoute: ObfuscatorsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
   TosRoute: TosRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,

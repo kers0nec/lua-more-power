@@ -35,8 +35,8 @@ const features = [
   },
   {
     icon: Link2,
-    title: "Loaders",
-    desc: "Deliver protected Luau with a signed loader URL from the dashboard.",
+    title: "Delivery & ad links",
+    desc: "Use signed loader URLs, keyless mode, or issue a key after a visitor completes your chosen link.",
   },
 ];
 
@@ -91,7 +91,10 @@ function Home() {
                 style={{ borderColor: "var(--border)" }}
               >
                 <span className="font-mono text-xs">loader.lua</span>
-                <span className="font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                <span
+                  className="font-mono text-[10px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   encrypted route
                 </span>
               </div>
@@ -101,7 +104,7 @@ function Home() {
               >
                 {`_G.script_key = "LM-A7X2-9KQM-4RPL"
 local loader = game:HttpGet(
-  "https://luamore.app/api/public/r/demo"
+  "https://luamore.win/v1/load/demo"
 )
 loadstring(loader)()`}
               </pre>
@@ -147,7 +150,11 @@ loadstring(loader)()`}
           <h2 className="mt-3 font-display text-4xl md:text-5xl">Four steps, then you are done</h2>
           <div className="mt-12 grid gap-8 md:grid-cols-4">
             {steps.map((s) => (
-              <div key={s.n} className="border-t pt-6" style={{ borderColor: "var(--border-strong)" }}>
+              <div
+                key={s.n}
+                className="border-t pt-6"
+                style={{ borderColor: "var(--border-strong)" }}
+              >
                 <div className="font-mono text-xs" style={{ color: "var(--muted-foreground)" }}>
                   {s.n}
                 </div>
@@ -165,7 +172,10 @@ loadstring(loader)()`}
         <div className="mx-auto max-w-2xl text-center">
           <div className="eyebrow">Pricing</div>
           <h2 className="mt-3 font-display text-4xl md:text-5xl">Everything is free</h2>
-          <p className="mx-auto mt-4 max-w-lg text-base" style={{ color: "var(--muted-foreground)" }}>
+          <p
+            className="mx-auto mt-4 max-w-lg text-base"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             No Stripe. No tiers. Unlimited scripts, keys, obfuscation, and Discord panels.
           </p>
         </div>
@@ -174,7 +184,10 @@ loadstring(loader)()`}
             <h3 className="font-display text-2xl">LuaMore</h3>
             <div className="mt-4 font-display text-6xl">
               $0
-              <span className="font-sans text-sm font-normal" style={{ color: "var(--muted-foreground)" }}>
+              <span
+                className="font-sans text-sm font-normal"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 {" "}
                 forever
               </span>
@@ -189,7 +202,11 @@ loadstring(loader)()`}
                 "No extra ads. No billing.",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2.5">
-                  <CheckCircle2 size={15} className="mt-0.5 shrink-0" style={{ color: "var(--primary)" }} />
+                  <CheckCircle2
+                    size={15}
+                    className="mt-0.5 shrink-0"
+                    style={{ color: "var(--primary)" }}
+                  />
                   <span style={{ color: "var(--muted-foreground)" }}>{f}</span>
                 </li>
               ))}
