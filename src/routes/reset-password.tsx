@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { handleIncomingAuth } from "@/lib/auth-client";
@@ -137,8 +138,19 @@ function ResetPasswordPage() {
                   required
                 />
               </div>
-              <button type="submit" className="btn-primary w-full" disabled={busy}>
-                {busy ? "Updating…" : "Update password"}
+              <button
+                type="submit"
+                className="btn-primary w-full flex items-center justify-center gap-2"
+                disabled={busy}
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span>Updating password...</span>
+                  </>
+                ) : (
+                  <span>Update password</span>
+                )}
               </button>
             </form>
           ) : ready ? (
@@ -155,8 +167,21 @@ function ResetPasswordPage() {
                   required
                 />
               </div>
-              <button type="submit" className="btn-primary w-full" disabled={busy || sent}>
-                {busy ? "Sending…" : sent ? "Email sent" : "Send reset email"}
+              <button
+                type="submit"
+                className="btn-primary w-full flex items-center justify-center gap-2"
+                disabled={busy || sent}
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span>Sending email...</span>
+                  </>
+                ) : sent ? (
+                  "Email sent"
+                ) : (
+                  "Send reset email"
+                )}
               </button>
             </form>
           ) : null}

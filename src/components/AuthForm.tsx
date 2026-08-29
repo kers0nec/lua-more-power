@@ -5,7 +5,7 @@ import { handleIncomingAuth } from "@/lib/auth-client";
 import { Logo } from "@/components/Logo";
 import { HumanCheck } from "@/components/HumanCheck";
 import { USERNAME_HINT, USERNAME_RE } from "@/lib/site";
-import { Mail, KeyRound, Sparkles } from "lucide-react";
+import { Mail, KeyRound, Sparkles, Loader2 } from "lucide-react";
 
 export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) {
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
@@ -176,8 +176,14 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
         nav({ to: "/dashboard" });
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Authentication request failed";
-      setErr(msg);
+      const rawMsg = e instanceof Error ? e.message : "Authentication request failed";
+      if (rawMsg === "Load failed" || rawMsg === "Failed to fetch" || rawMsg.includes("network")) {
+        setErr(
+          "Network connection or server error. Please check your internet connection and try again.",
+        );
+      } else {
+        setErr(rawMsg);
+      }
     } finally {
       setBusy(false);
     }
@@ -405,21 +411,46 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
                 type="button"
                 onClick={resendConfirmation}
                 disabled={busy}
-                className="btn-outline w-full py-2 text-xs flex items-center justify-center gap-2"
+                className="btn-outline w-full py-2.5 text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Mail className="h-3.5 w-3.5" />
-                Resend Confirmation Email
+                {busy ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Sending email...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>Resend Confirmation Email</span>
+                  </>
+                )}
               </button>
             )}
 
-            <button disabled={busy} className="btn-primary w-full">
-              {busy
-                ? "Please wait…"
-                : mode === "signup"
-                  ? "Create account"
-                  : authMethod === "magiclink"
-                    ? "Send Magic Link"
-                    : "Sign in"}
+            <button
+              disabled={busy}
+              className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
+            >
+              {busy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                  <span>
+                    {mode === "signup"
+                      ? "Creating account..."
+                      : authMethod === "magiclink"
+                        ? "Sending magic link..."
+                        : "Signing in..."}
+                  </span>
+                </>
+              ) : (
+                <span>
+                  {mode === "signup"
+                    ? "Create account"
+                    : authMethod === "magiclink"
+                      ? "Send Magic Link"
+                      : "Sign in"}
+                </span>
+              )}
             </button>
           </form>
 
