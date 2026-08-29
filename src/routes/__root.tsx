@@ -150,7 +150,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // Handle "Remember me" session lifecycle
+  // Handle incoming auth tokens & "Remember me" session lifecycle
   useEffect(() => {
     try {
       document.documentElement.removeAttribute("data-accent");
@@ -165,6 +165,10 @@ function RootComponent() {
     } catch {
       /* storage unavailable */
     }
+
+    void import("@/lib/auth-client").then(({ handleIncomingAuth }) => {
+      void handleIncomingAuth();
+    });
   }, []);
 
   return (

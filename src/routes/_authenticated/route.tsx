@@ -23,71 +23,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { handleIncomingAuth } from "@/lib/auth-client";
 import { Logo } from "@/components/Logo";
-
-async function resolveCurrentUser() {
-  if (typeof window === "undefined") return null;
-
-  // Handle Google OAuth PKCE authorization code (?code=...)
-  if (window.location.search.includes("code=")) {
-    try {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get("code");
-      if (code) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error && data?.user) {
-          url.searchParams.delete("code");
-          window.history.replaceState({}, document.title, url.pathname + (url.hash || ""));
-          return data.user;
-        }
-      }
-    } catch (e) {
-      console.warn("[Auth] OAuth code exchange:", e);
-    }
-  }
-
-  // Handle OAuth hash tokens (#access_token=...)
-  if (
-    window.location.hash.includes("access_token=") ||
-    window.location.hash.includes("refresh_token=")
-  ) {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        return data.session.user;
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-
-  // Standard user check
-  try {
-    const { data: userData, error } = await supabase.auth.getUser();
-    if (!error && userData?.user) {
-      return userData.user;
-    }
-  } catch {
-    /* fallback to session */
-  }
-
-  // Fallback to active session in localStorage
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData?.session?.user) {
-      return sessionData.session.user;
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const user = await resolveCurrentUser();
+    const { user } = await handleIncomingAuth();
     if (!user) {
       throw redirect({ to: "/auth" });
     }

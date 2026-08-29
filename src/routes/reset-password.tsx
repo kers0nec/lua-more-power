@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { handleIncomingAuth } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -25,13 +26,25 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        setHasSession(Boolean(data.session));
-        setReady(true);
-      })
-      .catch(() => setReady(true));
+    async function init() {
+      const res = await handleIncomingAuth();
+      if (res.error) {
+        setStatus(res.error);
+      }
+      setHasSession(Boolean(res.user));
+      setReady(true);
+    }
+    void init();
+
+    const { data: authSub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setHasSession(true);
+      }
+    });
+
+    return () => {
+      authSub?.subscription?.unsubscribe();
+    };
   }, []);
 
   async function requestReset(event: FormEvent) {

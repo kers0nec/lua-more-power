@@ -1,12 +1,15 @@
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { handleIncomingAuth } from "@/lib/auth-client";
 import { Logo } from "@/components/Logo";
 import { HumanCheck } from "@/components/HumanCheck";
 import { USERNAME_HINT, USERNAME_RE } from "@/lib/site";
+import { Mail, KeyRound, Sparkles } from "lucide-react";
 
 export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) {
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+  const [authMethod, setAuthMethod] = useState<"password" | "magiclink">("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -17,6 +20,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   const [err, setErr] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [canResendEmail, setCanResendEmail] = useState(false);
   const nav = useNavigate();
 
   useEffect(() => {
@@ -26,37 +30,28 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   }, [initialMode]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthErr = params.get("error_description") || params.get("error");
-    if (oauthErr) setErr(oauthErr);
+    let active = true;
 
-    async function checkCurrentSession() {
-      try {
-        if (typeof window !== "undefined" && window.location.search.includes("code=")) {
-          const code = params.get("code");
-          if (code) {
-            setBusy(true);
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-            if (!error && data?.session) {
-              persistRemember(true);
-              nav({ to: "/dashboard" });
-              return;
-            }
-          }
-        }
+    async function processIncomingAuth() {
+      const res = await handleIncomingAuth();
+      if (!active) return;
 
-        const { data } = await supabase.auth.getSession();
-        if (data?.session) {
+      if (res.error) {
+        setErr(res.error);
+      } else if (res.user) {
+        persistRemember(true);
+        if (res.type === "recovery") {
+          nav({ to: "/reset-password" });
+        } else {
           nav({ to: "/dashboard" });
         }
-      } catch {
-        /* ignore */
       }
     }
 
-    void checkCurrentSession();
+    void processIncomingAuth();
 
     const { data: authSub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
       if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
         persistRemember(true);
         nav({ to: "/dashboard" });
@@ -64,6 +59,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
     });
 
     return () => {
+      active = false;
       authSub?.subscription?.unsubscribe();
     };
   }, [nav]);
@@ -77,12 +73,43 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
     }
   }
 
+  async function resendConfirmation() {
+    if (!email.trim()) {
+      setErr("Please enter your email address first.");
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    try {
+      const redirectUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/dashboard`
+          : "https://luamore.wasmer.app/dashboard";
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+      if (error) throw error;
+      setNotice("Verification link resent! Please check your email inbox and spam folder.");
+      setCanResendEmail(false);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed to resend confirmation email");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     setNotice(null);
+    setCanResendEmail(false);
+
     if (mode === "signup") {
-      if (!USERNAME_RE.test(username)) {
+      if (!USERNAME_RE.test(username.trim())) {
         setErr(USERNAME_HINT);
         return;
       }
@@ -95,37 +122,62 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
         return;
       }
     }
+
     setBusy(true);
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/dashboard`
+        : "https://luamore.wasmer.app/dashboard";
+
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
-            emailRedirectTo: window.location.origin,
-            data: { display_name: username },
+            emailRedirectTo: redirectUrl,
+            data: { display_name: username.trim() },
           },
         });
         if (error) throw error;
+
         if (data.session) {
           persistRemember(remember);
           nav({ to: "/dashboard" });
           return;
         } else {
           setNotice(
-            "Account created! Please check your email inbox to confirm your email, or sign in now.",
+            "Account created! We have sent a confirmation link to your email. Please click the link to verify your account and sign in.",
           );
-          setMode("signin");
+          setCanResendEmail(true);
           return;
         }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+      } else if (authMethod === "magiclink") {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
         if (error) throw error;
+        setNotice("Magic sign-in link sent! Check your email to sign in with one click.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) {
+          if (error.message.toLowerCase().includes("email not confirmed")) {
+            setCanResendEmail(true);
+          }
+          throw error;
+        }
         persistRemember(remember);
         nav({ to: "/dashboard" });
       }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Authentication request failed");
+      const msg = e instanceof Error ? e.message : "Authentication request failed";
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -134,17 +186,21 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   async function googleLogin() {
     persistRemember(remember);
     setErr(null);
+    setNotice(null);
     setBusy(true);
     try {
       const redirectUrl =
         typeof window !== "undefined" ? `${window.location.origin}/dashboard` : "/dashboard";
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: redirectUrl,
         },
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed to initiate Google sign-in");
       setBusy(false);
@@ -234,6 +290,44 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
           </div>
 
           <form onSubmit={submit} className="space-y-4">
+            {mode === "signin" && (
+              <div
+                className="flex rounded-lg border p-1"
+                style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.02)" }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod("password");
+                    setErr(null);
+                  }}
+                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                    authMethod === "password"
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod("magiclink");
+                    setErr(null);
+                  }}
+                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                    authMethod === "magiclink"
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Magic Link
+                </button>
+              </div>
+            )}
+
             {mode === "signup" && (
               <div>
                 <label className="eyebrow">Username</label>
@@ -264,32 +358,42 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
               />
               {mode === "signup" ? (
                 <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  We use this for account recovery and key delivery notices.
+                  We use this for account verification and access recovery.
+                </p>
+              ) : authMethod === "magiclink" ? (
+                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  We'll send a 1-click login link directly to your inbox.
                 </p>
               ) : null}
             </div>
-            <div>
-              <label className="eyebrow">Password</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-blue mt-2"
-                placeholder="••••••••"
-              />
-              {mode === "signin" ? (
-                <div
-                  className="mt-2 text-right text-xs"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  <Link to="/reset-password" className="underline underline-offset-2">
-                    Forgot password?
-                  </Link>
-                </div>
-              ) : null}
-            </div>
+
+            {(mode === "signup" || authMethod === "password") && (
+              <div>
+                <label className="eyebrow">Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-blue mt-2"
+                  placeholder="••••••••"
+                />
+                {mode === "signin" ? (
+                  <div
+                    className="mt-2 text-right text-xs"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    <Link
+                      to="/reset-password"
+                      className="underline underline-offset-2 hover:text-primary"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            )}
 
             {mode === "signup" && (
               <>
@@ -333,31 +437,49 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
 
             {notice && (
               <div
-                className="rounded-md border p-3 text-sm text-emerald-300"
+                className="rounded-md border p-3 text-sm text-emerald-300 flex flex-col gap-2"
                 style={{
                   borderColor: "rgba(16, 185, 129, 0.4)",
                   background: "rgba(16, 185, 129, 0.1)",
                 }}
               >
-                {notice}
+                <div>{notice}</div>
               </div>
             )}
 
             {err && (
               <div
-                className="rounded-md border p-3 text-sm"
+                className="rounded-md border p-3 text-sm flex flex-col gap-2"
                 style={{
                   borderColor: "var(--destructive)",
                   color: "var(--destructive)",
                   background: "rgba(244,63,94,0.08)",
                 }}
               >
-                {err}
+                <div>{err}</div>
               </div>
             )}
 
+            {canResendEmail && (
+              <button
+                type="button"
+                onClick={resendConfirmation}
+                disabled={busy}
+                className="btn-outline w-full py-2 text-xs flex items-center justify-center gap-2"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Resend Confirmation Email
+              </button>
+            )}
+
             <button disabled={busy} className="btn-primary w-full">
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {busy
+                ? "Please wait…"
+                : mode === "signup"
+                  ? "Create account"
+                  : authMethod === "magiclink"
+                    ? "Send Magic Link"
+                    : "Sign in"}
             </button>
           </form>
 
