@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Terms of Service — LuaMore</title>
   <meta name="description" content="Terms of Service for LuaMore — the free script hosting, key, and loader platform." />
-  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);else{document.documentElement.setAttribute("data-accent","gold");localStorage.setItem("lm_prefs",JSON.stringify({accent:"gold"}));}}catch(e){document.documentElement.setAttribute("data-accent","gold");}</script>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body data-page="tos">

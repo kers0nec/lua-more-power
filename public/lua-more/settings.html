@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings — LuaMore</title>
   <meta name="description" content="Manage your LuaMore profile, email, password, security, and appearance." />
-  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);else{document.documentElement.setAttribute("data-accent","gold");localStorage.setItem("lm_prefs",JSON.stringify({accent:"gold"}));}}catch(e){document.documentElement.setAttribute("data-accent","gold");}</script>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body data-page="settings">
@@ -157,9 +157,10 @@
         <!-- appearance -->
         <div class="card" id="appearance">
           <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> Appearance</h3>
-          <p class="sub">The site is dark blue and black — pick your accent. It applies everywhere, instantly.</p>
+          <p class="sub">The site is dark blue and black with gold accents — pick your accent. It applies everywhere, instantly.</p>
           <div class="swatches">
-            <span class="swatch" data-val="blue" title="Blue (default)" style="background:linear-gradient(135deg,#4d9fff,#38bdf8);"></span>
+            <span class="swatch sel" data-val="gold" title="Gold (default)" style="background:linear-gradient(135deg,#f6c453,#ffdf8e);"></span>
+            <span class="swatch" data-val="blue" title="Blue" style="background:linear-gradient(135deg,#4d9fff,#38bdf8);"></span>
             <span class="swatch" data-val="cyan" title="Cyan" style="background:linear-gradient(135deg,#22d3ee,#67e8f9);"></span>
             <span class="swatch" data-val="violet" title="Violet" style="background:linear-gradient(135deg,#a78bfa,#c4b5fd);"></span>
             <span class="swatch" data-val="green" title="Green" style="background:linear-gradient(135deg,#34d399,#6ee7b7);"></span>
@@ -177,6 +178,21 @@
               <div class="d">Your current browser session — it ends when you sign out.</div>
             </div>
           </div>
+        </div>
+
+        <!-- human verification -->
+        <div class="card" id="verify">
+          <h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Verify you're human</h3>
+          <p class="sub">Extra check to keep your account safe from bots.</p>
+          <div class="field-row">
+            <div class="field" style="flex:1;min-width:200px;margin:0;">
+              <label for="verify-code">Type what you see</label>
+              <div style="font-family:var(--mono);font-size:20px;font-weight:900;letter-spacing:.2em;color:var(--gold);background:var(--bg-2);border:1px dashed var(--border);border-radius:10px;padding:12px 14px;margin-bottom:6px;user-select:none;" id="verify-challenge">GOLD-7X9</div>
+              <input class="input" id="verify-code" type="text" placeholder="Type the code above" autocomplete="off" style="font-family:var(--mono);font-weight:700;letter-spacing:.05em;" />
+              <div class="err">That doesn't match. Try again.</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="this.textContent='Verified';this.style.background='var(--ok)';this.style.color='#041a10';this.disabled=true;document.getElementById('verify-code').value='GOLD-7X9';document.querySelector('#verify .err').style.display='none';">Verify</button>
         </div>
 
         <!-- danger zone -->

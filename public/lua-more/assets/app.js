@@ -550,13 +550,13 @@
       function paintSwatches() {
         var prefs = {};
         try { prefs = JSON.parse(localStorage.getItem("lm_prefs") || "{}"); } catch (e) {}
-        var cur = prefs.accent || "blue";
+        var cur = prefs.accent || "gold";
         $$("#appearance .swatch").forEach(function (s) { s.classList.toggle("sel", s.getAttribute("data-val") === cur); });
         var avColor = profile ? profile._avatar : "blue";
         $$(".av-swatch").forEach(function (s) { s.classList.toggle("sel", s.getAttribute("data-av") === avColor); });
       }
       function avatarColor() {
-        try { return (JSON.parse(localStorage.getItem("lm_prefs") || "{}").avatar) || "blue"; } catch (e) { return "blue"; }
+        try { return (JSON.parse(localStorage.getItem("lm_prefs") || "{}").avatar) || "gold"; } catch (e) { return "gold"; }
       }
       function paintAvatar() {
         var name = (profile && profile.display_name) || (user.email || "").split("@")[0] || "LM";
@@ -583,14 +583,14 @@
       function loadProfile() {
         return client.from("profiles").select("*").eq("id", uid).maybeSingle().then(function (r) {
           if (r.data) profile = r.data;
-          else profile = { display_name: (user.user_metadata && user.user_metadata.display_name) || (user.email || "").split("@")[0], created_at: user.created_at, _avatar: "blue" };
+          else profile = { display_name: (user.user_metadata && user.user_metadata.display_name) || (user.email || "").split("@")[0], created_at: user.created_at, _avatar: "gold" };
           paint();
           return profile;
         });
       }
 
       /* profile */
-      var avColor = "blue";
+      var avColor = "gold";
       $$(".av-swatch").forEach(function (s) {
         s.addEventListener("click", function () {
           avColor = s.getAttribute("data-av");

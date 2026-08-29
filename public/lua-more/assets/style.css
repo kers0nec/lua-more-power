@@ -348,7 +348,7 @@ pre.code .ln { display: inline-block; width: 2ch; margin-right: 14px; text-align
 .verify-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .verify-head .shield {
   width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: none;
-  background: rgba(77, 159, 255, 0.1); border: 1px solid rgba(77, 159, 255, 0.35); color: var(--accent-2);
+  background: rgba(246, 196, 83, 0.12); border: 1px solid rgba(246, 196, 83, 0.45); color: var(--gold-2);
 }
 .verify-head .shield svg { width: 17px; height: 17px; }
 .verify-head h4 { margin: 0; font-size: 14.5px; }
