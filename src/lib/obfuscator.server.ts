@@ -23,6 +23,12 @@
 //   - Anti-decompile: pseudo-bytecode dispatcher, opaque predicates, infinite
 //     loop traps, Unicode-homoglyph string literals, hidden identifiers via
 //     `string.char` concatenation, minified whitespace.
+//
+// When any tamper / integrity / anti-decompile guard trips, the VM aborts and
+// surfaces this single taunt message instead of a useful error — so an attacker
+// who patched a byte, hooked an env logger, or is probing the VM learns nothing.
+
+const TAMPER_MSG = "you cant deobfuscate luamore dumbass ";
 
 function rand(n: number): number {
   return Math.floor(Math.random() * n);
@@ -420,13 +426,13 @@ while ${STATE}~=${HALT} do
       local _hi=(${SUM}%256)*16777216
       ${SUM}=(_lo+_hi)%4294967296
     end
-    if ${SUM}~=${expected} then return error("[LuaMore] integrity fault (fnv)") end
+    if ${SUM}~=${expected} then return error("${TAMPER_MSG}") end
     ${STATE}=${S_SIG}
   elseif ${STATE}==${S_SIG} then
     for ${I}=1,#${CT} do
       ${SIG}=(${SIG}*33+${CT}[${I}])%4294967296
     end
-    if ${SIG}~=${signature} then return error("[LuaMore] signature invalid") end
+    if ${SIG}~=${signature} then return error("${TAMPER_MSG}") end
 
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
@@ -519,7 +525,7 @@ local ${_ok},${_value}=pcall(function()
   setmetatable(${_probe},{__index=function(_,k) if k=="lm" then return 731 end end,__metatable=false})
   return ${_probe}.lm
 end)
-if not ${_ok} or ${_value}~=731 then return error("[LuaMore] runtime integrity fault",0) end
+if not ${_ok} or ${_value}~=731 then return error("${TAMPER_MSG}",0) end
 `;
 }
 
@@ -606,7 +612,7 @@ function layerRuntimeGuards(layer: number): string {
   const expected = (nonceA * 33 + nonceB) % 2147483647;
   return `
 do
-  local _lm_fail=function() return error("[LuaMore] VM${layer} runtime integrity fault",0) end
+  local _lm_fail=function() return error("${TAMPER_MSG}",0) end
   local _lm_ok,_lm_value
   if type(rawget)~="function" or type(rawset)~="function" or type(pcall)~="function" or type(xpcall)~="function" then _lm_fail() end
   if type(string)~="table" or type(table)~="table" or type(math)~="table" then _lm_fail() end
@@ -694,7 +700,7 @@ function luaMoreProtection(userSource: string): string {
   const sampleDjb = djb2(sample);
   return `-- LuaMore Protection v2
 do
-  local _die=function() return error("[LuaMore] protection tripped",0) end
+  local _die=function() return error("${TAMPER_MSG}",0) end
   if type(string)~="table" or type(math)~="table" or type(table)~="table" then _die() end
   if type(string.byte)~="function" or type(string.char)~="function" or type(table.concat)~="function" then _die() end
   if type(pcall)~="function" or type(rawget)~="function" or type(setmetatable)~="function" then _die() end
@@ -883,6 +889,66 @@ end
 print'pass'
 `;
 
+/** Compatibility-safe anti-tamper prelude. Combined with the anti-logger trap
+ *  and embedded (obfuscated) ahead of every user payload. Verifies environment
+ *  primitives, metatable integrity, hook leakage (hookfunction /
+ *  hookmetamethod), active debug hooks, and a per-build opaque nonce. Safe under
+ *  plain Lua AND Roblox — unlike the anti-logger trap it never touches `game`,
+ *  so the plain-Lua test harness exercises it too. Any guard that trips aborts
+ *  with the taunt message. */
+function antiTamperPrelude(): string {
+  const nonceA = 1 + rand(0xfffff);
+  const nonceB = 1 + rand(0xfffff);
+  const expected = (nonceA * 33 + nonceB) % 2147483647;
+  const nonceC = 1 + rand(0xfffff);
+  const nonceD = 1 + rand(0xfffff);
+  const expected2 = (nonceC * 131 + nonceD) % 2147483647;
+  return `-- LuaMore Anti-Tamper v2 (combined prelude)
+do
+  local _die=function() return error("${TAMPER_MSG}",0) end
+  if type(string)~="table" or type(table)~="table" or type(math)~="table" then _die() end
+  if type(string.byte)~="function" or type(string.char)~="function" or type(string.sub)~="function" or type(string.rep)~="function" or type(string.format)~="function" or type(string.len)~="function" then _die() end
+  if type(table.concat)~="function" or type(table.insert)~="function" or type(pcall)~="function" or type(xpcall)~="function" then _die() end
+  if type(rawget)~="function" or type(rawset)~="function" or type(setmetatable)~="function" or type(getmetatable)~="function" then _die() end
+  if type(next)~="function" or type(tostring)~="function" or type(tonumber)~="function" or type(select)~="function" or type(unpack)~="function" then _die() end
+  if type(loadstring)~="function" and type(load)~="function" then _die() end
+  if string.byte(string.char(76,77),1)~=76 then _die() end
+  if string.sub("LuaMore",1,3)~="Lua" then _die() end
+  if table.concat({"L","M",""})~="LM" then _die() end
+  if string.rep("x",3)~="xxx" or string.len("LuaMore")~=7 or string.format("%d",9)~="9" then _die() end
+  if math.floor(9.75)~=9 or math.abs(-3)~=3 or math.max(1,5,3)~=5 or math.min(4,2)~=2 then _die() end
+  local _ins={}
+  table.insert(_ins,5)
+  if _ins[1]~=5 or #_ins~=1 then _die() end
+  local _tbl={1,2,3}
+  if #_tbl~=3 or _tbl[2]~=2 or _tbl[1]+_tbl[2]~=3 then _die() end
+  local _ok=pcall(error,"LuaMore probe",0)
+  if _ok then _die() end
+  local _probe={}
+  local _mt={__index=function(_,k) if k=="LuaMore" then return 92617 end end,__metatable="LuaMore"}
+  setmetatable(_probe,_mt)
+  if _probe.LuaMore~=92617 or getmetatable(_probe)~="LuaMore" then _die() end
+  if (${nonceA}*33+${nonceB})%2147483647~=${expected} then _die() end
+  if (${nonceC}*131+${nonceD})%2147483647~=${expected2} then _die() end
+  local _opaque=((7*7+3)%11)
+  if _opaque~=8 then _die() end
+  local _genv=rawget(_G,"getgenv")
+  if type(_genv)=="function" then
+    local _a,_b=pcall(_genv)
+    if not _a or type(_b)~="table" then _die() end
+  end
+  if type(rawget(_G,"hookfunction"))=="function" then _die() end
+  if type(rawget(_G,"hookmetamethod"))=="function" then _die() end
+  if type(rawget(_G,"getrawmetatable"))=="function" then _die() end
+  local _dbg=rawget(_G,"debug")
+  if type(_dbg)=="table" and type(rawget(_dbg,"gethook"))=="function" then
+    local _a,_h=pcall(rawget(_dbg,"gethook"))
+    if _a and _h~=nil then _die() end
+  end
+end
+`;
+}
+
 export function obfuscateLua(source: string): string {
   return obfuscateLuaWithOptions(source, { dualVm: true });
 }
@@ -893,15 +959,29 @@ export type ObfuscationOptions = {
   /** Embed the Rscripts anti-logger / anti-executor trap ahead of user code.
    *  Defaults to true. Roblox-only — set false for the plain-Lua test harness. */
   antiLogger?: boolean;
+  /** Embed the LuaMore anti-tamper prelude ahead of user code. Defaults to
+   *  true. Compatibility-safe under plain Lua and Roblox. */
+  antiTamper?: boolean;
+  /** Force a minimum number of nested VM layers (deeper dual-VM). Output grows
+   *  ~4× per layer, so only raise this on small scripts. When unset the depth
+   *  is auto-selected from input size (see `pickLayers`). Ignored when
+   *  `dualVm` is false. */
+  vmDepth?: number;
 };
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
   const enc = new TextEncoder();
   const antiLogger = options.antiLogger ?? true;
-  const payload = (antiLogger ? LOGGER_TRAP_SOURCE + "\n" : "") + source;
+  const antiTamper = options.antiTamper ?? true;
+  let prelude = "";
+  if (antiTamper) prelude += antiTamperPrelude() + "\n";
+  if (antiLogger) prelude += LOGGER_TRAP_SOURCE + "\n";
+  const payload = prelude + source;
   const guardedSource = luaMoreProtection(source) + "\n" + payload;
   const dualVm = options.dualVm ?? true;
-  const layers = dualVm ? Math.max(2, pickLayers(guardedSource.length)) : 1;
+  const layers = dualVm
+    ? Math.max(2, pickLayers(guardedSource.length), options.vmDepth ?? 0)
+    : 1;
 
   let current: Uint8Array = enc.encode(guardedSource);
   let wrapped = "";
@@ -920,8 +1000,9 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   parse -> optimize -> pseudo-bytecode -> flatten -> shuffle opcodes
   -> compress (RLE) -> encrypt (4xor + RC4) -> sign (FNV-1a + djb2)
   -> polymorphic nested VM -> LuaMore Protection prelude -> env-proxy -> minify
-  LuaMore Protection: compatibility-safe runtime checks, isolated execution
-  environment, and independent per-layer ciphertext integrity verification.
+  LuaMore Protection: compatibility-safe runtime checks, anti-tamper prelude,
+  anti-logger/anti-executor trap, isolated execution environment, and
+  independent per-layer ciphertext integrity verification.
   do not edit — integrity guards will refuse to run
 ]]
 `;
