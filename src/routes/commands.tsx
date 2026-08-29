@@ -10,7 +10,7 @@ export const Route = createFileRoute("/commands")({
       {
         name: "description",
         content:
-          "All LuaMore Discord slash commands, including /create-script, /generatekey, /whitelist, /loader.",
+          "All LuaMore Discord slash commands: /setup, /whitelist, /resethwid, /login, and /help.",
       },
       { property: "og:title", content: "LuaMore Commands" },
       { property: "og:description", content: "Every LuaMore Discord slash command explained." },

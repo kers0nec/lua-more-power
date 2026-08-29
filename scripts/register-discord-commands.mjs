@@ -92,12 +92,10 @@ async function main() {
 
   console.log(`[LuaMore Discord Sync] Registering ${DISCORD_COMMANDS.length} slash commands...`);
 
-  const url = guildId
-    ? `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`
-    : `https://discord.com/api/v10/applications/${clientId}/commands`;
+  const globalUrl = `https://discord.com/api/v10/applications/${clientId}/commands`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(globalUrl, {
       method: "PUT",
       headers: {
         Authorization: `Bot ${token}`,
@@ -115,8 +113,27 @@ async function main() {
 
     const data = await res.json();
     console.log(
-      `[LuaMore Discord Sync] ✅ Successfully registered ${data.length} slash commands${guildId ? ` to guild ${guildId}` : " globally"}!`,
+      `[LuaMore Discord Sync] ✅ Successfully registered ${data.length} slash commands globally!`,
     );
+
+    if (guildId) {
+      try {
+        const guildUrl = `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`;
+        await fetch(guildUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bot ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([]),
+        });
+        console.log(
+          `[LuaMore Discord Sync] 🧹 Cleaned guild-scoped duplicate commands for guild ${guildId}`,
+        );
+      } catch {
+        /* ignore */
+      }
+    }
   } catch (err) {
     console.error("[LuaMore Discord Sync] Failed to register commands:", err.message);
   }

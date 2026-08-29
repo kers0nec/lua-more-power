@@ -72,12 +72,21 @@ async function handleCommand(body: any) {
 
       case "login": {
         const key = String(opts.get("api_key") ?? "");
-        if (!key || !userId) return errorReply("Missing api_key");
-        const linked = await linkDiscord(userId, key);
-        if (!linked) return errorReply("Invalid API key");
+        if (!key || !userId) {
+          return errorReply(
+            "Missing API key. Please generate an API key at Dashboard → API Keys (https://luamore.app/dashboard/api-keys) and run `/login <api_key>`.",
+          );
+        }
+        const result = await linkDiscord(userId, key);
+        if (!result.success) {
+          return errorReply(
+            result.error ||
+              "Invalid API key.\n\nTo get a valid key:\n1. Sign in to https://luamore.app/login\n2. Open **Dashboard → API Keys** (https://luamore.app/dashboard/api-keys)\n3. Enter a label and click **Generate**\n4. Copy the new key and run `/login <your_key>` in Discord.",
+          );
+        }
         return embedReply({
-          title: "✅ Logged in",
-          description: "Discord account linked. Run `/setup` in your panel channel.",
+          title: "✅ Logged in to LuaMore",
+          description: `Linked Discord account to **${result.username || "LuaMore account"}**.\n\nYou can now run \`/setup\` in your server's panel channel to deploy your scripts!`,
           color: COLOR_SUCCESS,
         });
       }
@@ -576,21 +585,96 @@ async function getProfileByDiscord(discordId?: string) {
   return data;
 }
 
-async function linkDiscord(discordId: string, apiKey: string) {
-  const hash = await sha256Hex(apiKey);
+async function linkDiscord(
+  discordId: string,
+  apiKey: string,
+): Promise<{ success: boolean; username?: string; error?: string }> {
+  const cleanKey = apiKey
+    .trim()
+    .replace(/^Bearer\s+/i, "")
+    .replace(/^["'`]|["'`]$/g, "")
+    .trim();
+  if (!cleanKey) return { success: false, error: "Empty API key provided" };
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: key } = await supabaseAdmin
+
+  let targetUserId: string | null = null;
+  let keyId: string | null = null;
+
+  // 1. Try matching sha256 hash of the cleaned API key
+  const hash = await sha256Hex(cleanKey);
+  const { data: keyRow } = await supabaseAdmin
     .from("api_keys")
-    .select("user_id")
+    .select("id, user_id, key_hash")
     .eq("key_hash", hash)
     .maybeSingle();
-  if (!key) return false;
-  await supabaseAdmin.from("profiles").update({ discord_id: discordId }).eq("id", key.user_id);
-  await supabaseAdmin
-    .from("api_keys")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("key_hash", hash);
-  return true;
+
+  if (keyRow?.user_id) {
+    targetUserId = keyRow.user_id;
+    keyId = keyRow.id;
+  }
+
+  // 2. Fallback: check if the key matches a prefix or raw pattern if stored differently
+  if (!targetUserId && cleanKey.length >= 4) {
+    const prefix = cleanKey.slice(0, 4);
+    const { data: prefixMatches } = await supabaseAdmin
+      .from("api_keys")
+      .select("id, user_id, prefix, key_hash")
+      .eq("prefix", prefix)
+      .limit(5);
+
+    if (prefixMatches && prefixMatches.length === 1 && prefixMatches[0].key_hash === hash) {
+      targetUserId = prefixMatches[0].user_id;
+      keyId = prefixMatches[0].id;
+    }
+  }
+
+  // 3. Fallback: check if cleanKey is a Supabase JWT token
+  if (!targetUserId && cleanKey.includes(".")) {
+    try {
+      const { data: userData } = await supabaseAdmin.auth.getUser(cleanKey);
+      if (userData?.user?.id) {
+        targetUserId = userData.user.id;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (!targetUserId) {
+    return {
+      success: false,
+      error:
+        "Invalid or unrecorded API key.\n\n" +
+        "Please visit **https://luamore.app/dashboard/api-keys**, generate a new API key, copy it, and try `/login <api_key>` again.",
+    };
+  }
+
+  // Update last_used_at on the key if found
+  if (keyId) {
+    void supabaseAdmin
+      .from("api_keys")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", keyId);
+  }
+
+  // Fetch or upsert profile
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("id, username, email, discord_id")
+    .eq("id", targetUserId)
+    .maybeSingle();
+
+  if (profile) {
+    await supabaseAdmin.from("profiles").update({ discord_id: discordId }).eq("id", targetUserId);
+  } else {
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: targetUserId, discord_id: discordId }, { onConflict: "id" });
+  }
+
+  const username = profile?.username || profile?.email || "User";
+  return { success: true, username };
 }
 
 async function sha256Hex(s: string) {

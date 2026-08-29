@@ -109,11 +109,9 @@ export async function autoRegisterDiscordCommands(options?: {
 
   registrationPromise = (async () => {
     try {
-      const url = guildId
-        ? `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`
-        : `https://discord.com/api/v10/applications/${clientId}/commands`;
-
-      const res = await fetch(url, {
+      // Always register commands globally so they work everywhere with a single set of definitions
+      const globalUrl = `https://discord.com/api/v10/applications/${clientId}/commands`;
+      const res = await fetch(globalUrl, {
         method: "PUT",
         headers: {
           Authorization: `Bot ${token}`,
@@ -134,12 +132,34 @@ export async function autoRegisterDiscordCommands(options?: {
 
       const result = (await res.json()) as Array<{ id: string; name: string }>;
       lastRegisteredAt = Date.now();
+
+      // If a guildId was configured or provided, clear any guild-scoped duplicate commands
+      // to avoid Discord showing 2 copies of each command in that server.
+      if (guildId) {
+        try {
+          const guildUrl = `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`;
+          await fetch(guildUrl, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bot ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify([]), // empty array wipes guild-scoped duplicates
+          });
+          console.log(
+            `[Discord Auto-Register] Cleared guild-scoped duplicate commands for guild ${guildId}`,
+          );
+        } catch {
+          /* ignore guild cleanup failure */
+        }
+      }
+
       console.log(
-        `[Discord Auto-Register] Successfully registered ${result.length} slash commands${guildId ? ` to guild ${guildId}` : " globally"}.`,
+        `[Discord Auto-Register] Successfully registered ${result.length} slash commands globally.`,
       );
       return {
         ok: true,
-        message: `Successfully registered ${result.length} slash commands${guildId ? ` (Guild: ${guildId})` : " globally"}.`,
+        message: `Successfully registered ${result.length} slash commands globally${guildId ? ` (and cleaned guild duplicates for ${guildId})` : ""}.`,
         count: result.length,
       };
     } catch (err) {

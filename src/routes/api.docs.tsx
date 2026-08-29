@@ -88,6 +88,9 @@ function ApiDocs() {
               <a href="#quickstart" className="text-muted-foreground hover:text-foreground">
                 Quickstart
               </a>
+              <a href="#auth-login" className="text-muted-foreground hover:text-foreground">
+                POST /auth/login
+              </a>
               <a href="#auth" className="text-muted-foreground hover:text-foreground">
                 Authentication
               </a>
@@ -113,10 +116,55 @@ function ApiDocs() {
                 <a href="/dashboard/api-keys" className="underline">
                   Dashboard → API Keys
                 </a>
-                , then POST the Lua source you want protected to:
+                , or authenticate programmatically via the <strong>Login API</strong>, then POST the
+                Lua source you want protected to:
               </p>
               <Code>{`POST ${ENDPOINT}`}</Code>
               <p>The response returns the fully obfuscated Lua as a string.</p>
+            </Section>
+
+            <Section id="auth-login" title="POST /api/public/auth/login">
+              <p>
+                Authenticate via password or API key to obtain session tokens or verify user
+                identities.
+              </p>
+              <p>
+                <strong>1. Password Login</strong>
+              </p>
+              <Code>{`POST https://luamore.app/api/public/auth/login
+Content-Type: application/json
+
+{
+  "email": "you@example.com",
+  "password": "yourpassword"
+}`}</Code>
+              <p>
+                <strong>Response (200 OK):</strong>
+              </p>
+              <Code>{`{
+  "ok": true,
+  "authenticated_via": "password",
+  "user": {
+    "id": "31969a53-3fe9-450f-90e8-07e05fc8677c",
+    "email": "you@example.com",
+    "username": "coder",
+    "discord_id": null,
+    "tier": "free"
+  },
+  "session": {
+    "access_token": "eyJhbGci...",
+    "refresh_token": "...",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "expires_at": 1740000000
+  }
+}`}</Code>
+
+              <p>
+                <strong>2. API Key / Token Validation</strong>
+              </p>
+              <Code>{`GET https://luamore.app/api/public/auth/login
+Authorization: Bearer YOUR_API_KEY_OR_TOKEN`}</Code>
             </Section>
 
             <Section id="auth" title="Authentication">
