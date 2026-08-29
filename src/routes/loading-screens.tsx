@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LoadingScreenGuide } from "@/components/LoadingScreenGuide";
 
-export const Route = createFileRoute("/docs/loading")({
+export const Route = createFileRoute("/loading-screens")({
   head: () => ({
     meta: [
-      { title: "Loading screens — LuaMore Docs" },
+      { title: "Loading screens — LuaMore" },
       {
         name: "description",
-        content: "Wide in-game loading bars while LuaMore authenticates and delivers your script.",
+        content: "Four responsive loading bar presets for LuaMore script loaders.",
       },
     ],
   }),

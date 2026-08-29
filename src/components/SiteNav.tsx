@@ -6,10 +6,10 @@ import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
   { to: "/features", label: "Features" },
-  { to: "/how", label: "How" },
-  { to: "/pricing", label: "Pricing" },
-  { to: "/docs", label: "Docs" },
   { to: "/keys", label: "Keys" },
+  { to: "/obfuscators", label: "Obfuscators" },
+  { to: "/loading-screens", label: "Loading screens" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export function SiteNav() {
@@ -33,7 +33,7 @@ export function SiteNav() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {LINKS.map((l) => {
             const active = loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
             return (
@@ -52,7 +52,7 @@ export function SiteNav() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <a
             href={DISCORD_INVITE}
             target="_blank"
@@ -71,7 +71,7 @@ export function SiteNav() {
         </div>
 
         <button
-          className="btn-ghost shrink-0 px-2 py-1 md:hidden"
+          className="btn-ghost shrink-0 px-2 py-1 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -82,7 +82,7 @@ export function SiteNav() {
 
       {open && (
         <div
-          className="border-t px-6 py-4 md:hidden"
+          className="border-t px-6 py-4 lg:hidden"
           style={{ borderColor: "var(--border)", background: "var(--background)" }}
         >
           <nav className="flex flex-col gap-1">

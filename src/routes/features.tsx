@@ -5,7 +5,10 @@ export const Route = createFileRoute("/features")({
   head: () => ({
     meta: [
       { title: "Features — LuaMore" },
-      { name: "description", content: "Scripts, keys, Discord, protection, and loaders — all free on LuaMore." },
+      {
+        name: "description",
+        content: "Scripts, keys, Discord, protection, and loaders — all free on LuaMore.",
+      },
     ],
   }),
   component: FeaturesPage,
@@ -46,6 +49,14 @@ const groups = [
       { name: "Keyless mode", desc: "Same overlay works without a key parameter." },
     ],
   },
+  {
+    title: "Rewards",
+    items: [
+      { name: "Ad links", desc: "Linkvertise, LootLabs, Work.ink, or your own provider." },
+      { name: "Claims", desc: "Track pending, verified, and issued key claims." },
+      { name: "Anti-replay", desc: "One-time completion records stop replayed receipts." },
+    ],
+  },
 ];
 
 function FeaturesPage() {
@@ -75,10 +86,10 @@ function FeaturesPage() {
       <div className="mt-14 card-blue p-6">
         <h3 className="font-display text-xl">Adding a loading screen?</h3>
         <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-          A wide loading bar that works on mobile and desktop. Add your loader URL, then tweak it if you
-          want.
+          A wide loading bar that works on mobile and desktop. Add your loader URL, then tweak it if
+          you want.
         </p>
-        <Link to="/docs/loading" className="btn-primary mt-4">
+        <Link to="/loading-screens" className="btn-primary mt-4">
           Loading screen guide
         </Link>
       </div>
