@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get started — LuaMore</title>
+  <meta name="description" content="Create your free LuaMore account. Protect your first script whenever you're ready — no card, no tiers." />
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-page="register">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav class="nav-links">
+        <a href="features.html">Features</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm" href="login.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="register.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap auth-layout">
+      <div>
+        <h1 style="font-size:34px;font-weight:850;">Create your LuaMore account</h1>
+        <p class="lede" style="font-size:16.5px;color:var(--text-2);">Free to start. Protect your first script whenever you're ready.</p>
+        <div class="card" style="margin-top:26px;">
+          <ul class="plain">
+            <li>Unlimited scripts, keys &amp; projects</li>
+            <li>Key system with HWID binding</li>
+            <li>In-game loading bars</li>
+            <li>Discord panels &amp; ad links</li>
+            <li style="color:var(--ok);">No card. No trial. No upsell.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="auth-card" id="auth-card-main">
+        <form id="register-form" novalidate>
+        <!-- step 1: details + human check -->
+        <div id="reg-step-1">
+          <div class="field" style="text-align:center;margin-bottom:22px;">
+            <label for="reg-username">Username</label>
+            <input class="input" id="reg-username" type="text" autocomplete="username" placeholder="e.g. luadev_42" />
+            <div class="hint">Use 3–24 letters or numbers only — no spaces, underscores, or symbols.</div>
+            <div class="err">That username doesn't meet the rules.</div>
+          </div>
+
+          <div class="field">
+            <label for="reg-email">Email</label>
+            <input class="input" id="reg-email" type="email" autocomplete="email" placeholder="you@example.com" />
+            <div class="hint">We use this for account recovery and key delivery notices.</div>
+            <div class="err">Enter a valid email address.</div>
+          </div>
+
+          <div class="field">
+            <label for="reg-password">Password</label>
+            <input class="input" id="reg-password" data-pw type="password" autocomplete="new-password" placeholder="At least 8 characters" />
+            <div class="pw-meter"><i></i><i></i><i></i><i></i></div>
+            <div class="hint pw-label"></div>
+            <div class="err">Use at least 8 characters.</div>
+          </div>
+
+          <div id="verify-register"></div>
+
+          <label class="checkline">
+            <input type="checkbox" id="reg-terms" />
+            <span>I read and agree to the <a href="tos.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a>.</span>
+          </label>
+
+          <button class="btn btn-primary btn-block btn-lg" type="submit">Create account</button>
+          <p class="small muted" style="text-align:center;margin:16px 0 0;">Already have an account? <a href="login.html">Sign in</a></p>
+        </div>
+
+        <!-- step 2: real email confirmation -->
+        <div id="reg-step-2" class="hidden">
+          <h2 style="font-size:22px;">Check your email</h2>
+          <p class="muted small" style="margin-bottom:16px;">A confirmation link is on its way to <b id="reg-pending-name" style="color:var(--text);"></b>. Open it in your inbox — it lands right back here and your account goes live.</p>
+          <div class="card" style="padding:16px;">
+            <p class="small" style="margin:0 0 14px;color:var(--text-2);">Already clicked the link? Sign in below to finish:</p>
+            <form id="reg-continue-form">
+              <div class="field">
+                <label for="reg-continue-email">Email</label>
+                <input class="input" id="reg-continue-email" type="email" autocomplete="email" placeholder="you@example.com" />
+                <div class="err">Enter your email.</div>
+              </div>
+              <div class="field">
+                <label for="reg-continue-pw">Password</label>
+                <input class="input" id="reg-continue-pw" type="password" autocomplete="current-password" placeholder="Your password" />
+                <div class="err">Enter your password.</div>
+              </div>
+              <button class="btn btn-primary btn-block" type="submit">Sign in and finish</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- step 3: done -->
+        <div id="reg-step-3" class="hidden" style="text-align:center;padding:26px 0 10px;">
+          <div style="width:64px;height:64px;border-radius:20px;margin:0 auto 18px;display:grid;place-items:center;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.5);color:var(--ok);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h2 style="font-size:24px;">You're in, <span id="reg-welcome-user">friend</span>.</h2>
+          <p class="muted" style="max-width:340px;margin:0 auto 22px;">Your account is ready. Set a display name, tweak your profile, and start adding scripts.</p>
+          <a class="btn btn-primary btn-lg" href="settings.html">Go to your settings</a>
+        </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav>
+        <a href="features.html">Docs</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="tos.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <span class="copy-line">© 2026 LuaMore · More Power, More Security, More Lua</span>
+    </div>
+  </footer>
+
+  <script src="assets/supabase.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — LuaMore</title>
+  <meta name="description" content="How LuaMore collects, uses, stores, and shares information. Free service, minimal data, no ad sellers." />
+  <script>try{var p=JSON.parse(localStorage.getItem("lm_prefs")||"{}");if(p.accent&&p.accent!=="blue")document.documentElement.setAttribute("data-accent",p.accent);}catch(e){}</script>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-page="privacy">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav class="nav-links">
+        <a href="features.html">Features</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="nav-right">
+        <a class="btn btn-ghost btn-sm" href="login.html">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="register.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap legal">
+      <a class="back-link" href="index.html">← Back</a>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: August 29, 2026</p>
+
+      <p>This Privacy Policy explains how LuaMore ("we," "us") collects, uses, stores, and shares information when you use luamore.win, our dashboard, loader runtime, Discord integrations, and related APIs. It should be read together with our <a href="tos.html">Terms of Service</a>.</p>
+
+      <h2>1. Information we collect</h2>
+      <p><b>Account and profile.</b> When you register, we collect your email address, display name, and a bcrypt-hashed password. If you enable two-factor authentication, we store the settings and secrets needed to verify codes (for example, a TOTP secret for an authenticator app). We record when you accept these Terms and our Privacy Policy.</p>
+      <p>Optional sign-in with Google provides basic profile information (such as email and name) according to the permissions you approve. We do not receive or store your Google password.</p>
+      <p><b>Discord.</b> If you link Discord or add our bot to a server, we may store your Discord user ID, username, display name, email (if shared by Discord), guild IDs, and configuration for panels, roles, slash commands, and key redemption flows you enable.</p>
+      <p><b>Projects, scripts, and keys.</b> We store projects, scripts, obfuscated outputs, license keys (hashed), key metadata (status, expiration, execution counts, type), HWID hashes you bind to keys, and settings you configure (including anti-bypass policies, webhooks, and ad gates).</p>
+      <p><b>Loader and runtime activity.</b> When end users run your loader, we process technical data needed to authenticate and deliver scripts, including:</p>
+      <ul>
+        <li>Hashed IP address (HMAC-SHA256 binding identifier — raw IPs are not stored in execution logs or analytics)</li>
+        <li>Country (ISO 3166-1 alpha-2 code inferred from our hosting edge — city or precise location is not stored)</li>
+        <li>Hashed hardware identifiers (HWID) where your configuration uses them</li>
+        <li>Executor name reported by the client</li>
+        <li>Roblox place or game identifiers when provided by the loader</li>
+        <li>Session nonces, heartbeat timestamps, and delivery telemetry</li>
+        <li>Security and tamper signals (for example, loadstring hook reports or late heartbeats) when your anti-bypass settings are enabled</li>
+      </ul>
+      <p>This data appears in your dashboard analytics and execution logs.</p>
+      <p><b>Reward-link gates.</b> If you use ad or reward links, we store gate configuration, claim records, provider verification state, completion timestamps, one-way completion-proof digests, and technical metadata such as hashed IP addresses, browser identifiers, and session identifiers. We use this data to prevent abuse, stop replayed receipts, and issue keys after the required steps. Providers you connect (such as Linkvertise, LootLabs, or Work.ink) independently collect and process data under their own privacy policies.</p>
+      <p><b>Signup abuse prevention.</b> To limit fraudulent account creation, we may store hashed device fingerprints, hashed IP addresses, and hashed user-agent strings associated with new registrations.</p>
+      <p><b>Logs.</b> We maintain operational, security, and interaction logs (including authentication events, rate-limit triggers, and dashboard actions) to secure the platform and help you debug issues. Security logs store hashed IP identifiers and short fingerprints for correlation; raw IP addresses are not written to application logs.</p>
+
+      <h2>2. How we use information</h2>
+      <p>We use collected information to:</p>
+      <ul>
+        <li>Provide, maintain, and improve the service</li>
+        <li>Authenticate users and deliver protected scripts to licensed end users</li>
+        <li>Enforce plan limits, rate limits, and security policies you configure</li>
+        <li>Send transactional email (verification, password reset, security notices)</li>
+        <li>Operate Discord bot features you enable</li>
+        <li>Detect abuse, fraud, and violations of our Terms</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+      <p>We do not sell your scripts or use them to train third-party AI models. We do not sell personal information to advertisers.</p>
+
+      <h2>3. How we share information</h2>
+      <p>We share information only as needed to operate the service:</p>
+      <ul>
+        <li><b>Infrastructure:</b> hosting and database providers (for example, Vercel, Cloudflare, Turso)</li>
+        <li><b>Email:</b> transactional email providers (for example, Brevo or SMTP relays you configure for platform mail)</li>
+        <li><b>Obfuscation:</b> wYnFuscate or similar providers when you request protection</li>
+        <li><b>Reward providers:</b> services creators connect for ad and reward links</li>
+        <li><b>Discord:</b> when you use bot or OAuth features</li>
+        <li><b>Webhooks:</b> endpoints you configure to receive events from your projects</li>
+        <li><b>Legal:</b> when required by law or to protect rights, safety, and security</li>
+      </ul>
+      <p>Team members you invite may access project data according to the permissions you grant.</p>
+
+      <h2>4. Cookies and local storage</h2>
+      <p>Essential cookies (session, login, security) are required for the product to work and are always on. We use cookies and similar technologies for:</p>
+      <ul>
+        <li><b>Session cookie:</b> keeps you signed in to the dashboard (essential)</li>
+        <li><b>Two-factor and OAuth cookies:</b> short-lived state during login (essential)</li>
+        <li><b>Device fingerprint cookie (<code>lm_device</code>):</b> signup abuse prevention when enabled (essential security)</li>
+        <li><b>Reward-gate cookies:</b> verify ad completion on reward pages you publish (essential to that feature)</li>
+        <li><b>Theme preferences:</b> accent and appearance in local storage (preference)</li>
+      </ul>
+      <p>We do not sell personal information. Project Discord webhooks you configure send only minimal event alerts (masked key, executor name, short IP hash) — not raw IPs or HWIDs.</p>
+
+      <h2>5. Data retention</h2>
+      <p>We retain account and project data while your account is active. You may delete projects, scripts, keys, and ad gates from your dashboard, or delete your entire account from Settings. When you delete content or close your account, we remove or anonymize data within a reasonable period, except where retention is required for security, fraud prevention, or legal compliance.</p>
+      <p>Loader sessions, execution logs, and security events may be retained for a limited period for analytics and abuse investigation, then purged or aggregated.</p>
+
+      <h2>6. Security</h2>
+      <p>We use industry-standard measures including HTTPS encryption, hashed passwords, hashed API keys, and access controls. No method of transmission or storage is completely secure; you use the service at your own risk and should protect your credentials.</p>
+
+      <h2>7. Your choices and rights</h2>
+      <p>You can update your profile, turn integrations on or off, and control what your projects collect from end users (within the features we provide). If you're in the EEA/UK or another region with similar laws, you may have rights to access, correct, delete, export, or restrict processing of personal data, and to object to certain processing. Contact us to submit a request — we may need to verify your identity.</p>
+
+      <h2>8. Children</h2>
+      <p>LuaMore is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will take appropriate steps to delete it.</p>
+
+      <h2>9. International users</h2>
+      <p>LuaMore is operated from the United States. If you access the service from other regions, your information may be processed in the United States and other countries where our providers operate, which may have different data-protection laws than your jurisdiction.</p>
+
+      <h2>10. Changes to this policy</h2>
+      <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top of this page will change when we do. Material changes will be posted here; continued use after updates constitutes acceptance.</p>
+
+      <h2>11. Contact</h2>
+      <p>Privacy questions and data requests can be sent to <a href="mailto:support@luamore.win">support@luamore.win</a>.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">LM</span><b>Lua<span style="color:var(--accent-2)">More</span></b></a>
+      <nav>
+        <a href="features.html">Docs</a>
+        <a href="keys.html">Keys</a>
+        <a href="obfuscators.html">Obfuscators</a>
+        <a href="loading-screens.html">Loading screens</a>
+        <a href="tos.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <span class="copy-line">© 2026 LuaMore</span>
+    </div>
+  </footer>
+
+  <script src="assets/supabase.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
