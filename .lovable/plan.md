@@ -6,14 +6,15 @@ Bring the authenticated dashboard fully into the KeyForge-inspired LuaMore desig
 ## Data and source recovery
 - Keep the current Lovable Cloud tables and all existing records; do not reset or reseed user data.
 - Treat the database as the source of truth. Remove reliance on the temporary local filesystem fallback, which is not durable in production and can make deleted or stale scripts reappear.
-- Restore the complete script workflow in the redesigned dashboard: script list, source editor, upload, metadata, FFA/access state, hosted loadstring with copy action, protect/save actions, and release history.
+- Recover the old functionality and data inside the new dashboard: script source editor, uploads, metadata, FFA/access state, hosted loadstring with copy action, protect/save actions, release history, keys, and panels.
 - Prevent accidental empty-source overwrites by disabling save until the script query has loaded successfully and by showing explicit loading, not-found, and save-error states.
 - Preserve the 24 existing scripts that currently contain source and the 19 existing protected outputs. Clearly show an empty-source state for records whose original source is not present rather than inventing or replacing code.
 
-## KeyForge-inspired dashboard
+## New KeyForge-inspired dashboard
+- Replace the old dashboard presentation—not restore it—with a complete KeyForge-inspired interface branded as LuaMore.
 - Apply one consistent dark navy/black dashboard system across overview, scripts, script detail, obfuscator, keys, batches, HWID bans, Discord panels, API keys, and settings.
-- Refine the sidebar, page headers, compact stat blocks, bordered data panels, forms, empty states, badges, and responsive mobile navigation to match the public-site visual language.
-- Keep LuaMore branding and all current backend behavior; reproduce the reference’s layout language, not its code or identity.
+- Rebuild the sidebar, page headers, compact stat blocks, bordered data panels, forms, empty states, badges, and responsive mobile navigation to closely match the reference experience.
+- Keep the existing functionality and recovered records beneath the new interface; reproduce the reference’s layout language, not its compiled code or identity.
 
 ## Discord panel fix
 - Rebuild the panel form so existing panels can edit and save name, description, attached script, channel ID, whitelist channel, buyer role, and admin roles.
