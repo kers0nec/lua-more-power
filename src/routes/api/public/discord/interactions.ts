@@ -122,308 +122,105 @@ async function handleCommand(body: any) {
         });
       }
 
-      case "setup": {
-        const profile = await getProfileByDiscord(userId);
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-        const scriptPublicId = String(opts.get("script_id") ?? "");
-        if (scriptPublicId) {
-          // Look up the script by public_id ACROSS ALL OWNERS so an admin in
-          // another server can post someone else's script panel (with the ID).
-          let script: any = null;
-          try {
-            const { data: dbScript } = await supabaseAdmin
-              .from("scripts")
-              .select("id, name, description, user_id")
-              .eq("public_id", scriptPublicId)
-              .maybeSingle();
-            if (dbScript) script = dbScript;
-          } catch {
-            // ignore
-          }
-
-          if (!script) {
-            const local = getScriptByPublicId(scriptPublicId);
-            if (local) script = local;
-          }
-
-          if (!script) return errorReply("Script not found — check its public ID");
-
-          // Invoker must own the script OR have Administrator in this guild.
-          const isOwner = profile?.id === script.user_id;
-          const perms = BigInt(body.member?.permissions ?? "0");
-          const isGuildAdmin = (perms & 0x8n) === 0x8n;
-          if (!isOwner && !isGuildAdmin) {
-            return errorReply(
-              "You need the Administrator permission in this server to post someone else's panel.",
-            );
-          }
-          return await postPanelForScript(script.user_id, script, body);
-        }
-
-        if (!profile)
-          return errorReply(
-            "Account not linked. Use `/login <api_key>` first, or pass `script_id:<public_id>`.",
-          );
-
-        let scripts: any[] = [];
-        try {
-          const { data: dbScripts } = await supabaseAdmin
-            .from("scripts")
-            .select("id, name, public_id")
-            .eq("user_id", profile.id)
-            .order("created_at", { ascending: false })
-            .limit(25);
-          if (dbScripts && dbScripts.length > 0) scripts = dbScripts;
-        } catch {
-          // ignore
-        }
-
-        if (!scripts.length) {
-          const localList = getAllScripts(profile.id);
-          if (localList.length > 0) scripts = localList;
-        }
-
-        if (!scripts?.length)
-          return errorReply("You have no scripts yet — create one on the dashboard.");
-
-        return {
-          type: 4,
-          data: {
-            flags: 64,
-            embeds: [
-              {
-                title: "LuaMore setup",
-                description: "Pick the script this channel's panel should serve.",
-                color: COLOR_INFO,
-              },
-            ],
-            components: [
-              {
-                type: 1,
-                components: [
-                  {
-                    type: 3,
-                    custom_id: "lm:setup",
-                    placeholder: "Select a script",
-                    options: scripts.map((s) => ({
-                      label: s.name.slice(0, 100),
-                      value: s.public_id,
-                      description: s.public_id,
-                    })),
-                  },
-                ],
-              },
-            ],
-          },
-        };
-      }
+      case "setup":
+        return embedReply({ title: "🚀 LuaMore Setup Guide", description: ["Welcome to LuaMore! Here's how to get started:", "", "**1️⃣ Create a Script**", "Use `/create-script` with a name and Lua source.", "", "**2️⃣ Send a Panel**", "Configure a panel in the dashboard, then use `/panel panel_id:<id>`.", "", "**3️⃣ Generate Keys**", "Use `/generatekey panel_id:<id> hours:24`.", "", "**4️⃣ Whitelist Users**", "Use `/whitelist script_id:<id> user:@user duration:48`.", "", "Run `/help` to see all commands."].join("\n"), color: COLOR_INFO });
 
       case "whitelist": {
         const profile = await getProfileByDiscord(userId);
+        const scriptRef = String(opts.get("script_id") ?? "").trim();
+        const target = String(opts.get("user") ?? "").trim();
+        const hours = Math.max(0, Number(opts.get("duration") ?? 0) || 0);
+        if (!scriptRef || !target) return errorReply("Provide `script_id` and `user`.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const panel = await getPanelForChannel(body.channel_id);
-        if (!panel) return errorReply("No panel in this channel — run `/setup` here first.");
-        if (!(await isPanelAdmin(panel, body, profile?.id)))
-          return errorReply("You need an admin role for this panel.");
-        if (!panel.script_id) return errorReply("This panel has no script attached.");
-
-        const target = String(opts.get("user") ?? "");
-        const ms = parseDuration(String(opts.get("duration") ?? ""));
-        if (opts.get("duration") && ms === null)
-          return errorReply("Bad duration — use 20s, 35m, 2h, 1d, 7d, 30d");
-        const expires = ms ? new Date(Date.now() + ms).toISOString() : null;
-
+        const script = await findScript(supabaseAdmin, scriptRef);
+        if (!script) return errorReply("Script not found.");
+        if (!canManageScript(script.user_id, body, profile?.id)) return errorReply("You must own this script or have Administrator in this server.");
+        const expires = hours > 0 ? new Date(Date.now() + hours * 3_600_000).toISOString() : null;
         const key = randomKey();
-        const { data: lic } = await supabaseAdmin
-          .from("license_keys")
-          .insert({
-            user_id: panel.user_id,
-            script_id: panel.script_id,
-            key,
-            discord_id: target,
-            hours_valid: ms ? Math.max(1, Math.round(ms / 3_600_000)) : 0,
-            expires_at: expires,
-          })
-          .select("id")
-          .maybeSingle();
-        await supabaseAdmin.from("whitelists").insert({
-          user_id: panel.user_id,
-          script_id: panel.script_id,
-          discord_id: target,
-          license_key_id: lic?.id,
-          expires_at: expires,
-        });
-
-        if (panel.discord_role_id && body.guild_id && process.env.DISCORD_BOT_TOKEN) {
-          await fetch(
-            `https://discord.com/api/v10/guilds/${body.guild_id}/members/${target}/roles/${panel.discord_role_id}`,
-            {
-              method: "PUT",
-              headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
-            },
-          ).catch(() => undefined);
-        }
-
-        return {
-          type: 4,
-          data: {
-            content: buildWhitelistMessage(target, panel.whitelist_channel_id || panel.channel_id),
-            allowed_mentions: { users: [target] },
-            embeds: [
-              {
-                title: "✅ Whitelisted",
-                description: `Duration: **${formatDuration(ms)}**`,
-                color: COLOR_SUCCESS,
-                footer: { text: "LuaMore" },
-              },
-            ],
-          },
-        };
+        const { data: lic, error: keyError } = await supabaseAdmin.from("license_keys").insert({ user_id: script.user_id, script_id: script.id, key, discord_id: target, hours_valid: hours, expires_at: expires }).select("id").maybeSingle();
+        if (keyError || !lic) return errorReply(keyError?.message ?? "Could not generate key.");
+        const { error: wlError } = await supabaseAdmin.from("whitelists").insert({ user_id: script.user_id, script_id: script.id, discord_id: target, license_key_id: lic.id, expires_at: expires });
+        if (wlError) return errorReply(wlError.message);
+        const loader = keyedLoader(script.public_id, key);
+        await sendDiscordDm(target, `✅ You have been whitelisted for **${script.name}**.\n\n${buildLoaderMessage(loader)}`);
+        return embedReply({ title: "✅ Whitelist Granted", description: `<@${target}> has been whitelisted for **${script.name}**\n\nLicense Key: \`${key}\`\nDuration: **${hours > 0 ? `${hours} hours` : "Permanent"}**\n\n${buildLoaderMessage(loader)}`, color: COLOR_SUCCESS });
       }
 
       case "resethwid": {
-        const target = String(opts.get("user") ?? "");
+        const scriptRef = String(opts.get("script_id") ?? "").trim();
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const panel = await getPanelForChannel(body.channel_id);
-
-        if (!target) {
-          if (!panel) return errorReply("No panel in this channel — run `/setup` here first.");
-          await supabaseAdmin
-            .from("license_keys")
-            .update({ hwid: null })
-            .eq("user_id", panel.user_id)
-            .eq("discord_id", userId);
-          return embedReply({
-            title: "⚙️ HWID reset",
-            description: "Run the script again to lock a new HWID.",
-            color: COLOR_SUCCESS,
-          });
-        }
-
-        const profile = await getProfileByDiscord(userId);
-        if (!panel) return errorReply("No panel in this channel — run `/setup` here first.");
-        if (!(await isPanelAdmin(panel, body, profile?.id)))
-          return errorReply("You need an admin role for this panel.");
-        await supabaseAdmin
-          .from("license_keys")
-          .update({ hwid: null })
-          .eq("user_id", panel.user_id)
-          .eq("discord_id", target);
-        return embedReply({ title: `⚙️ HWID reset for <@${target}>`, color: COLOR_SUCCESS });
+        const script = await findScript(supabaseAdmin, scriptRef);
+        if (!script) return errorReply("Script not found.");
+        const { count, error } = await supabaseAdmin.from("license_keys").update({ hwid: null }, { count: "exact" }).eq("script_id", script.id).eq("discord_id", userId);
+        if (error) return errorReply(error.message);
+        if (!count) return errorReply("No active key was found for you on this script.");
+        return embedReply({ title: "✅ HWID reset complete", description: `HWID reset complete for **${script.name}**.\nRe-run your loader to link the new HWID.`, color: COLOR_SUCCESS });
       }
 
       case "create-script": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Link your account first with `/login`.");
+        if (!profile) return errorReply("Link your Discord account from the LuaMore dashboard first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const scriptName = String(opts.get("name") ?? "").trim();
-        const code = String(opts.get("code") ?? "").trim();
+        const code = String(opts.get("code") ?? "");
         const ffa = Boolean(opts.get("ffa"));
-        const obfuscate = Boolean(opts.get("obfuscate"));
-        if (!scriptName) return errorReply("Provide a script name.");
-        let obfuscated: string | null = null;
-        if (obfuscate && code) {
-          try {
-            const { obfuscateLua } = await import("@/lib/obfuscator.server");
-            obfuscated = obfuscateLua(code);
-          } catch (e) {
-            return errorReply(`Obfuscation failed: ${e instanceof Error ? e.message : "unknown"}`);
-          }
+        const protect = Boolean(opts.get("obfuscate"));
+        const mode = String(opts.get("mode") ?? "standard").toLowerCase();
+        if (!scriptName || !code.trim()) return errorReply("Provide a script name and Lua code.");
+        if (scriptName.length > 120 || code.length > 5_000_000) return errorReply("Script name or source is too long.");
+        let protectedCode: string | null = null;
+        if (protect) {
+          try { const { obfuscateLuaWithOptions } = await import("@/lib/obfuscator.server"); protectedCode = obfuscateLuaWithOptions(code, { loaderVMDepth: mode === "advanced" ? 3 : mode === "basic" ? 1 : 2, antiTamper: true }); }
+          catch (e) { return errorReply(`Obfuscation failed: ${e instanceof Error ? e.message : "unknown"}`); }
         }
-        const { data, error } = await supabaseAdmin
-          .from("scripts")
-          .insert({
-            user_id: profile.id,
-            name: scriptName,
-            code: code || "",
-            ffa,
-            is_protected: obfuscate,
-            obfuscated_code: obfuscated,
-          })
-          .select("public_id, name")
-          .maybeSingle();
+        const { data, error } = await supabaseAdmin.from("scripts").insert({ user_id: profile.id, name: scriptName, code, ffa, is_protected: protect, obfuscated_code: protectedCode, obfuscator: protect ? mode : null }).select("id, public_id, name").maybeSingle();
         if (error || !data) return errorReply(error?.message ?? "Failed to create script");
-        return embedReply({
-          title: "✅ Script created",
-          description: `**${data.name}**\nPublic ID: \`${data.public_id}\`\n\nLoadstring:\n\`\`\`lua\n${
-            ffa
-              ? `loadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${data.public_id}.lua"))()`
-              : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${data.public_id}.lua"))()`
-          }\n\`\`\``,
-          color: COLOR_SUCCESS,
-        });
+        const loader = ffa ? openLoader(data.public_id) : keyedLoader(data.public_id, "YOUR_KEY");
+        return embedReply({ title: "✅ Script Created Successfully", description: `Script ID: \`${data.id}\`\nName: **${data.name}**\nPublic ID: \`${data.public_id}\`\nFFA Mode: **${ffa ? "Enabled" : "Disabled"}**\nObfuscation: **${protect ? titleCase(mode) : "Disabled"}**\n\n${buildLoaderMessage(loader)}\n\n♾️ Unlimited`, color: COLOR_SUCCESS });
       }
 
       case "panel": {
         const profile = await getProfileByDiscord(userId);
-        const publicId = String(opts.get("script_id") ?? "");
-        if (!publicId) return errorReply("Provide `script_id`.");
+        const panelId = String(opts.get("panel_id") ?? "").trim();
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: script } = await supabaseAdmin
-          .from("scripts")
-          .select("id, name, description, user_id")
-          .eq("public_id", publicId)
-          .maybeSingle();
-        if (!script) return errorReply("Script not found.");
-        const isOwner = profile?.id === script.user_id;
-        const perms = BigInt(body.member?.permissions ?? "0");
-        if (!isOwner && (perms & 0x8n) !== 0x8n)
-          return errorReply("You need Administrator permission here.");
-        return await postPanelForScript(script.user_id, script, body);
+        const { data: panel } = await supabaseAdmin.from("panels").select("*").eq("id", panelId).maybeSingle();
+        if (!panel) return errorReply("Panel not found.");
+        const isAdmin = (BigInt(body.member?.permissions ?? "0") & 0x8n) === 0x8n;
+        if (panel.user_id !== profile?.id && !isAdmin) return errorReply("You must own this panel or have Administrator in this server.");
+        const { data: script } = panel.script_id ? await supabaseAdmin.from("scripts").select("name, ffa").eq("id", panel.script_id).maybeSingle() : { data: null };
+        const sentBy = body.member?.user?.global_name || body.member?.user?.username || null;
+        return { type: 4, data: { embeds: [buildPanelEmbed({ id: panel.id, name: panel.name, description: panel.description, sentBy, projectName: script?.name ?? null, access: script?.ffa ? "Free access" : "Key required" })], components: buildPanelComponents(panel.id) } };
       }
 
       case "generatekey": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Link your account first with `/login`.");
+        if (!profile) return errorReply("Link your Discord account first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const publicId = String(opts.get("script_id") ?? "");
-        const hours = Number(opts.get("hours") ?? 0) || 0;
-        const note = String(opts.get("note") ?? "") || null;
-        const target = String(opts.get("user") ?? "") || null;
-        const { data: script } = await supabaseAdmin
-          .from("scripts")
-          .select("id, user_id")
-          .eq("public_id", publicId)
-          .maybeSingle();
-        if (!script || script.user_id !== profile.id)
-          return errorReply("Script not found (or not yours).");
+        const panelId = String(opts.get("panel_id") ?? "").trim();
+        const hours = Math.max(0, Number(opts.get("hours") ?? 0) || 0);
+        const note = String(opts.get("note") ?? "").trim() || null;
+        const target = String(opts.get("user") ?? "").trim() || null;
+        const { data: panel } = await supabaseAdmin.from("panels").select("id, user_id, script_id").eq("id", panelId).maybeSingle();
+        if (!panel || panel.user_id !== profile.id) return errorReply("Panel not found (or not yours).");
+        if (!panel.script_id) return errorReply("This panel has no script attached.");
         const key = randomKey();
-        const expires = hours > 0 ? new Date(Date.now() + hours * 3600_000).toISOString() : null;
-        const { error } = await supabaseAdmin.from("license_keys").insert({
-          user_id: profile.id,
-          script_id: script.id,
-          key,
-          hours_valid: hours,
-          expires_at: expires,
-          note,
-          discord_id: target,
-        });
+        const expires = hours > 0 ? new Date(Date.now() + hours * 3_600_000).toISOString() : null;
+        const { error } = await supabaseAdmin.from("license_keys").insert({ user_id: profile.id, panel_id: panel.id, script_id: panel.script_id, key, hours_valid: hours, expires_at: expires, note, discord_id: target });
         if (error) return errorReply(error.message);
-        return embedReply({
-          title: "🔑 Key generated",
-          description: `\`${key}\`\n${hours > 0 ? `Expires in **${hours}h**` : "Never expires"}${target ? `\nBound to <@${target}>` : ""}`,
-          color: COLOR_SUCCESS,
-        });
+        return embedReply({ title: "✅ Key Generated", description: `Key: \`${key}\`${target ? `\nAssigned To: <@${target}>` : "\nAssigned To: Available"}\nExpires: **${expires ? new Date(expires).toUTCString() : "Never"}**${note ? `\nNote: ${note}` : ""}\n\n♾️ Unlimited`, color: COLOR_SUCCESS });
       }
 
       case "blacklist": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Link your account first with `/login`.");
+        const scriptRef = String(opts.get("script_id") ?? "").trim();
+        const target = String(opts.get("user") ?? "").trim();
+        if (!profile) return errorReply("Link your Discord account first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const target = String(opts.get("user") ?? "");
-        const reason = String(opts.get("reason") ?? "") || null;
-        const { error } = await supabaseAdmin.from("user_bans").insert({
-          user_id: profile.id,
-          discord_id: target,
-          reason,
-        });
-        if (error) return errorReply(error.message);
-        return embedReply({
-          title: "🚫 Blacklisted",
-          description: `<@${target}> is blocked from your scripts.`,
-          color: COLOR_WARN,
-        });
+        const script = await findScript(supabaseAdmin, scriptRef);
+        if (!script || script.user_id !== profile.id) return errorReply("Script not found (or not yours).");
+        await supabaseAdmin.from("whitelists").delete().eq("script_id", script.id).eq("discord_id", target);
+        await supabaseAdmin.from("license_keys").delete().eq("script_id", script.id).eq("discord_id", target);
+        return embedReply({ title: "⛔ Blacklisted", description: `<@${target}> has been blacklisted from **${script.name}**.\nTheir whitelist and license key were revoked.`, color: COLOR_WARN });
       }
 
       case "deletekey": {
@@ -443,20 +240,17 @@ async function handleCommand(body: any) {
 
       case "forceresethwid": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Link your account first with `/login`.");
+        if (!profile) return errorReply("Link your Discord account first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: isOwner } = await supabaseAdmin.rpc("has_role", {
-          _user_id: profile.id,
-          _role: "owner",
-        });
-        if (!isOwner) return errorReply("Owner only.");
-        const target = String(opts.get("user") ?? "");
-        await supabaseAdmin.from("license_keys").update({ hwid: null }).eq("discord_id", target);
-        return embedReply({
-          title: "⚙️ Force reset",
-          description: `HWID cleared for <@${target}> on every key.`,
-          color: COLOR_SUCCESS,
-        });
+        const { data: isOwner } = await supabaseAdmin.rpc("has_role", { _user_id: profile.id, _role: "owner" });
+        if (!isOwner) return errorReply("LuaMore owner only.");
+        const script = await findScript(supabaseAdmin, String(opts.get("script_id") ?? "").trim());
+        const target = String(opts.get("user") ?? "").trim();
+        if (!script) return errorReply("Script not found.");
+        const { count, error } = await supabaseAdmin.from("license_keys").update({ hwid: null }, { count: "exact" }).eq("script_id", script.id).eq("discord_id", target);
+        if (error) return errorReply(error.message);
+        if (!count) return errorReply("No matching key was found.");
+        return embedReply({ title: "✅ Forced HWID reset", description: `Forced HWID reset for <@${target}> on **${script.name}**.`, color: COLOR_SUCCESS });
       }
 
       case "banuser":
@@ -469,7 +263,8 @@ async function handleCommand(body: any) {
           _role: "owner",
         });
         if (!isOwner) return errorReply("Owner only.");
-        const target = String(opts.get("user") ?? "");
+        const target = String(opts.get("discord_id") ?? "").trim();
+        if (!/^\d{17,20}$/.test(target)) return errorReply("Provide a valid Discord ID.");
         const { data: prof } = await supabaseAdmin
           .from("profiles")
           .select("id")
@@ -482,7 +277,7 @@ async function handleCommand(body: any) {
           .eq("id", prof.id);
         return embedReply({
           title: name === "banuser" ? "🚫 User banned" : "✅ User unbanned",
-          description: `<@${target}>`,
+          description: name === "banuser" ? `Website access blacklisted for \`${target}\`.` : `Website access restored for \`${target}\`.`,
           color: name === "banuser" ? COLOR_WARN : COLOR_SUCCESS,
         });
       }
@@ -520,44 +315,30 @@ async function handleCommand(body: any) {
 
       case "loader": {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const publicId = String(opts.get("script_id") ?? "");
-        const { data: script } = await supabaseAdmin
-          .from("scripts")
-          .select("name, public_id, ffa")
-          .eq("public_id", publicId)
-          .maybeSingle();
+        const script = await findScript(supabaseAdmin, String(opts.get("script_id") ?? "").trim());
         if (!script) return errorReply("Script not found.");
-        const url = `${originFromEnv()}/scripts/hosted/${script.public_id}.lua`;
-        const snippet = script.ffa
-          ? `loadstring(game:HttpGet("${url}"))()`
-          : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${url}"))()`;
-        return embedReply({
-          title: `📜 ${script.name}`,
-          description: `\`\`\`lua\n${snippet}\n\`\`\``,
-          color: COLOR_INFO,
-        });
+        let key: string | null = null;
+        if (!script.ffa) {
+          const { data: lic } = await supabaseAdmin.from("license_keys").select("key").eq("script_id", script.id).eq("discord_id", userId).eq("revoked", false).order("created_at", { ascending: false }).limit(1).maybeSingle();
+          key = lic?.key ?? null;
+          if (!key) return errorReply("No active key is assigned to your Discord account for this script.");
+        }
+        return embedReply({ title: `📜 ${script.name}`, description: buildLoaderMessage(script.ffa ? openLoader(script.public_id) : keyedLoader(script.public_id, key ?? "")), color: COLOR_INFO });
       }
 
       case "keys": {
         const profile = await getProfileByDiscord(userId);
-        if (!profile) return errorReply("Link your account first.");
+        if (!profile) return errorReply("Link your Discord account first.");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data } = await supabaseAdmin
-          .from("license_keys")
-          .select("key, expires_at, revoked, note")
-          .eq("user_id", profile.id)
-          .order("created_at", { ascending: false })
-          .limit(10);
-        if (!data?.length) return errorReply("You haven't generated any keys.");
-        const lines = data.map(
-          (k) =>
-            `\`${k.key}\`${k.revoked ? " · revoked" : ""}${k.expires_at ? ` · expires ${new Date(k.expires_at).toLocaleDateString()}` : ""}${k.note ? ` — ${k.note}` : ""}`,
-        );
-        return embedReply({
-          title: "🔑 Your recent keys",
-          description: lines.join("\n"),
-          color: COLOR_INFO,
-        });
+        const panelId = String(opts.get("panel_id") ?? "").trim();
+        let query = supabaseAdmin.from("license_keys").select("key, expires_at, revoked, note, discord_id").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(10);
+        if (panelId) query = query.eq("panel_id", panelId);
+        const { data, error } = await query;
+        if (error) return errorReply(error.message);
+        if (!data?.length) return errorReply("No matching license keys were found.");
+        const now = Date.now();
+        const lines = data.map((k) => { const status = k.revoked ? "Revoked" : k.expires_at && new Date(k.expires_at).getTime() < now ? "Expired" : k.discord_id ? `Claimed by <@${k.discord_id}>` : "Available"; return `\`${k.key}\` | ${status}${k.note ? ` | ${k.note}` : ""}`; });
+        return embedReply({ title: "🔑 Your recent keys", description: lines.join("\n"), color: COLOR_INFO });
       }
 
       default:
@@ -566,6 +347,27 @@ async function handleCommand(body: any) {
   } catch (e) {
     return errorReply(e instanceof Error ? e.message : "Command failed");
   }
+}
+
+function titleCase(value: string) { return value.charAt(0).toUpperCase() + value.slice(1); }
+function openLoader(publicId: string) { return `loadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${publicId}.lua"))()`; }
+function keyedLoader(publicId: string, key: string) { return `script_key = "${key}"\nloadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${publicId}.lua"))()`; }
+async function findScript(supabaseAdmin: any, reference: string) {
+  if (!reference) return null;
+  const { data } = await supabaseAdmin.from("scripts").select("id, user_id, name, public_id, ffa").or(`id.eq.${reference},public_id.eq.${reference}`).maybeSingle();
+  return data;
+}
+function canManageScript(ownerId: string, body: any, profileId?: string) {
+  if (profileId && profileId === ownerId) return true;
+  return (BigInt(body.member?.permissions ?? "0") & 0x8n) === 0x8n;
+}
+async function sendDiscordDm(discordId: string, content: string) {
+  const token = process.env.DISCORD_BOT_TOKEN; if (!token) return;
+  try {
+    const dm = await fetch("https://discord.com/api/v10/users/@me/channels", { method: "POST", headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ recipient_id: discordId }) });
+    if (!dm.ok) return; const channel = await dm.json() as { id?: string }; if (!channel.id) return;
+    await fetch(`https://discord.com/api/v10/channels/${channel.id}/messages`, { method: "POST", headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ content }) });
+  } catch { /* DMs may be disabled. */ }
 }
 
 async function getPanelForChannel(channelId?: string | null) {
@@ -1021,21 +823,4 @@ function hexToBytes(hex: string) {
   return out;
 }
 
-const HELP_TEXT = [
-  "**LuaMore — 16 commands**",
-  "`/help` — this menu",
-  "`/setup` — setup guide",
-  "`/login` — link your account",
-  "`/create-script` — new script",
-  "`/panel` — post a panel here",
-  "`/generatekey` — issue a license key",
-  "`/whitelist` — whitelist a user",
-  "`/blacklist` — block a user",
-  "`/deletekey` — remove a key",
-  "`/resethwid` — reset your HWID",
-  "`/forceresethwid` — owner reset any HWID",
-  "`/banuser` / `/unbanuser` — owner-only",
-  "`/banhwid` / `/unbanhwid` — block a HWID",
-  "`/loader` — get loadstring for a script",
-  "`/keys` — your last 10 keys",
-].join("\n");
+const HELP_TEXT = ["**📖 LuaMore Commands**", "", "**📜 Scripts**", "`/create-script` — Create a new script", "`/loader` — Get your script loader", "", "**📋 Panels**", "`/panel` — Send a panel to this channel", "", "**🔑 Keys**", "`/generatekey` — Generate a key", "`/deletekey` — Delete a key", "`/keys` — List recent keys", "", "**👤 Whitelist**", "`/whitelist` — Grant script access", "`/blacklist` — Revoke script access", "", "**🔧 HWID**", "`/resethwid` — Reset your HWID", "`/forceresethwid` — Force reset (owner)", "`/banhwid` — Ban an HWID", "`/unbanhwid` — Unban an HWID", "", "**🛡️ Admin**", "`/banuser` — Ban website access (owner)", "`/unbanuser` — Restore website access (owner)", "", "**ℹ️ Other**", "`/setup` — Setup guide", "`/help` — This menu"].join("\n");
