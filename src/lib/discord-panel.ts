@@ -7,21 +7,32 @@ export type PanelEmbedInput = {
   name: string;
   description?: string | null;
   sentBy?: string | null;
+  projectName?: string | null;
+  access?: string | null;
 };
 
 export const PANEL_ACCENT = 0x00aaff;
 
-export function buildPanelEmbed({ id, name, description, sentBy }: PanelEmbedInput) {
+export function buildPanelEmbed({
+  id,
+  name,
+  description,
+  sentBy,
+  projectName,
+  access,
+}: PanelEmbedInput) {
   void id;
-  const body =
-    description?.trim() ||
-    `This control panel is for the project: **${name}**\n\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role.`;
+  const body = description?.trim() || "Use the controls below to manage your LuaMore access.";
 
   return {
-    title: `${name} Control Panel`,
+    title: `🎮 ${name}`,
     description: body,
     color: PANEL_ACCENT,
-    footer: { text: sentBy ? `Sent by ${sentBy}. • LuaMore` : "LuaMore" },
+    fields: [
+      { name: "Project", value: projectName || name, inline: true },
+      { name: "Access", value: access || "Key required", inline: true },
+    ],
+    footer: { text: sentBy ? `Sent by ${sentBy} • LuaMore` : "LuaMore" },
     timestamp: new Date().toISOString(),
   };
 }
