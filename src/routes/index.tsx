@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CheckCircle2, FileCode2, KeyRound, Bot, Link2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileCode2, KeyRound, Bot, Link2, Zap, Shield } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { DISCORD_INVITE } from "@/lib/site";
@@ -21,22 +21,22 @@ const features = [
   {
     icon: FileCode2,
     title: "Scripts",
-    desc: "Store a script, choose protection, and copy its loader.",
+    desc: "Store a script, choose protection, and copy its loader. Unlimited scripts, stored permanently.",
   },
   {
     icon: KeyRound,
     title: "Keys",
-    desc: "Create timed or permanent keys and bind them to a device.",
+    desc: "Create timed or permanent keys and bind them to a device. HWID locking and batch generation.",
   },
   {
     icon: Bot,
     title: "Discord",
-    desc: "Post key panels and manage users with slash commands.",
+    desc: "Post key panels and manage users with slash commands. Auto-assign buyer roles on redeem.",
   },
   {
     icon: Link2,
-    title: "Delivery & ad links",
-    desc: "Use signed loader URLs, keyless mode, or issue a key after a visitor completes your chosen link.",
+    title: "Delivery",
+    desc: "Signed loader URLs, keyless mode, loading screen presets, and encrypted route delivery.",
   },
 ];
 
@@ -59,18 +59,21 @@ function Home() {
     <div className="min-h-screen">
       <SiteNav />
 
+      {/* Hero */}
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
         <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <span className="badge-blue">luamore · loader</span>
-              <h1 className="mt-6 font-display text-5xl leading-[1.05] md:text-7xl">
-                Control who can run your scripts.
+              <h1 className="mt-6 font-display text-5xl leading-[1.02] md:text-7xl">
+                Control who can run
+                <br />
+                your scripts.
               </h1>
               <p className="mt-6 max-w-lg text-lg" style={{ color: "var(--muted-foreground)" }}>
                 Add a script, choose how access works, then copy the loader. LuaMore is free — no
-                plans, no billing.
+                plans, no billing, no paywalls.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link to="/register" className="btn-primary">
@@ -82,9 +85,14 @@ function Home() {
               </div>
             </div>
 
+            {/* Loader preview card */}
             <div
               className="overflow-hidden rounded-xl border"
-              style={{ borderColor: "var(--border-strong)", background: "var(--card)" }}
+              style={{
+                borderColor: "var(--border-strong)",
+                background: "linear-gradient(180deg, #050d1c 0%, #030810 100%)",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.1)",
+              }}
             >
               <div
                 className="flex items-center justify-between border-b px-4 py-3"
@@ -95,7 +103,7 @@ function Home() {
                   className="font-mono text-[10px]"
                   style={{ color: "var(--muted-foreground)" }}
                 >
-                  encrypted route
+                  encrypted route · 42ms
                 </span>
               </div>
               <pre
@@ -104,7 +112,7 @@ function Home() {
               >
                 {`_G.script_key = "LM-A7X2-9KQM-4RPL"
 local loader = game:HttpGet(
-  "https://luamore.win/v1/load/demo"
+  "https://luamore.app/v1/load/demo"
 )
 loadstring(loader)()`}
               </pre>
@@ -114,7 +122,18 @@ loadstring(loader)()`}
                   {demoKeys.map((k) => (
                     <li key={k.key} className="flex items-center justify-between font-mono text-xs">
                       <span>{k.key}</span>
-                      <span style={{ color: "var(--muted-foreground)" }}>{k.status}</span>
+                      <span
+                        style={{
+                          color:
+                            k.status === "active"
+                              ? "var(--success)"
+                              : k.status === "expired"
+                                ? "var(--destructive)"
+                                : "var(--muted-foreground)",
+                        }}
+                      >
+                        {k.status}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -124,9 +143,13 @@ loadstring(loader)()`}
         </div>
       </section>
 
+      {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-6 py-24">
         <div className="eyebrow">What it does</div>
         <h2 className="mt-3 font-display text-4xl md:text-5xl">The parts you actually use</h2>
+        <p className="mt-4 max-w-xl text-base" style={{ color: "var(--muted-foreground)" }}>
+          Scripts, keys, Discord, and delivery — everything included, everything free.
+        </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <div key={f.title} className="card-blue p-6">
@@ -140,6 +163,7 @@ loadstring(loader)()`}
         </div>
       </section>
 
+      {/* How it works */}
       <section
         id="how"
         className="border-y"
@@ -168,6 +192,7 @@ loadstring(loader)()`}
         </div>
       </section>
 
+      {/* Free Forever */}
       <section id="pricing" className="mx-auto max-w-6xl px-6 py-24">
         <div className="mx-auto max-w-2xl text-center">
           <div className="eyebrow">Pricing</div>
@@ -180,47 +205,96 @@ loadstring(loader)()`}
           </p>
         </div>
         <div className="mx-auto mt-12 max-w-md">
-          <div className="card-blue p-8" style={{ borderColor: "var(--foreground)" }}>
-            <h3 className="font-display text-2xl">LuaMore</h3>
-            <div className="mt-4 font-display text-6xl">
-              $0
-              <span
-                className="font-sans text-sm font-normal"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                {" "}
-                forever
-              </span>
+          <div
+            className="card-blue relative overflow-hidden p-8"
+            style={{ borderColor: "var(--foreground)" }}
+          >
+            <div
+              className="absolute -top-20 -right-20 h-40 w-40 rounded-full opacity-15 blur-3xl"
+              style={{ background: "var(--primary)" }}
+            />
+            <div className="relative">
+              <h3 className="font-display text-2xl">LuaMore</h3>
+              <div className="mt-4 font-display text-6xl tracking-tight">
+                $0
+                <span
+                  className="font-sans text-sm font-normal"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {" "}
+                  forever
+                </span>
+              </div>
+              <ul className="mt-8 space-y-3 text-sm">
+                {[
+                  "Unlimited projects, scripts, and keys",
+                  "LuaMore VM obfuscation with anti-hook",
+                  "HWID binding and license keys",
+                  "Discord panels and slash commands",
+                  "Loading screen presets (4 styles)",
+                  "No extra ads. No billing.",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5">
+                    <CheckCircle2
+                      size={15}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: "var(--primary)" }}
+                    />
+                    <span style={{ color: "var(--muted-foreground)" }}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register" className="btn-primary mt-8 w-full">
+                <Zap size={15} /> Create account
+              </Link>
             </div>
-            <ul className="mt-8 space-y-3 text-sm">
-              {[
-                "Unlimited projects, scripts, and keys",
-                "LuaMore VM obfuscation",
-                "HWID binding and license keys",
-                "Discord panels and slash commands",
-                "Loading screen presets",
-                "No extra ads. No billing.",
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2.5">
-                  <CheckCircle2
-                    size={15}
-                    className="mt-0.5 shrink-0"
-                    style={{ color: "var(--primary)" }}
-                  />
-                  <span style={{ color: "var(--muted-foreground)" }}>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Link to="/register" className="btn-primary mt-8 w-full">
-              Create account
-            </Link>
           </div>
         </div>
       </section>
 
+      {/* Protection highlight */}
+      <section
+        className="border-t"
+        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+      >
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: Shield,
+                title: "Anti-Hook Engine",
+                desc: "Silent Entropy Poisoning corrupts decryption keys when hooks are detected. Dual FNV-1a & djb2 checksums.",
+              },
+              {
+                icon: Zap,
+                title: "Instant Delivery",
+                desc: "Global edge network caches and delivers obfuscated payloads in under 35ms with 99.99% uptime.",
+              },
+              {
+                icon: KeyRound,
+                title: "HWID Locking",
+                desc: "Bind scripts to device hardware on first run. Block unauthorized devices until you reset.",
+              },
+            ].map((item) => (
+              <div key={item.title} className="card-blue p-6">
+                <item.icon size={20} style={{ color: "var(--primary)" }} />
+                <h3 className="mt-4 font-display text-xl">{item.title}</h3>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="relative mx-auto max-w-3xl px-6 py-24 text-center">
           <h2 className="font-display text-4xl md:text-5xl">Start with one script.</h2>
+          <p className="mt-4 text-base" style={{ color: "var(--muted-foreground)" }}>
+            Create a free account and protect your first script in under a minute.
+          </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/register" className="btn-primary">
               Create account
