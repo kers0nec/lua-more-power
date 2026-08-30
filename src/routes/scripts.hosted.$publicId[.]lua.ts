@@ -10,7 +10,11 @@ export const Route = createFileRoute("/scripts/hosted/$publicId.lua")({
       GET: async ({ params, request }) => {
         const url = new URL(request.url);
         const origin = url.origin;
-        const publicId = params.publicId;
+        // Filename `$publicId[.]lua` compiles to a param whose key includes the escape.
+        // Read from the URL path directly to be safe across TSR versions.
+        const p = params as Record<string, string>;
+        const match = url.pathname.match(/\/scripts\/hosted\/([^/]+)\.lua$/);
+        const publicId = match?.[1] ?? p.publicId ?? p["publicId.lua"] ?? "";
         // Determine if the script is FFA — if so, just proxy directly to raw.
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
