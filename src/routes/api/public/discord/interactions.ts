@@ -313,6 +313,253 @@ async function handleCommand(body: any) {
         return embedReply({ title: `⚙️ HWID reset for <@${target}>`, color: COLOR_SUCCESS });
       }
 
+      case "create-script": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first with `/login`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const scriptName = String(opts.get("name") ?? "").trim();
+        const code = String(opts.get("code") ?? "").trim();
+        const ffa = Boolean(opts.get("ffa"));
+        const obfuscate = Boolean(opts.get("obfuscate"));
+        if (!scriptName) return errorReply("Provide a script name.");
+        let obfuscated: string | null = null;
+        if (obfuscate && code) {
+          try {
+            const { obfuscateLua } = await import("@/lib/obfuscator.server");
+            obfuscated = obfuscateLua(code);
+          } catch (e) {
+            return errorReply(`Obfuscation failed: ${e instanceof Error ? e.message : "unknown"}`);
+          }
+        }
+        const { data, error } = await supabaseAdmin
+          .from("scripts")
+          .insert({
+            user_id: profile.id,
+            name: scriptName,
+            code: code || "",
+            ffa,
+            is_protected: obfuscate,
+            obfuscated_code: obfuscated,
+          })
+          .select("public_id, name")
+          .maybeSingle();
+        if (error || !data) return errorReply(error?.message ?? "Failed to create script");
+        return embedReply({
+          title: "✅ Script created",
+          description: `**${data.name}**\nPublic ID: \`${data.public_id}\`\n\nLoadstring:\n\`\`\`lua\n${
+            ffa
+              ? `loadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${data.public_id}.lua"))()`
+              : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${originFromEnv()}/scripts/hosted/${data.public_id}.lua"))()`
+          }\n\`\`\``,
+          color: COLOR_SUCCESS,
+        });
+      }
+
+      case "panel": {
+        const profile = await getProfileByDiscord(userId);
+        const publicId = String(opts.get("script_id") ?? "");
+        if (!publicId) return errorReply("Provide `script_id`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: script } = await supabaseAdmin
+          .from("scripts")
+          .select("id, name, description, user_id")
+          .eq("public_id", publicId)
+          .maybeSingle();
+        if (!script) return errorReply("Script not found.");
+        const isOwner = profile?.id === script.user_id;
+        const perms = BigInt(body.member?.permissions ?? "0");
+        if (!isOwner && (perms & 0x8n) !== 0x8n)
+          return errorReply("You need Administrator permission here.");
+        return await postPanelForScript(script.user_id, script, body);
+      }
+
+      case "generatekey": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first with `/login`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const publicId = String(opts.get("script_id") ?? "");
+        const hours = Number(opts.get("hours") ?? 0) || 0;
+        const note = String(opts.get("note") ?? "") || null;
+        const target = String(opts.get("user") ?? "") || null;
+        const { data: script } = await supabaseAdmin
+          .from("scripts")
+          .select("id, user_id")
+          .eq("public_id", publicId)
+          .maybeSingle();
+        if (!script || script.user_id !== profile.id)
+          return errorReply("Script not found (or not yours).");
+        const key = randomKey();
+        const expires = hours > 0 ? new Date(Date.now() + hours * 3600_000).toISOString() : null;
+        const { error } = await supabaseAdmin.from("license_keys").insert({
+          user_id: profile.id,
+          script_id: script.id,
+          key,
+          hours_valid: hours,
+          expires_at: expires,
+          note,
+          discord_id: target,
+        });
+        if (error) return errorReply(error.message);
+        return embedReply({
+          title: "🔑 Key generated",
+          description: `\`${key}\`\n${hours > 0 ? `Expires in **${hours}h**` : "Never expires"}${target ? `\nBound to <@${target}>` : ""}`,
+          color: COLOR_SUCCESS,
+        });
+      }
+
+      case "blacklist": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first with `/login`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const target = String(opts.get("user") ?? "");
+        const reason = String(opts.get("reason") ?? "") || null;
+        const { error } = await supabaseAdmin.from("user_bans").insert({
+          user_id: profile.id,
+          discord_id: target,
+          reason,
+        });
+        if (error) return errorReply(error.message);
+        return embedReply({
+          title: "🚫 Blacklisted",
+          description: `<@${target}> is blocked from your scripts.`,
+          color: COLOR_WARN,
+        });
+      }
+
+      case "deletekey": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first with `/login`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const key = String(opts.get("key") ?? "");
+        const { error, count } = await supabaseAdmin
+          .from("license_keys")
+          .delete({ count: "exact" })
+          .eq("user_id", profile.id)
+          .eq("key", key);
+        if (error) return errorReply(error.message);
+        if (!count) return errorReply("Key not found (or not yours).");
+        return embedReply({ title: "🗑️ Key deleted", color: COLOR_SUCCESS });
+      }
+
+      case "forceresethwid": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first with `/login`.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: isOwner } = await supabaseAdmin.rpc("has_role", {
+          _user_id: profile.id,
+          _role: "owner",
+        });
+        if (!isOwner) return errorReply("Owner only.");
+        const target = String(opts.get("user") ?? "");
+        await supabaseAdmin.from("license_keys").update({ hwid: null }).eq("discord_id", target);
+        return embedReply({
+          title: "⚙️ Force reset",
+          description: `HWID cleared for <@${target}> on every key.`,
+          color: COLOR_SUCCESS,
+        });
+      }
+
+      case "banuser":
+      case "unbanuser": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: isOwner } = await supabaseAdmin.rpc("has_role", {
+          _user_id: profile.id,
+          _role: "owner",
+        });
+        if (!isOwner) return errorReply("Owner only.");
+        const target = String(opts.get("user") ?? "");
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("discord_id", target)
+          .maybeSingle();
+        if (!prof) return errorReply("That user has no LuaMore profile.");
+        await supabaseAdmin
+          .from("profiles")
+          .update({ is_banned: name === "banuser" })
+          .eq("id", prof.id);
+        return embedReply({
+          title: name === "banuser" ? "🚫 User banned" : "✅ User unbanned",
+          description: `<@${target}>`,
+          color: name === "banuser" ? COLOR_WARN : COLOR_SUCCESS,
+        });
+      }
+
+      case "banhwid": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const hwid = String(opts.get("hwid") ?? "").trim();
+        const reason = String(opts.get("reason") ?? "") || null;
+        if (!hwid) return errorReply("Provide `hwid`.");
+        const { error } = await supabaseAdmin.from("hwid_bans").insert({
+          user_id: profile.id,
+          hwid,
+          reason,
+        });
+        if (error) return errorReply(error.message);
+        return embedReply({ title: "🚫 HWID banned", description: `\`${hwid}\``, color: COLOR_WARN });
+      }
+
+      case "unbanhwid": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const hwid = String(opts.get("hwid") ?? "").trim();
+        const { count, error } = await supabaseAdmin
+          .from("hwid_bans")
+          .delete({ count: "exact" })
+          .eq("user_id", profile.id)
+          .eq("hwid", hwid);
+        if (error) return errorReply(error.message);
+        if (!count) return errorReply("HWID not banned.");
+        return embedReply({ title: "✅ HWID unbanned", description: `\`${hwid}\``, color: COLOR_SUCCESS });
+      }
+
+      case "loader": {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const publicId = String(opts.get("script_id") ?? "");
+        const { data: script } = await supabaseAdmin
+          .from("scripts")
+          .select("name, public_id, ffa")
+          .eq("public_id", publicId)
+          .maybeSingle();
+        if (!script) return errorReply("Script not found.");
+        const url = `${originFromEnv()}/scripts/hosted/${script.public_id}.lua`;
+        const snippet = script.ffa
+          ? `loadstring(game:HttpGet("${url}"))()`
+          : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${url}"))()`;
+        return embedReply({
+          title: `📜 ${script.name}`,
+          description: `\`\`\`lua\n${snippet}\n\`\`\``,
+          color: COLOR_INFO,
+        });
+      }
+
+      case "keys": {
+        const profile = await getProfileByDiscord(userId);
+        if (!profile) return errorReply("Link your account first.");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data } = await supabaseAdmin
+          .from("license_keys")
+          .select("key, expires_at, revoked, note")
+          .eq("user_id", profile.id)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (!data?.length) return errorReply("You haven't generated any keys.");
+        const lines = data.map(
+          (k) =>
+            `\`${k.key}\`${k.revoked ? " · revoked" : ""}${k.expires_at ? ` · expires ${new Date(k.expires_at).toLocaleDateString()}` : ""}${k.note ? ` — ${k.note}` : ""}`,
+        );
+        return embedReply({
+          title: "🔑 Your recent keys",
+          description: lines.join("\n"),
+          color: COLOR_INFO,
+        });
+      }
+
       default:
         return errorReply(`Unknown command: ${name}`);
     }
@@ -775,10 +1022,20 @@ function hexToBytes(hex: string) {
 }
 
 const HELP_TEXT = [
-  "**1.** Invite the LuaMore bot.",
-  "**2.** Enable Key system on your script.",
-  "**3.** Run `/setup` in a channel and pick the script.",
-  "**4.** Configure the Buyer role and Admin roles for that panel on the dashboard.",
-  "**5.** Use `/whitelist user duration` — duration like 20s, 35m, 2h, 1d, 7d, 30d (omit for forever).",
-  "**6.** Admins can use `/resethwid user` with no cooldown.",
+  "**LuaMore — 16 commands**",
+  "`/help` — this menu",
+  "`/setup` — setup guide",
+  "`/login` — link your account",
+  "`/create-script` — new script",
+  "`/panel` — post a panel here",
+  "`/generatekey` — issue a license key",
+  "`/whitelist` — whitelist a user",
+  "`/blacklist` — block a user",
+  "`/deletekey` — remove a key",
+  "`/resethwid` — reset your HWID",
+  "`/forceresethwid` — owner reset any HWID",
+  "`/banuser` / `/unbanuser` — owner-only",
+  "`/banhwid` / `/unbanhwid` — block a HWID",
+  "`/loader` — get loadstring for a script",
+  "`/keys` — your last 10 keys",
 ].join("\n");

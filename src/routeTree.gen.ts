@@ -40,6 +40,8 @@ import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_a
 import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
 import { Route as ApiPublicObfuscateRouteImport } from './routes/api/public/obfuscate'
+import { Route as ScriptsHostedPublicIdDotluaRouteImport } from './routes/scripts.hosted.$publicId[.]lua'
+import { Route as ScriptsRawPublicIdDotluaRouteImport } from './routes/scripts.raw.$publicId[.]lua'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
 import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
 import { Route as ApiPublicAuthLoginRouteImport } from './routes/api/public/auth/login'
@@ -212,6 +214,18 @@ const ApiPublicObfuscateRoute = ApiPublicObfuscateRouteImport.update({
   path: '/api/public/obfuscate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScriptsHostedPublicIdDotluaRoute =
+  ScriptsHostedPublicIdDotluaRouteImport.update({
+    id: '/scripts/hosted/$publicId.lua',
+    path: '/scripts/hosted/$publicId.lua',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ScriptsRawPublicIdDotluaRoute =
+  ScriptsRawPublicIdDotluaRouteImport.update({
+    id: '/scripts/raw/$publicId.lua',
+    path: '/scripts/raw/$publicId.lua',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedDashboardScriptsIndexRoute =
   AuthenticatedDashboardScriptsIndexRouteImport.update({
     id: '/dashboard/scripts/',
@@ -294,6 +308,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
+  '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
@@ -335,6 +351,8 @@ export interface FileRoutesByTo {
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
+  '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
@@ -378,6 +396,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
+  '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
   '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
@@ -421,6 +441,8 @@ export interface FileRouteTypes {
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/scripts/hosted/$publicId.lua'
+    | '/scripts/raw/$publicId.lua'
     | '/dashboard/'
     | '/dashboard/scripts/$id'
     | '/api/public/auth/login'
@@ -462,6 +484,8 @@ export interface FileRouteTypes {
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/scripts/hosted/$publicId.lua'
+    | '/scripts/raw/$publicId.lua'
     | '/dashboard'
     | '/dashboard/scripts/$id'
     | '/api/public/auth/login'
@@ -504,6 +528,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/panels'
     | '/_authenticated/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/scripts/hosted/$publicId.lua'
+    | '/scripts/raw/$publicId.lua'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/scripts/$id'
     | '/api/public/auth/login'
@@ -539,6 +565,8 @@ export interface RootRouteChildren {
   TosRoute: typeof TosRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
+  ScriptsHostedPublicIdDotluaRoute: typeof ScriptsHostedPublicIdDotluaRoute
+  ScriptsRawPublicIdDotluaRoute: typeof ScriptsRawPublicIdDotluaRoute
   ApiPublicAuthLoginRoute: typeof ApiPublicAuthLoginRoute
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
@@ -767,6 +795,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicObfuscateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scripts/hosted/$publicId.lua': {
+      id: '/scripts/hosted/$publicId.lua'
+      path: '/scripts/hosted/$publicId.lua'
+      fullPath: '/scripts/hosted/$publicId.lua'
+      preLoaderRoute: typeof ScriptsHostedPublicIdDotluaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scripts/raw/$publicId.lua': {
+      id: '/scripts/raw/$publicId.lua'
+      path: '/scripts/raw/$publicId.lua'
+      fullPath: '/scripts/raw/$publicId.lua'
+      preLoaderRoute: typeof ScriptsRawPublicIdDotluaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard/scripts/': {
       id: '/_authenticated/dashboard/scripts/'
       path: '/dashboard/scripts'
@@ -896,6 +938,8 @@ const rootRouteChildren: RootRouteChildren = {
   TosRoute: TosRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
+  ScriptsHostedPublicIdDotluaRoute: ScriptsHostedPublicIdDotluaRoute,
+  ScriptsRawPublicIdDotluaRoute: ScriptsRawPublicIdDotluaRoute,
   ApiPublicAuthLoginRoute: ApiPublicAuthLoginRoute,
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
