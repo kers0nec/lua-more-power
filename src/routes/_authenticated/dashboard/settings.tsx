@@ -101,21 +101,8 @@ function Page() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-10 md:px-10">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="eyebrow">Workspace Preferences</div>
-          <h1 className="mt-2 font-display text-4xl md:text-5xl">Account Settings</h1>
-          <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            Manage your creator profile, security credentials, themes, and workspace data.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="badge-solid flex items-center gap-1.5">
-            <Sparkles size={12} /> Free Forever
-          </span>
-        </div>
-      </div>
+    <div className="app-page max-w-5xl">
+      <header className="app-page-header"><div><div className="eyebrow">Workspace preferences</div><h1 className="mt-2 font-display text-4xl">Account settings</h1><p className="mt-2 text-sm text-muted-foreground">Manage your profile, credentials, Discord identity, and workspace data.</p></div><span className="badge-solid flex items-center gap-1.5"><Sparkles size={12} /> Free forever</span></header>
 
       {/* Tabs */}
       <div

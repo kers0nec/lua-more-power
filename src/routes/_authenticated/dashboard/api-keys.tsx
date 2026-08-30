@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createApiKey, deleteApiKey, listApiKeys } from "@/lib/api-keys.functions";
 import { Copy, Check, Key, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/api-keys")({
   head: () => ({ meta: [{ title: "API Keys — LuaMore" }] }),
@@ -57,19 +58,8 @@ function Page() {
   };
 
   return (
-    <div className="p-8 max-w-4xl">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-          <Key className="h-5 w-5" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold">API Keys</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Used by the Discord <code className="text-foreground">/login</code> command, REST API,
-            and CLI/loader integrations.
-          </p>
-        </div>
-      </div>
+    <div className="app-page max-w-5xl">
+      <DashboardHeader eyebrow="Developer tools" title="API keys" description="Authenticate Discord commands, REST requests, and loader integrations." action={<span className="badge-blue"><Key size={12} /> {(q.data ?? []).length} active</span>} />
 
       <div className="card-blue p-5 mt-6 flex flex-wrap items-end gap-3 border border-border/40">
         <div className="flex-1 min-w-64">

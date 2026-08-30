@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { deleteKey, generateKey, listKeys } from "@/lib/keys.functions";
 import { listScripts } from "@/lib/scripts.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/keys")({
   head: () => ({ meta: [{ title: "License Keys — LuaMore" }] }),
@@ -42,8 +44,8 @@ function Keys() {
   });
 
   return (
-    <div className="p-8 max-w-6xl">
-      <h1 className="text-3xl font-bold">License Keys</h1>
+    <div className="app-page">
+      <DashboardHeader eyebrow="Access control" title="License keys" description="Generate, bind, inspect, and revoke access credentials across your scripts." action={<span className="badge-blue"><KeyRound size={12} /> {(keys.data ?? []).length} keys</span>} />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-5 items-end">
         <div>
@@ -103,14 +105,9 @@ function Keys() {
       <div className="mt-6 card-blue divide-y">
         {(keys.data ?? []).map((k) => (
           <div key={k.id} className="p-4 flex flex-wrap items-center gap-3">
-            <code
-              className="font-mono text-sm px-2 py-1 rounded cursor-pointer"
-              style={{ background: "var(--accent-light)", color: "var(--primary-dark)" }}
-              onClick={() => navigator.clipboard.writeText(k.key)}
-              title="Click to copy"
-            >
-              {k.key}
-            </code>
+            <button className="inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-primary" onClick={() => navigator.clipboard.writeText(k.key)} title="Copy key">
+              <span className="truncate">{k.key}</span><Copy size={13} className="shrink-0" />
+            </button>
             {k.revoked && (
               <span
                 className="badge-blue"
@@ -127,12 +124,7 @@ function Keys() {
               </span>
             )}
             <div className="flex-1" />
-            <button
-              onClick={() => delMut.mutate(k.id)}
-              className="text-xs text-[color:var(--destructive)] hover:underline"
-            >
-              Delete
-            </button>
+            <button onClick={() => delMut.mutate(k.id)} className="btn-ghost px-2 text-destructive" aria-label="Delete key" title="Delete key"><Trash2 size={15} /></button>
           </div>
         ))}
         {keys.data && keys.data.length === 0 && (

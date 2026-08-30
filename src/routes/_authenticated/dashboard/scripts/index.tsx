@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { FileCode2, Plus, Trash2 } from "lucide-react";
 import { createScript, deleteScript, listScripts } from "@/lib/scripts.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/")({
   head: () => ({ meta: [{ title: "Scripts — LuaMore" }] }),
@@ -50,10 +52,8 @@ function Scripts() {
   });
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Scripts</h1>
-      </div>
+    <div className="app-page">
+      <DashboardHeader eyebrow="Projects" title="Scripts" description="Store source, configure access, and copy a stable hosted loader for every project." action={<span className="badge-blue"><FileCode2 size={12} /> {(scripts.data ?? []).length} total</span>} />
 
       <form
         onSubmit={(e) => {
@@ -135,7 +135,7 @@ function Scripts() {
             (public)
           </label>
           <button disabled={createMut.isPending} className="btn-primary">
-            {createMut.isPending ? "Creating…" : "Create script"}
+            <Plus size={15} /> {createMut.isPending ? "Creating…" : "Create script"}
           </button>
         </div>
         {err && <div className="text-sm text-[color:var(--destructive)] md:col-span-2">{err}</div>}
@@ -163,13 +163,8 @@ function Scripts() {
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  if (confirm(`Delete "${s.name}"?`)) delMut.mutate(s.id);
-                }}
-                className="text-xs text-[color:var(--destructive)] hover:underline"
-              >
-                Delete
+              <button onClick={() => { if (confirm(`Delete "${s.name}"?`)) delMut.mutate(s.id); }} className="btn-ghost px-2 text-destructive" aria-label={`Delete ${s.name}`} title="Delete script">
+                <Trash2 size={15} />
               </button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
