@@ -19,8 +19,17 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
       { label: "Docs", to: "/docs" },
       { label: "Loading screens", to: "/loading-screens" },
       { label: "Commands", to: "/commands" },
-      { label: "API", to: "/api/docs" },
+      { label: "FAQ", to: "/faq" },
+      { label: "Changelog", to: "/changelog" },
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      { label: "Sign in", to: "/login" },
+      { label: "Register", to: "/register" },
       { label: "Settings", to: "/settings" },
+      { label: "Pricing", to: "/pricing" },
     ],
   },
   {
@@ -40,11 +49,12 @@ export function SiteFooter() {
       className="border-t"
       style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
     >
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
-            LuaMore is free. Store scripts, issue keys, and copy a loader — no billing, no paywalls.
+            LuaMore is free. Store scripts, issue keys, and copy a loader — no billing, no
+            paywalls. Everything included for every account.
           </p>
           <p
             className="font-mono text-[11px] uppercase tracking-[0.16em]"

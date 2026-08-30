@@ -15,7 +15,7 @@ const steps = [
   {
     n: "01",
     title: "Create a project",
-    desc: "Add the script you want to deliver. Paste Luau or upload a file. LuaMore stores the source for you.",
+    desc: "Add the script you want to deliver. Paste Luau or upload a file. LuaMore stores the source permanently.",
   },
   {
     n: "02",
@@ -30,25 +30,36 @@ const steps = [
   {
     n: "04",
     title: "Check activity",
-    desc: "See runs, errors, and active devices from the dashboard. Revoke or reset HWID anytime.",
+    desc: "See runs, errors, and active devices. All analytics stay in your dashboard.",
   },
 ];
 
 function HowPage() {
   return (
     <PageShell
-      eyebrow="Setup"
-      title="How it works"
-      subtitle="Four steps, then you are done. No billing, no plan limits."
+      eyebrow="How it works"
+      title="Four steps, then you're done"
+      subtitle="From pasting your script to copying a loader — LuaMore keeps it simple. Everything is free, no billing, no tiers."
     >
-      <ol className="space-y-8">
+      {/* Steps grid */}
+      <div
+        className="grid gap-px overflow-hidden rounded-xl border"
+        style={{ borderColor: "var(--border)", background: "var(--border)" }}
+      >
         {steps.map((s) => (
-          <li
+          <div
             key={s.n}
-            className="grid gap-2 border-t pt-6 md:grid-cols-[80px_1fr]"
-            style={{ borderColor: "var(--border)" }}
+            className="grid grid-cols-[auto_1fr] gap-5 items-start p-6 md:p-8"
+            style={{ background: "var(--card)" }}
           >
-            <div className="font-mono text-sm" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold"
+              style={{
+                background: "var(--accent)",
+                color: "var(--primary)",
+                border: "1px solid var(--border)",
+              }}
+            >
               {s.n}
             </div>
             <div>
@@ -57,16 +68,106 @@ function HowPage() {
                 {s.desc}
               </p>
             </div>
-          </li>
+          </div>
         ))}
-      </ol>
-      <div className="mt-12 flex flex-wrap gap-3">
-        <Link to="/register" className="btn-primary">
-          Create account
-        </Link>
-        <Link to="/docs" className="btn-outline">
-          Read the docs
-        </Link>
+      </div>
+
+      {/* What happens under the hood */}
+      <div className="mt-14">
+        <div className="flex items-center gap-4">
+          <h2 className="eyebrow shrink-0">Under the hood</h2>
+          <div className="hairline" />
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              title: "Encrypted delivery",
+              desc: "Scripts are stored encrypted and only decrypted server-side after key and HWID verification. The raw source never reaches unauthorized devices.",
+            },
+            {
+              title: "HWID fingerprinting",
+              desc: "On first run, the user's hardware signature is bound to their key. Subsequent loads from other devices are blocked until you reset.",
+            },
+            {
+              title: "Heartbeat monitoring",
+              desc: "The loader sends periodic heartbeats. Late or missing heartbeats trigger anti-bypass responses you configure.",
+            },
+            {
+              title: "Discord integration",
+              desc: "Post interactive panels in your server. Users self-serve keys, admins reset HWIDs, and buyer roles auto-assign.",
+            },
+            {
+              title: "Loading overlays",
+              desc: "Choose from four loading bar presets (Frost, Neon, Clean, Gold). Mobile-ready and customizable.",
+            },
+            {
+              title: "Free forever",
+              desc: "No plans, no billing, no Stripe. Unlimited scripts, keys, obfuscation runs, and Discord panels for every account.",
+            },
+          ].map((item) => (
+            <div key={item.title} className="card-blue p-5">
+              <h3 className="font-display text-lg">{item.title}</h3>
+              <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Loader example */}
+      <div className="mt-14">
+        <div className="flex items-center gap-4">
+          <h2 className="eyebrow shrink-0">Loader example</h2>
+          <div className="hairline" />
+        </div>
+        <div
+          className="mt-6 overflow-hidden rounded-lg border"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <div
+            className="flex items-center justify-between border-b px-4 py-3"
+            style={{ borderColor: "var(--border)", background: "var(--muted)" }}
+          >
+            <span className="font-mono text-xs">loader.lua</span>
+            <span className="font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              encrypted route · 42ms
+            </span>
+          </div>
+          <pre
+            className="overflow-x-auto p-5 text-xs leading-relaxed"
+            style={{ fontFamily: "var(--font-mono)", background: "var(--input)" }}
+          >
+            <code>{`-- Set the key variable for LuaMore authentication
+_G.script_key = "LM-A7X2-9KQM-4RPL"
+
+-- Fetch and execute the encrypted payload
+local loader = game:HttpGet(
+  "https://luamore.app/api/public/r/YOUR_PUBLIC_ID", true
+)
+loadstring(loader)()`}</code>
+          </pre>
+        </div>
+        <p className="mt-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+          Keys stay in the loader URL from your dashboard — this is not a key-entry box. Copy the
+          loader URL from Dashboard → Scripts → your project.
+        </p>
+      </div>
+
+      {/* CTA */}
+      <div className="mt-14 text-center">
+        <h2 className="font-display text-3xl">Ready to ship?</h2>
+        <p className="mt-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
+          Create a free account and protect your first script in under a minute.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to="/register" className="btn-primary">
+            Create account
+          </Link>
+          <Link to="/keys" className="btn-outline">
+            Key system docs
+          </Link>
+        </div>
       </div>
     </PageShell>
   );

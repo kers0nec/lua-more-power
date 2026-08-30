@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CommandsRouteImport } from './routes/commands'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as HowRouteImport } from './routes/how'
 import { Route as KeysRouteImport } from './routes/keys'
@@ -25,6 +27,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TosRouteImport } from './routes/tos'
 import { Route as ApiDocsRouteImport } from './routes/api.docs'
 import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
@@ -39,6 +42,7 @@ import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_au
 import { Route as ApiPublicObfuscateRouteImport } from './routes/api/public/obfuscate'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
 import { Route as AuthenticatedDashboardScriptsIdRouteImport } from './routes/_authenticated/dashboard/scripts/$id'
+import { Route as ApiPublicAuthLoginRouteImport } from './routes/api/public/auth/login'
 import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/public/discord/interactions'
 import { Route as ApiPublicDiscordRegisterCommandsRouteImport } from './routes/api/public/discord/register-commands'
 import { Route as ApiPublicLoaderPublicIdRouteImport } from './routes/api/public/loader/$publicId'
@@ -60,6 +64,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommandsRoute = CommandsRouteImport.update({
   id: '/commands',
   path: '/commands',
@@ -68,6 +77,11 @@ const CommandsRoute = CommandsRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -123,6 +137,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TosRoute = TosRouteImport.update({
@@ -205,6 +224,11 @@ const AuthenticatedDashboardScriptsIdRoute =
     path: '/dashboard/scripts/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicAuthLoginRoute = ApiPublicAuthLoginRouteImport.update({
+  id: '/api/public/auth/login',
+  path: '/api/public/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiscordInteractionsRoute =
   ApiPublicDiscordInteractionsRouteImport.update({
     id: '/api/public/discord/interactions',
@@ -243,8 +267,10 @@ const ApiPublicDiscordOauthStartRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
@@ -256,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -269,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
@@ -280,8 +308,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
@@ -293,6 +323,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -306,6 +337,7 @@ export interface FileRoutesByTo {
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
@@ -319,8 +351,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
@@ -332,6 +366,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
@@ -345,6 +380,7 @@ export interface FileRoutesById {
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/scripts/$id': typeof AuthenticatedDashboardScriptsIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
   '/api/public/discord/interactions': typeof ApiPublicDiscordInteractionsRoute
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
@@ -358,8 +394,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/changelog'
     | '/commands'
     | '/docs'
+    | '/faq'
     | '/features'
     | '/how'
     | '/keys'
@@ -371,6 +409,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/terms'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -384,6 +423,7 @@ export interface FileRouteTypes {
     | '/api/public/obfuscate'
     | '/dashboard/'
     | '/dashboard/scripts/$id'
+    | '/api/public/auth/login'
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
@@ -395,8 +435,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/changelog'
     | '/commands'
     | '/docs'
+    | '/faq'
     | '/features'
     | '/how'
     | '/keys'
@@ -408,6 +450,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/terms'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -421,6 +464,7 @@ export interface FileRouteTypes {
     | '/api/public/obfuscate'
     | '/dashboard'
     | '/dashboard/scripts/$id'
+    | '/api/public/auth/login'
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
@@ -433,8 +477,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/changelog'
     | '/commands'
     | '/docs'
+    | '/faq'
     | '/features'
     | '/how'
     | '/keys'
@@ -446,6 +492,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/settings'
+    | '/terms'
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
@@ -459,6 +506,7 @@ export interface FileRouteTypes {
     | '/api/public/obfuscate'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/scripts/$id'
+    | '/api/public/auth/login'
     | '/api/public/discord/interactions'
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
@@ -472,8 +520,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ChangelogRoute: typeof ChangelogRoute
   CommandsRoute: typeof CommandsRoute
   DocsRoute: typeof DocsRouteWithChildren
+  FaqRoute: typeof FaqRoute
   FeaturesRoute: typeof FeaturesRoute
   HowRoute: typeof HowRoute
   KeysRoute: typeof KeysRoute
@@ -485,9 +535,11 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   TosRoute: typeof TosRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
+  ApiPublicAuthLoginRoute: typeof ApiPublicAuthLoginRoute
   ApiPublicDiscordInteractionsRoute: typeof ApiPublicDiscordInteractionsRoute
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
   ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
@@ -519,6 +571,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/commands': {
       id: '/commands'
       path: '/commands'
@@ -531,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -608,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tos': {
@@ -708,6 +781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardScriptsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/auth/login': {
+      id: '/api/public/auth/login'
+      path: '/api/public/auth/login'
+      fullPath: '/api/public/auth/login'
+      preLoaderRoute: typeof ApiPublicAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/discord/interactions': {
       id: '/api/public/discord/interactions'
       path: '/api/public/discord/interactions'
@@ -797,8 +877,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ChangelogRoute: ChangelogRoute,
   CommandsRoute: CommandsRoute,
   DocsRoute: DocsRouteWithChildren,
+  FaqRoute: FaqRoute,
   FeaturesRoute: FeaturesRoute,
   HowRoute: HowRoute,
   KeysRoute: KeysRoute,
@@ -810,9 +892,11 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   TosRoute: TosRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
+  ApiPublicAuthLoginRoute: ApiPublicAuthLoginRoute,
   ApiPublicDiscordInteractionsRoute: ApiPublicDiscordInteractionsRoute,
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
   ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
