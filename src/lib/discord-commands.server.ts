@@ -1,115 +1,114 @@
-// Auto-registers the 16 LuaMore slash commands with Discord.
+// Canonical LuaMore Discord slash-command definitions.
 
 const OPT = { STRING: 3, INTEGER: 4, BOOLEAN: 5, USER: 6 } as const;
 
+const MODE_CHOICES = [
+  { name: "Basic", value: "basic" },
+  { name: "Standard", value: "standard" },
+  { name: "Advanced", value: "advanced" },
+];
+
 export const DISCORD_COMMANDS = [
-  { name: "help", description: "List all LuaMore commands" },
-  { name: "setup", description: "Show the LuaMore setup guide" },
-  {
-    name: "login",
-    description: "Link your Discord to your LuaMore account",
-    options: [
-      { type: OPT.STRING, name: "api_key", description: "Your LuaMore API key", required: false },
-      { type: OPT.STRING, name: "email", description: "Account email", required: false },
-      { type: OPT.STRING, name: "password", description: "Account password", required: false },
-    ],
-  },
   {
     name: "create-script",
     description: "Create a new LuaMore script",
     options: [
       { type: OPT.STRING, name: "name", description: "Script name", required: true },
-      { type: OPT.STRING, name: "code", description: "Luau source (paste short scripts)", required: false },
-      { type: OPT.BOOLEAN, name: "ffa", description: "Free-for-all (no key)", required: false },
-      { type: OPT.BOOLEAN, name: "obfuscate", description: "Auto-obfuscate", required: false },
+      { type: OPT.STRING, name: "code", description: "Lua source code", required: true },
+      { type: OPT.BOOLEAN, name: "ffa", description: "Allow access without a key", required: false },
+      { type: OPT.BOOLEAN, name: "obfuscate", description: "Protect the source before hosting", required: false },
+      { type: OPT.STRING, name: "mode", description: "Protection level", required: false, choices: MODE_CHOICES },
     ],
   },
   {
     name: "panel",
-    description: "Post a control panel for a script in this channel",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public ID", required: true },
-    ],
+    description: "Send an interactive panel to this channel",
+    options: [{ type: OPT.STRING, name: "panel_id", description: "Panel ID", required: true }],
   },
   {
     name: "generatekey",
-    description: "Generate a license key",
+    description: "Generate a license key for a panel",
     options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public ID", required: true },
-      { type: OPT.INTEGER, name: "hours", description: "Hours valid (0 = forever)", required: false },
-      { type: OPT.STRING, name: "note", description: "Note for this key", required: false },
-      { type: OPT.USER, name: "user", description: "Bind key to a Discord user", required: false },
+      { type: OPT.STRING, name: "panel_id", description: "Panel ID", required: true },
+      { type: OPT.INTEGER, name: "hours", description: "Hours valid (0 = permanent)", required: false, min_value: 0 },
+      { type: OPT.STRING, name: "note", description: "Optional note", required: false },
+      { type: OPT.USER, name: "user", description: "Discord user to assign", required: false },
     ],
   },
   {
     name: "whitelist",
-    description: "Whitelist a user on this channel's panel",
+    description: "Grant a Discord user access to a script",
     options: [
+      { type: OPT.STRING, name: "script_id", description: "Script ID or public ID", required: true },
       { type: OPT.USER, name: "user", description: "User to whitelist", required: true },
-      { type: OPT.STRING, name: "duration", description: "20s, 35m, 2h, 1d — omit for forever", required: false },
+      { type: OPT.INTEGER, name: "duration", description: "Hours valid (0 = permanent)", required: false, min_value: 0 },
     ],
   },
   {
     name: "blacklist",
-    description: "Blacklist a user from your scripts",
+    description: "Revoke a Discord user's access to a script",
     options: [
+      { type: OPT.STRING, name: "script_id", description: "Script ID or public ID", required: true },
       { type: OPT.USER, name: "user", description: "User to blacklist", required: true },
-      { type: OPT.STRING, name: "reason", description: "Reason", required: false },
     ],
   },
   {
     name: "deletekey",
-    description: "Delete a license key you own",
+    description: "Permanently delete a license key you own",
     options: [{ type: OPT.STRING, name: "key", description: "License key", required: true }],
   },
   {
     name: "resethwid",
-    description: "Reset your own HWID (or another user's if you are admin)",
-    options: [{ type: OPT.USER, name: "user", description: "User (admins only)", required: false }],
+    description: "Reset your HWID for a script",
+    options: [{ type: OPT.STRING, name: "script_id", description: "Script ID or public ID", required: true }],
   },
   {
     name: "forceresethwid",
-    description: "Force-reset HWID for any user (owner only)",
-    options: [{ type: OPT.USER, name: "user", description: "User", required: true }],
+    description: "Force-reset a user's HWID (LuaMore owner only)",
+    options: [
+      { type: OPT.STRING, name: "script_id", description: "Script ID or public ID", required: true },
+      { type: OPT.USER, name: "user", description: "Discord user", required: true },
+    ],
   },
   {
     name: "banuser",
-    description: "Ban a user from LuaMore (owner only)",
+    description: "Ban a Discord ID from the website (owner only)",
     options: [
-      { type: OPT.USER, name: "user", description: "User", required: true },
+      { type: OPT.STRING, name: "discord_id", description: "Discord user ID", required: true },
       { type: OPT.STRING, name: "reason", description: "Reason", required: false },
     ],
   },
   {
     name: "unbanuser",
-    description: "Unban a user (owner only)",
-    options: [{ type: OPT.USER, name: "user", description: "User", required: true }],
+    description: "Restore website access for a Discord ID (owner only)",
+    options: [{ type: OPT.STRING, name: "discord_id", description: "Discord user ID", required: true }],
   },
   {
     name: "banhwid",
     description: "Ban a hardware ID from your scripts",
     options: [
-      { type: OPT.STRING, name: "hwid", description: "HWID string", required: true },
+      { type: OPT.STRING, name: "hwid", description: "Hardware ID", required: true },
       { type: OPT.STRING, name: "reason", description: "Reason", required: false },
     ],
   },
   {
     name: "unbanhwid",
-    description: "Unban a HWID",
-    options: [{ type: OPT.STRING, name: "hwid", description: "HWID string", required: true }],
+    description: "Remove a hardware ID ban",
+    options: [{ type: OPT.STRING, name: "hwid", description: "Hardware ID", required: true }],
   },
   {
     name: "loader",
-    description: "Get the loadstring for a script",
-    options: [
-      { type: OPT.STRING, name: "script_id", description: "Script public ID", required: true },
-    ],
+    description: "Get the loader for a script",
+    options: [{ type: OPT.STRING, name: "script_id", description: "Script ID or public ID", required: true }],
   },
   {
     name: "keys",
     description: "List your 10 most recent license keys",
+    options: [{ type: OPT.STRING, name: "panel_id", description: "Filter by panel ID", required: false }],
   },
-];
+  { name: "setup", description: "Show the LuaMore setup guide" },
+  { name: "help", description: "List all LuaMore commands" },
+] as const;
 
 let lastRegisteredAt = 0;
 let registrationPromise: Promise<{ ok: boolean; message: string; count?: number }> | null = null;
@@ -127,10 +126,7 @@ export async function autoRegisterDiscordCommands(options?: {
   const guildId = (process.env.DISCORD_GUILD_ID || process.env.DISCORD_SERVER_ID || "").trim();
 
   if (!token || !clientId) {
-    return {
-      ok: false,
-      message: "DISCORD_BOT_TOKEN and DISCORD_CLIENT_ID must be configured.",
-    };
+    return { ok: false, message: "DISCORD_BOT_TOKEN and DISCORD_CLIENT_ID must be configured." };
   }
 
   const now = Date.now();
@@ -141,8 +137,7 @@ export async function autoRegisterDiscordCommands(options?: {
 
   registrationPromise = (async () => {
     try {
-      const globalUrl = `https://discord.com/api/v10/applications/${clientId}/commands`;
-      const res = await fetch(globalUrl, {
+      const res = await fetch(`https://discord.com/api/v10/applications/${clientId}/commands`, {
         method: "PUT",
         headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(DISCORD_COMMANDS),
@@ -154,23 +149,13 @@ export async function autoRegisterDiscordCommands(options?: {
       }
       const result = (await res.json()) as Array<{ id: string; name: string }>;
       lastRegisteredAt = Date.now();
-
       if (guildId) {
-        try {
-          await fetch(
-            `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`,
-            {
-              method: "PUT",
-              headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" },
-              body: JSON.stringify([]),
-            },
-          );
-        } catch {
-          /* ignore */
-        }
+        await fetch(`https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`, {
+          method: "PUT",
+          headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify([]),
+        }).catch(() => undefined);
       }
-
-      console.log(`[Discord Auto-Register] Registered ${result.length} commands globally.`);
       return { ok: true, message: `Registered ${result.length} commands.`, count: result.length };
     } catch (err) {
       console.error("[Discord Auto-Register] Error:", err);
