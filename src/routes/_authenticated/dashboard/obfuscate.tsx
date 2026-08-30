@@ -247,6 +247,12 @@ function ObfuscatePage() {
                 ],
                 ["isLuauRuntime", isLuauRuntime, setIsLuauRuntime, "Luau runtime (Roblox)"],
                 ["dualVm", dualVm, setDualVm, "Dual VM"],
+                [
+                  "polymorphicVM",
+                  polymorphicVM,
+                  setPolymorphicVM,
+                  "Polymorphic VM (Base64 + bytecode + XOR)",
+                ],
               ] as const
             ).map(([id, val, set, label]) => (
               <div key={id} className="flex items-center justify-between gap-4">
