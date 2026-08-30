@@ -44,6 +44,63 @@ export type Database = {
         }
         Relationships: []
       }
+      execution_logs: {
+        Row: {
+          created_at: string
+          hwid: string | null
+          id: string
+          ip: string | null
+          key: string | null
+          license_key_id: string | null
+          place_id: string | null
+          roblox_user_id: string | null
+          roblox_username: string | null
+          script_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hwid?: string | null
+          id?: string
+          ip?: string | null
+          key?: string | null
+          license_key_id?: string | null
+          place_id?: string | null
+          roblox_user_id?: string | null
+          roblox_username?: string | null
+          script_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hwid?: string | null
+          id?: string
+          ip?: string | null
+          key?: string | null
+          license_key_id?: string | null
+          place_id?: string | null
+          roblox_user_id?: string | null
+          roblox_username?: string | null
+          script_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "execution_logs_license_key_id_fkey"
+            columns: ["license_key_id"]
+            isOneToOne: false
+            referencedRelation: "license_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "execution_logs_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hwid_bans: {
         Row: {
           created_at: string

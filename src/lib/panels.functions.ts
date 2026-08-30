@@ -92,6 +92,7 @@ export const updatePanel = createServerFn({ method: "POST" })
     whitelistChannelId?: string | null;
     roleId?: string | null;
     adminRoleIds?: string[];
+    webhookUrl?: string | null;
   }) => z.object({
     id: z.string().uuid(),
     name: z.string().trim().min(1).max(120),
@@ -101,9 +102,11 @@ export const updatePanel = createServerFn({ method: "POST" })
     whitelistChannelId: z.string().regex(/^\d{5,25}$/, "Enter a valid Discord channel ID").nullable().optional(),
     roleId: z.string().regex(/^\d{5,25}$/, "Enter a valid Discord role ID").nullable().optional(),
     adminRoleIds: z.array(z.string().regex(/^\d{5,25}$/, "Enter valid Discord role IDs")).max(20).optional(),
+    webhookUrl: z.string().url().max(500).nullable().optional().or(z.literal("")),
   }).parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...values } = data;
+    const webhook = values.webhookUrl && values.webhookUrl.length > 0 ? values.webhookUrl : null;
     const { error } = await context.supabase
       .from("panels")
       .update({
@@ -114,7 +117,7 @@ export const updatePanel = createServerFn({ method: "POST" })
         whitelist_channel_id: values.whitelistChannelId ?? null,
         discord_role_id: values.roleId ?? null,
         admin_role_ids: values.adminRoleIds ?? [],
-        webhook_url: null,
+        webhook_url: webhook,
       })
       .eq("id", id)
       .eq("user_id", context.userId);
@@ -180,6 +183,21 @@ export const sendPanel = createServerFn({ method: "POST" })
     }
     if (!allowed) throw new Error("You need Administrator or Manage Channels permission in that Discord server.");
 
+    let scriptName: string | null = null;
+    if (panel.script_id) {
+      const { data: s } = await context.supabase.from("scripts").select("name").eq("id", panel.script_id).maybeSingle();
+      scriptName = s?.name ?? null;
+    }
+
+    // Best-effort avatar lookup
+    let avatarUrl: string | null = null;
+    try {
+      const user = await discordGet(`/users/${profile.discord_id}`, botToken) as { id?: string; avatar?: string | null };
+      if (user.id && user.avatar) {
+        avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
+      }
+    } catch { /* ignore */ }
+
     const { buildPanelComponents, buildPanelEmbed } = await import("@/lib/discord-panel");
     const response = await fetch(`https://discord.com/api/v10/channels/${panel.channel_id}/messages`, {
       method: "POST",
@@ -188,8 +206,10 @@ export const sendPanel = createServerFn({ method: "POST" })
         embeds: [buildPanelEmbed({
           id: panel.id,
           name: panel.name,
+          projectName: scriptName || panel.name,
           description: panel.description,
           sentBy: profile.display_name || profile.email?.split("@")[0] || null,
+          sentByAvatarUrl: avatarUrl,
         })],
         components: buildPanelComponents(panel.id),
       }),

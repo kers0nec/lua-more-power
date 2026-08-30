@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Hosted loader URL — returns a small snippet that reads script_key from
-// _G / getgenv() and re-fetches the raw script with hwid appended.
-//   loadstring(game:HttpGet("https://luamore.app/scripts/hosted/<public_id>.lua"))()
+// Hosted loader — returns a small stub that captures HWID + Roblox player
+// identity and re-fetches the raw script with those params appended.
 
 export const Route = createFileRoute("/scripts/hosted/$publicId.lua")({
   server: {
@@ -10,12 +9,11 @@ export const Route = createFileRoute("/scripts/hosted/$publicId.lua")({
       GET: async ({ params, request }) => {
         const url = new URL(request.url);
         const origin = url.origin;
-        // Filename `$publicId[.]lua` compiles to a param whose key includes the escape.
-        // Read from the URL path directly to be safe across TSR versions.
         const p = params as Record<string, string>;
         const match = url.pathname.match(/\/scripts\/hosted\/([^/]+)\.lua$/);
         const publicId = match?.[1] ?? p.publicId ?? p["publicId.lua"] ?? "";
-        // Determine if the script is FFA — if so, just proxy directly to raw.
+
+        // FFA scripts: proxy directly (still logs identity via query params).
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data } = await supabaseAdmin
@@ -28,17 +26,25 @@ export const Route = createFileRoute("/scripts/hosted/$publicId.lua")({
             return handleLoaderRequest({ publicId }, request);
           }
         } catch {
-          /* fall through to keyed snippet */
+          /* fall through */
         }
 
         const snippet = `local env = (getgenv and getgenv()) or _G
-local key = env.script_key or script_key
-if not key or tostring(key) == "" then
-  warn("[LuaMore] script_key was not set.")
-  return
-end
-local hwid = game:GetService("RbxAnalyticsService"):GetClientId()
-local chunk = game:HttpGet("${origin}/scripts/raw/${publicId}.lua?key=" .. key .. "&hwid=" .. hwid)
+local key = env.script_key or script_key or ""
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ok, hwid = pcall(function() return game:GetService("RbxAnalyticsService"):GetClientId() end)
+if not ok then hwid = "unknown" end
+local plr = Players.LocalPlayer
+local uname = plr and plr.Name or "server"
+local uid = plr and tostring(plr.UserId) or "0"
+local place = tostring(game.PlaceId or 0)
+local q = "?key=" .. HttpService:UrlEncode(tostring(key))
+  .. "&hwid=" .. HttpService:UrlEncode(tostring(hwid))
+  .. "&user=" .. HttpService:UrlEncode(uname)
+  .. "&uid=" .. HttpService:UrlEncode(uid)
+  .. "&place=" .. HttpService:UrlEncode(place)
+local chunk = game:HttpGet("${origin}/scripts/raw/${publicId}.lua" .. q)
 loadstring(chunk)()
 `;
         return new Response(snippet, {

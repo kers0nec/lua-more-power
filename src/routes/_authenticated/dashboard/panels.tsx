@@ -17,6 +17,7 @@ type Panel = {
   id: string; name: string; description: string | null; script_id: string | null;
   channel_id: string | null; whitelist_channel_id: string | null;
   discord_role_id: string | null; admin_role_ids: string[];
+  webhook_url: string | null;
 };
 
 type ScriptOption = { id: string; name: string };
@@ -92,14 +93,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function PanelRow({ panel, scripts, updatePanelFn, sendPanelFn, onRefresh, onDelete, setStatus }: { panel: Panel; scripts: ScriptOption[]; updatePanelFn: ReturnType<typeof useServerFn<typeof updatePanel>>; sendPanelFn: ReturnType<typeof useServerFn<typeof sendPanel>>; onRefresh: () => void; onDelete: () => void; setStatus: (value: string) => void }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: panel.name, description: panel.description ?? "", scriptId: panel.script_id ?? "", channelId: panel.channel_id ?? "", whitelistChannelId: panel.whitelist_channel_id ?? "", roleId: panel.discord_role_id ?? "", adminRoleIds: (panel.admin_role_ids ?? []).join(", ") });
-  useEffect(() => setForm({ name: panel.name, description: panel.description ?? "", scriptId: panel.script_id ?? "", channelId: panel.channel_id ?? "", whitelistChannelId: panel.whitelist_channel_id ?? "", roleId: panel.discord_role_id ?? "", adminRoleIds: (panel.admin_role_ids ?? []).join(", ") }), [panel]);
-  const saveMutation = useMutation({ mutationFn: () => updatePanelFn({ data: { id: panel.id, name: form.name, description: form.description || null, scriptId: form.scriptId || null, channelId: form.channelId || null, whitelistChannelId: form.whitelistChannelId || null, roleId: form.roleId || null, adminRoleIds: form.adminRoleIds.split(/[\s,]+/).filter(Boolean) } }), onSuccess: () => { setStatus("✓ Panel settings saved"); onRefresh(); setOpen(false); }, onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not save panel"}`) });
+  const initial = () => ({ name: panel.name, description: panel.description ?? "", scriptId: panel.script_id ?? "", channelId: panel.channel_id ?? "", whitelistChannelId: panel.whitelist_channel_id ?? "", roleId: panel.discord_role_id ?? "", adminRoleIds: (panel.admin_role_ids ?? []).join(", "), webhookUrl: panel.webhook_url ?? "" });
+  const [form, setForm] = useState(initial);
+  useEffect(() => setForm(initial()), [panel]);
+  const saveMutation = useMutation({ mutationFn: () => updatePanelFn({ data: { id: panel.id, name: form.name, description: form.description || null, scriptId: form.scriptId || null, channelId: form.channelId || null, whitelistChannelId: form.whitelistChannelId || null, roleId: form.roleId || null, adminRoleIds: form.adminRoleIds.split(/[\s,]+/).filter(Boolean), webhookUrl: form.webhookUrl || null } }), onSuccess: () => { setStatus("✓ Panel settings saved"); onRefresh(); setOpen(false); }, onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not save panel"}`) });
   const sendMutation = useMutation({ mutationFn: () => sendPanelFn({ data: { id: panel.id } }), onSuccess: (result) => setStatus(`✓ Panel sent${result.channelName ? ` to #${result.channelName}` : ""}${result.messageId ? ` · message ${result.messageId}` : ""}`), onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not send panel"}`) });
   const ready = Boolean(panel.channel_id && panel.script_id);
   return <article className="py-5">
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-lg">{panel.name}</h2><span className={ready ? "badge-blue" : "eyebrow"}>{ready ? "Ready" : "Needs setup"}</span></div><p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{panel.description || "No description"}</p><div className="mt-2 flex flex-wrap gap-3 font-mono text-xs text-muted-foreground"><span>{panel.channel_id ? `channel ${panel.channel_id}` : "no channel"}</span><span>{panel.script_id ? "script attached" : "no script"}</span></div></div>
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-lg">{panel.name}</h2><span className={ready ? "badge-blue" : "eyebrow"}>{ready ? "Ready" : "Needs setup"}</span>{panel.webhook_url && <span className="eyebrow">webhook</span>}</div><p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{panel.description || "No description"}</p><div className="mt-2 flex flex-wrap gap-3 font-mono text-xs text-muted-foreground"><span>{panel.channel_id ? `channel ${panel.channel_id}` : "no channel"}</span><span>{panel.script_id ? "script attached" : "no script"}</span></div></div>
       <div className="flex shrink-0 flex-wrap gap-2"><button className="btn-outline text-xs" onClick={() => setOpen((value) => !value)}><Settings2 size={14} /> Edit <ChevronDown size={13} className={open ? "rotate-180" : ""} /></button><button className="btn-primary text-xs" onClick={() => sendMutation.mutate()} disabled={!ready || sendMutation.isPending}><Send size={14} /> {sendMutation.isPending ? "Sending…" : "Send to channel"}</button><button className="btn-ghost px-2 text-destructive" onClick={onDelete} aria-label={`Delete ${panel.name}`} title="Delete panel"><Trash2 size={15} /></button></div>
     </div>
     {open && <div className="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
@@ -110,6 +112,7 @@ function PanelRow({ panel, scripts, updatePanelFn, sendPanelFn, onRefresh, onDel
       <Field label="Whitelist log channel"><input className="input-blue font-mono" value={form.whitelistChannelId} onChange={(event) => setForm({ ...form, whitelistChannelId: event.target.value })} inputMode="numeric" /></Field>
       <Field label="Buyer role ID"><input className="input-blue font-mono" value={form.roleId} onChange={(event) => setForm({ ...form, roleId: event.target.value })} inputMode="numeric" /></Field>
       <Field label="Admin role IDs"><input className="input-blue font-mono" value={form.adminRoleIds} onChange={(event) => setForm({ ...form, adminRoleIds: event.target.value })} placeholder="Comma separated" /></Field>
+      <div className="md:col-span-2"><Field label="Execution webhook URL"><input className="input-blue font-mono" value={form.webhookUrl} onChange={(event) => setForm({ ...form, webhookUrl: event.target.value })} placeholder="https://discord.com/api/webhooks/…" /></Field><p className="mt-1 text-xs text-muted-foreground">Every execution of this panel's script POSTs an embed with the Roblox user, key, HWID and place to this URL.</p></div>
       <div className="md:col-span-2 flex justify-end"><button className="btn-primary" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}><Check size={14} /> {saveMutation.isPending ? "Saving…" : "Save panel"}</button></div>
     </div>}
   </article>;
