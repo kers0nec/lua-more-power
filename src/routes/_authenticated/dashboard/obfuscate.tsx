@@ -100,13 +100,26 @@ function ObfuscatePage() {
     abortRef.current = controller;
     startProgress(code.length);
     try {
-      const r = await obf({ data: { code, dualVm }, signal: controller.signal });
+      const r = await obf({
+        data: {
+          code,
+          dualVm,
+          encryptStrings,
+          proxifyLocals,
+          proxifyFunctions,
+          antiTamper,
+          controlFlowFlattening,
+          isLuauRuntime,
+          loaderVMDepth,
+        },
+        signal: controller.signal,
+      });
       if (controller.signal.aborted) return;
       clearTimers();
       pushLog(`✓ done — ${r.size.toLocaleString()} chars out`);
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · ${r.dualVm ? "Dual VM" : "Single VM"}`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · VM depth ${loaderVMDepth}`,
       );
     } catch (e) {
       clearTimers();
