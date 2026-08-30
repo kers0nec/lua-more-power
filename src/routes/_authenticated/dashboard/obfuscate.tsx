@@ -228,18 +228,48 @@ function ObfuscatePage() {
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
           <div
-            className="mt-3 flex items-center justify-between gap-4 border-y py-3"
+            className="mt-3 grid gap-2 border-y py-3"
             style={{ borderColor: "var(--border)" }}
           >
-            <div>
-              <label htmlFor="dual-vm" className="text-sm font-semibold">
-                Dual VM
+            {(
+              [
+                ["encryptStrings", encryptStrings, setEncryptStrings, "Encrypt strings"],
+                ["proxifyLocals", proxifyLocals, setProxifyLocals, "Proxify locals"],
+                ["proxifyFunctions", proxifyFunctions, setProxifyFunctions, "Proxify functions"],
+                ["antiTamper", antiTamper, setAntiTamper, "Anti-tamper"],
+                [
+                  "controlFlowFlattening",
+                  controlFlowFlattening,
+                  setControlFlowFlattening,
+                  "Control-flow flattening",
+                ],
+                ["isLuauRuntime", isLuauRuntime, setIsLuauRuntime, "Luau runtime (Roblox)"],
+                ["dualVm", dualVm, setDualVm, "Dual VM"],
+              ] as const
+            ).map(([id, val, set, label]) => (
+              <div key={id} className="flex items-center justify-between gap-4">
+                <label htmlFor={id} className="text-sm">
+                  {label}
+                </label>
+                <Switch id={id} checked={val} onCheckedChange={set} disabled={running} />
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-4">
+              <label htmlFor="depth" className="text-sm">
+                Loader VM depth <span className="opacity-60">({loaderVMDepth})</span>
               </label>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                Stack VM2 over VM1 with separate runtime and payload integrity checks.
-              </p>
+              <input
+                id="depth"
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={loaderVMDepth}
+                onChange={(e) => setLoaderVMDepth(parseInt(e.target.value, 10))}
+                disabled={running}
+                className="w-40"
+              />
             </div>
-            <Switch id="dual-vm" checked={dualVm} onCheckedChange={setDualVm} disabled={running} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button onClick={runObf} disabled={running || !code.trim()} className="btn-primary">
