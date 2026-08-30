@@ -127,7 +127,7 @@ export const deleteScript = createServerFn({ method: "POST" })
 
 export const obfuscateCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { code: string; dualVm?: boolean; encryptStrings?: boolean; proxifyLocals?: boolean; proxifyFunctions?: boolean; antiTamper?: boolean; controlFlowFlattening?: boolean; isLuauRuntime?: boolean; loaderVMDepth?: number }) => z.object({
+  .inputValidator((input: { code: string; dualVm?: boolean; encryptStrings?: boolean; proxifyLocals?: boolean; proxifyFunctions?: boolean; antiTamper?: boolean; controlFlowFlattening?: boolean; isLuauRuntime?: boolean; loaderVMDepth?: number; polymorphicVM?: boolean }) => z.object({
     code: z.string().min(1).max(25_000_000),
     dualVm: z.boolean().optional(),
     encryptStrings: z.boolean().optional(),
@@ -137,10 +137,11 @@ export const obfuscateCode = createServerFn({ method: "POST" })
     controlFlowFlattening: z.boolean().optional(),
     isLuauRuntime: z.boolean().optional(),
     loaderVMDepth: z.number().int().min(1).max(5).optional(),
+    polymorphicVM: z.boolean().optional(),
   }).parse(input))
   .handler(async ({ data }) => {
     const { obfuscateLuaWithOptions } = await import("@/lib/obfuscator.server");
     const { code, ...options } = data;
     const obfuscated = obfuscateLuaWithOptions(code, options);
-    return { obfuscated, size: obfuscated.length, sourceSize: code.length, dualVm: options.dualVm ?? true, loaderVMDepth: options.loaderVMDepth };
+    return { obfuscated, size: obfuscated.length, sourceSize: code.length, dualVm: options.dualVm ?? true, loaderVMDepth: options.loaderVMDepth, polymorphicVM: options.polymorphicVM ?? false };
   });
