@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Ban } from "lucide-react";
 import { banHwid, listHwidBans, unbanHwid } from "@/lib/hwid.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/hwid")({
   head: () => ({ meta: [{ title: "HWID Bans — LuaMore" }] }),
@@ -31,8 +33,8 @@ function Page() {
   });
 
   return (
-    <div className="p-8 max-w-4xl">
-      <h1 className="text-3xl font-bold">HWID Bans</h1>
+    <div className="app-page max-w-5xl">
+      <DashboardHeader eyebrow="Device control" title="HWID bans" description="Block abusive device fingerprints and restore access when needed." action={<span className="badge-blue"><Ban size={12} /> {(q.data ?? []).length} blocked</span>} />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-3 items-end">
         <div>

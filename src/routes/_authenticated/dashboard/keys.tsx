@@ -105,14 +105,9 @@ function Keys() {
       <div className="mt-6 card-blue divide-y">
         {(keys.data ?? []).map((k) => (
           <div key={k.id} className="p-4 flex flex-wrap items-center gap-3">
-            <code
-              className="font-mono text-sm px-2 py-1 rounded cursor-pointer"
-              style={{ background: "var(--accent-light)", color: "var(--primary-dark)" }}
-              onClick={() => navigator.clipboard.writeText(k.key)}
-              title="Click to copy"
-            >
-              {k.key}
-            </code>
+            <button className="inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-primary" onClick={() => navigator.clipboard.writeText(k.key)} title="Copy key">
+              <span className="truncate">{k.key}</span><Copy size={13} className="shrink-0" />
+            </button>
             {k.revoked && (
               <span
                 className="badge-blue"
@@ -129,12 +124,7 @@ function Keys() {
               </span>
             )}
             <div className="flex-1" />
-            <button
-              onClick={() => delMut.mutate(k.id)}
-              className="text-xs text-[color:var(--destructive)] hover:underline"
-            >
-              Delete
-            </button>
+            <button onClick={() => delMut.mutate(k.id)} className="btn-ghost px-2 text-destructive" aria-label="Delete key" title="Delete key"><Trash2 size={15} /></button>
           </div>
         ))}
         {keys.data && keys.data.length === 0 && (

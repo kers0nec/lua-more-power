@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Download, Layers } from "lucide-react";
 import { generateBatch } from "@/lib/keys.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/batches")({
   head: () => ({ meta: [{ title: "Key Batches — LuaMore" }] }),
@@ -20,11 +22,8 @@ function Batches() {
   });
 
   return (
-    <div className="p-8 max-w-4xl">
-      <h1 className="text-3xl font-bold">Bulk Key Generation</h1>
-      <p className="mt-1" style={{ color: "var(--muted-foreground)" }}>
-        Generate up to 500 keys at once.
-      </p>
+    <div className="app-page max-w-5xl">
+      <DashboardHeader eyebrow="Access control" title="Key batches" description="Generate up to 500 timed or permanent license keys in one operation." action={<span className="badge-blue"><Layers size={12} /> Bulk tools</span>} />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-3 items-end">
         <div>
@@ -61,17 +60,8 @@ function Batches() {
         <div className="card-blue p-4 mt-6">
           <div className="flex items-center justify-between mb-3">
             <div className="text-sm font-semibold">{keys.length} keys generated</div>
-            <button
-              className="btn-outline text-sm"
-              onClick={() => {
-                const blob = new Blob([keys.join("\n")], { type: "text/plain" });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = `luamore_keys_${Date.now()}.txt`;
-                a.click();
-              }}
-            >
-              Download .txt
+            <button className="btn-outline text-sm" onClick={() => { const blob = new Blob([keys.join("\n")], { type: "text/plain" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `luamore_keys_${Date.now()}.txt`; a.click(); }}>
+              <Download size={14} /> Download .txt
             </button>
           </div>
           <textarea
