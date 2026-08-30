@@ -17,7 +17,7 @@ function Keys() {
   const scripts = useServerFn(listScripts);
   const qc = useQueryClient();
   const keys = useQuery({ queryKey: ["keys"], queryFn: () => list() });
-  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() });
+  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() }) as { data?: any[] };
 
   const [scriptId, setScriptId] = useState<string>("");
   const [hours, setHours] = useState<number>(24);
