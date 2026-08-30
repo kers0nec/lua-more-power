@@ -313,7 +313,7 @@
 @utility landing-hero {
   position: relative;
   overflow: hidden;
-  min-height: calc(100vh - 4rem);
+  min-height: clamp(680px, calc(100vh - 4rem), 820px);
   border-bottom: 1px solid var(--border);
   background: var(--gradient-hero);
 }
