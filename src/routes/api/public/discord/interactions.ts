@@ -975,7 +975,7 @@ async function linkDiscord(
   // Fetch profile
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("id, username, email, discord_id")
+    .select("id, display_name, email, discord_id")
     .eq("id", targetUserId)
     .maybeSingle();
 
