@@ -112,6 +112,7 @@ function ObfuscatePage() {
           controlFlowFlattening,
           isLuauRuntime,
           loaderVMDepth,
+          polymorphicVM,
         },
         signal: controller.signal,
       });
