@@ -14,7 +14,7 @@ function Scripts() {
   const create = useServerFn(createScript);
   const del = useServerFn(deleteScript);
   const qc = useQueryClient();
-  const scripts = useQuery({ queryKey: ["scripts"], queryFn: () => list() });
+  const scripts = useQuery({ queryKey: ["scripts"], queryFn: () => list() }) as { data?: any[] };
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
