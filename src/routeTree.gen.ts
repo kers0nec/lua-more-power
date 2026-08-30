@@ -31,6 +31,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TosRouteImport } from './routes/tos'
 import { Route as ApiDocsRouteImport } from './routes/api.docs'
 import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
+import { Route as FeaturesKeySystemGuiRouteImport } from './routes/features.key-system-gui'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
@@ -161,6 +162,11 @@ const DocsLoadingRoute = DocsLoadingRouteImport.update({
   path: '/loading',
   getParentRoute: () => DocsRoute,
 } as any)
+const FeaturesKeySystemGuiRoute = FeaturesKeySystemGuiRouteImport.update({
+  id: '/key-system-gui',
+  path: '/key-system-gui',
+  getParentRoute: () => FeaturesRoute,
+} as any)
 const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/dashboard/',
@@ -285,7 +291,7 @@ export interface FileRoutesByFullPath {
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
   '/faq': typeof FaqRoute
-  '/features': typeof FeaturesRoute
+  '/features': typeof FeaturesRouteWithChildren
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
   '/loading-screens': typeof LoadingScreensRoute
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
+  '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -328,7 +335,7 @@ export interface FileRoutesByTo {
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
   '/faq': typeof FaqRoute
-  '/features': typeof FeaturesRoute
+  '/features': typeof FeaturesRouteWithChildren
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
   '/loading-screens': typeof LoadingScreensRoute
@@ -343,6 +350,7 @@ export interface FileRoutesByTo {
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
+  '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -373,7 +381,7 @@ export interface FileRoutesById {
   '/commands': typeof CommandsRoute
   '/docs': typeof DocsRouteWithChildren
   '/faq': typeof FaqRoute
-  '/features': typeof FeaturesRoute
+  '/features': typeof FeaturesRouteWithChildren
   '/how': typeof HowRoute
   '/keys': typeof KeysRoute
   '/loading-screens': typeof LoadingScreensRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/tos': typeof TosRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
+  '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -433,6 +442,7 @@ export interface FileRouteTypes {
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
+    | '/features/key-system-gui'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
+    | '/features/key-system-gui'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/tos'
     | '/api/docs'
     | '/docs/loading'
+    | '/features/key-system-gui'
     | '/_authenticated/dashboard/api-keys'
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
@@ -550,7 +562,7 @@ export interface RootRouteChildren {
   CommandsRoute: typeof CommandsRoute
   DocsRoute: typeof DocsRouteWithChildren
   FaqRoute: typeof FaqRoute
-  FeaturesRoute: typeof FeaturesRoute
+  FeaturesRoute: typeof FeaturesRouteWithChildren
   HowRoute: typeof HowRoute
   KeysRoute: typeof KeysRoute
   LoadingScreensRoute: typeof LoadingScreensRoute
@@ -731,6 +743,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/loading'
       preLoaderRoute: typeof DocsLoadingRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/features/key-system-gui': {
+      id: '/features/key-system-gui'
+      path: '/key-system-gui'
+      fullPath: '/features/key-system-gui'
+      preLoaderRoute: typeof FeaturesKeySystemGuiRouteImport
+      parentRoute: typeof FeaturesRoute
     }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
@@ -915,6 +934,18 @@ const DocsRouteChildren: DocsRouteChildren = {
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
+interface FeaturesRouteChildren {
+  FeaturesKeySystemGuiRoute: typeof FeaturesKeySystemGuiRoute
+}
+
+const FeaturesRouteChildren: FeaturesRouteChildren = {
+  FeaturesKeySystemGuiRoute: FeaturesKeySystemGuiRoute,
+}
+
+const FeaturesRouteWithChildren = FeaturesRoute._addFileChildren(
+  FeaturesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -923,7 +954,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandsRoute: CommandsRoute,
   DocsRoute: DocsRouteWithChildren,
   FaqRoute: FaqRoute,
-  FeaturesRoute: FeaturesRoute,
+  FeaturesRoute: FeaturesRouteWithChildren,
   HowRoute: HowRoute,
   KeysRoute: KeysRoute,
   LoadingScreensRoute: LoadingScreensRoute,
