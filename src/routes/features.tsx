@@ -1,151 +1,76 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Bot, Boxes, FileCode2, KeyRound, MonitorSmartphone, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
 export const Route = createFileRoute("/features")({
   head: () => ({
     meta: [
       { title: "Features — LuaMore" },
-      {
-        name: "description",
-        content: "Scripts, keys, Discord, protection, and loaders — all free on LuaMore.",
-      },
+      { name: "description", content: "Explore LuaMore script hosting, keys, Discord panels, loaders, and access controls." },
+      { property: "og:title", content: "Features — LuaMore" },
+      { property: "og:description", content: "Script hosting, keys, Discord panels, loaders, and access controls in one free workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FeaturesPage,
 });
 
 const groups = [
-  {
-    title: "Scripts",
-    desc: "Store a script, choose protection, and copy its loader.",
-    items: [
-      { name: "Script storage", desc: "Paste Luau or upload a file. LuaMore stores the source permanently for you." },
-      { name: "LuaMore VM obfuscation", desc: "Default Luau obfuscation optimized for Roblox scripts with anti-hook protection." },
-      { name: "Cached builds", desc: "Protect on save, serve cached output for instant delivery." },
-      { name: "Game routing", desc: "Bind to PlaceIds and dispatch at auth." },
-      { name: "Keyless mode", desc: "Same overlay works without a key parameter for free-for-all scripts." },
-    ],
-  },
-  {
-    title: "Keys",
-    desc: "Create timed or permanent keys and bind them to a device.",
-    items: [
-      { name: "Duration", desc: "Lifetime, daily, weekly, custom durations with automatic expiry." },
-      { name: "HWID binding", desc: "Bind to device after first run. Protects against sharing and reselling." },
-      { name: "Limits", desc: "Cap executions, revoke instantly, batch generate keys." },
-      { name: "Discord mapping", desc: "Tie keys to guild members. Auto-assign buyer roles on redeem." },
-      { name: "Anti-bypass routing", desc: "Encrypted server-side validation streams payload only after key and HWID match." },
-    ],
-  },
-  {
-    title: "Discord",
-    desc: "Post key panels and manage users with slash commands.",
-    items: [
-      { name: "Setup", desc: "Link guild, select project, post interactive panels." },
-      { name: "Roles", desc: "Buyer role on redeem, admin controls for staff." },
-      { name: "Slash commands", desc: "/setup, /whitelist, /resethwid, /login, /help — all auto-registered." },
-      { name: "Recovery", desc: "HWID reset from Discord. No dashboard needed." },
-      { name: "Panels", desc: "Self-serve redemption panels with embedded script delivery buttons." },
-    ],
-  },
-  {
-    title: "Delivery & Loaders",
-    desc: "Use signed loader URLs, keyless mode, or loading screen presets.",
-    items: [
-      { name: "Loader URL", desc: "Copy a signed loadstring from the dashboard. Carries your script ID." },
-      { name: "Loading screens", desc: "Four wide in-game bars (Frost, Neon, Clean, Gold) while LuaMore authenticates." },
-      { name: "Mobile-ready", desc: "Loading bars scale wider on desktop and nearly full-width on phone." },
-      { name: "Keyless loader", desc: "Same loading overlay works without a key parameter." },
-      { name: "Encrypted route", desc: "All payloads delivered through encrypted channels with heartbeat monitoring." },
-    ],
-  },
-  {
-    title: "Protection",
-    desc: "Multi-layer VM obfuscation with anti-hook shields.",
-    items: [
-      { name: "LuaMore v13 VM", desc: "Quad-layer encryption: RLE bytecode, rotating XOR, RC4 stream, keyed PRNG." },
-      { name: "Anti-Hook Shield", desc: "Silent Entropy Poisoning corrupts decryption keys when hooks are detected." },
-      { name: "Anti-Tamper", desc: "Native C-closure verification and metatable integrity checks." },
-      { name: "Dual-VM wrapping", desc: "Two independent VM layers for maximum protection depth." },
-      { name: "Integrity verification", desc: "Dual FNV-1a & djb2 32-bit checksums prevent memory substitution." },
-    ],
-  },
+  { icon: FileCode2, title: "Scripts", desc: "Create, upload, update, and publish Lua source while keeping a stable loader URL.", bullets: ["Permanent source storage", "Release history", "FFA and key-required modes", "Copy-ready loadstrings"] },
+  { icon: KeyRound, title: "Keys", desc: "Control how long access lasts and which device can use each license.", bullets: ["Custom expirations", "First-run HWID binding", "Instant revoke and reset", "Bulk key generation"] },
+  { icon: Bot, title: "Discord", desc: "Run routine access operations from Discord without handing out dashboard access.", bullets: ["Interactive panels", "Slash-command workflows", "Administrator checks", "User and key management"] },
+  { icon: Boxes, title: "Delivery", desc: "Serve the current script through a predictable hosted loader for every release.", bullets: ["Short hosted URLs", "Raw and hosted routes", "Keyless delivery", "Update without relinking"] },
+  { icon: MonitorSmartphone, title: "Loading UI", desc: "Add a polished loading state while authentication and delivery complete.", bullets: ["Four visual presets", "Desktop and mobile preview", "Custom labels and position", "Copyable Luau templates"] },
+  { icon: ShieldCheck, title: "Workspace controls", desc: "Keep scripts, keys, bans, panels, API access, and profile settings organized.", bullets: ["HWID ban management", "API key controls", "Panel history", "Account settings"] },
 ];
 
 function FeaturesPage() {
   return (
     <PageShell
-      eyebrow="Feature reference"
-      title="Features"
-      subtitle="Reference for scripts, keys, Discord, protection, and delivery. LuaMore is free — every feature is included for every account."
+      eyebrow="Product reference"
+      title="Everything needed to ship and manage a loader."
+      subtitle="LuaMore brings source hosting, access keys, device binding, Discord controls, and delivery into one focused workspace. Every capability is included for free."
     >
-      <div className="grid gap-10 md:grid-cols-2">
-        {groups.map((g) => (
-          <section key={g.title}>
-            <h2 className="font-display text-2xl">{g.title}</h2>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              {g.desc}
-            </p>
-            <ul className="mt-4 space-y-4">
-              {g.items.map((i) => (
-                <li key={i.name} className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                  <div className="font-medium">{i.name}</div>
-                  <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                    {i.desc}
-                  </p>
-                </li>
-              ))}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {groups.map((group) => (
+          <article key={group.title} className="card-blue lift-card flex min-h-80 flex-col p-7">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-accent">
+              <group.icon size={18} className="text-primary" />
+            </div>
+            <h2 className="mt-7 font-display text-2xl">{group.title}</h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{group.desc}</p>
+            <ul className="mt-7 space-y-3 border-t border-border pt-5 text-sm text-muted-foreground">
+              {group.bullets.map((bullet) => <li key={bullet}>— {bullet}</li>)}
             </ul>
-          </section>
+          </article>
         ))}
       </div>
 
-      {/* Adding a loading screen callout */}
-      <div
-        className="mt-14 rounded-xl border p-6"
-        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-      >
-        <h2 className="font-display text-xl">Adding a loading screen?</h2>
-        <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-          A wide loading bar that works on mobile and desktop. Four presets (Frost, Neon, Clean,
-          Gold) with customizable title, subtitle, accent colors, and position. Add your loader URL,
-          then tweak it if you want.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link to="/loading-screens" className="btn-primary">
-            Loading screen guide
-          </Link>
-          <Link to="/docs" className="btn-outline">
-            All docs
+      <section className="mt-16 grid overflow-hidden rounded-lg border border-border bg-card lg:grid-cols-[1fr_0.7fr]">
+        <div className="p-8 md:p-12">
+          <div className="eyebrow">Visual delivery</div>
+          <h2 className="mt-4 font-display text-3xl">Build a loading screen around your loader.</h2>
+          <p className="mt-4 max-w-xl leading-7 text-muted-foreground">
+            Preview four responsive in-game bars, customize the title and placement, then copy the
+            matching Lua template directly into your project.
+          </p>
+          <Link to="/features/key-system-gui" className="btn-primary mt-8">
+            Open the GUI builder <ArrowRight size={15} />
           </Link>
         </div>
-      </div>
-
-      {/* Quick start */}
-      <div
-        className="mt-10 rounded-xl border p-6"
-        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-      >
-        <h2 className="font-display text-xl">Quick start</h2>
-        <ol className="mt-4 space-y-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
-          <li className="flex gap-3">
-            <span className="font-mono text-xs shrink-0 mt-0.5" style={{ color: "var(--primary)" }}>01</span>
-            <span>Create a project in the dashboard and pick a loading screen preset (or none).</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-mono text-xs shrink-0 mt-0.5" style={{ color: "var(--primary)" }}>02</span>
-            <span>Copy the matching Luau from the loading presets.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-mono text-xs shrink-0 mt-0.5" style={{ color: "var(--primary)" }}>03</span>
-            <span>Paste your loader URL from the dashboard into the Luau template.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-mono text-xs shrink-0 mt-0.5" style={{ color: "var(--primary)" }}>04</span>
-            <span>Run as a <code className="font-mono text-xs px-1 rounded" style={{ background: "var(--muted)", color: "var(--foreground)" }}>LocalScript</code> — the bar shows while LuaMore loads your script.</span>
-          </li>
-        </ol>
-      </div>
+        <div className="dot-bg flex min-h-64 items-center justify-center border-t border-border bg-secondary p-8 lg:border-l lg:border-t-0">
+          <div className="w-full max-w-sm rounded-md border border-primary bg-card p-4 shadow-hover">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium">Validating access</span>
+              <span className="font-mono text-primary">72%</span>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-[72%] rounded-full bg-primary" />
+            </div>
+          </div>
+        </div>
+      </section>
     </PageShell>
   );
 }
