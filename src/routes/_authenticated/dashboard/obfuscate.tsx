@@ -52,6 +52,13 @@ function ObfuscatePage() {
   const [logs, setLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [dualVm, setDualVm] = useState(true);
+  const [encryptStrings, setEncryptStrings] = useState(true);
+  const [proxifyLocals, setProxifyLocals] = useState(true);
+  const [proxifyFunctions, setProxifyFunctions] = useState(true);
+  const [antiTamper, setAntiTamper] = useState(true);
+  const [controlFlowFlattening, setControlFlowFlattening] = useState(true);
+  const [isLuauRuntime, setIsLuauRuntime] = useState(true);
+  const [loaderVMDepth, setLoaderVMDepth] = useState(2);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -93,13 +100,26 @@ function ObfuscatePage() {
     abortRef.current = controller;
     startProgress(code.length);
     try {
-      const r = await obf({ data: { code, dualVm }, signal: controller.signal });
+      const r = await obf({
+        data: {
+          code,
+          dualVm,
+          encryptStrings,
+          proxifyLocals,
+          proxifyFunctions,
+          antiTamper,
+          controlFlowFlattening,
+          isLuauRuntime,
+          loaderVMDepth,
+        },
+        signal: controller.signal,
+      });
       if (controller.signal.aborted) return;
       clearTimers();
       pushLog(`✓ done — ${r.size.toLocaleString()} chars out`);
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · ${r.dualVm ? "Dual VM" : "Single VM"}`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · VM depth ${loaderVMDepth}`,
       );
     } catch (e) {
       clearTimers();
@@ -208,18 +228,48 @@ function ObfuscatePage() {
             className="input-blue font-mono text-sm h-[440px] resize-none"
           />
           <div
-            className="mt-3 flex items-center justify-between gap-4 border-y py-3"
+            className="mt-3 grid gap-2 border-y py-3"
             style={{ borderColor: "var(--border)" }}
           >
-            <div>
-              <label htmlFor="dual-vm" className="text-sm font-semibold">
-                Dual VM
+            {(
+              [
+                ["encryptStrings", encryptStrings, setEncryptStrings, "Encrypt strings"],
+                ["proxifyLocals", proxifyLocals, setProxifyLocals, "Proxify locals"],
+                ["proxifyFunctions", proxifyFunctions, setProxifyFunctions, "Proxify functions"],
+                ["antiTamper", antiTamper, setAntiTamper, "Anti-tamper"],
+                [
+                  "controlFlowFlattening",
+                  controlFlowFlattening,
+                  setControlFlowFlattening,
+                  "Control-flow flattening",
+                ],
+                ["isLuauRuntime", isLuauRuntime, setIsLuauRuntime, "Luau runtime (Roblox)"],
+                ["dualVm", dualVm, setDualVm, "Dual VM"],
+              ] as const
+            ).map(([id, val, set, label]) => (
+              <div key={id} className="flex items-center justify-between gap-4">
+                <label htmlFor={id} className="text-sm">
+                  {label}
+                </label>
+                <Switch id={id} checked={val} onCheckedChange={set} disabled={running} />
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-4">
+              <label htmlFor="depth" className="text-sm">
+                Loader VM depth <span className="opacity-60">({loaderVMDepth})</span>
               </label>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                Stack VM2 over VM1 with separate runtime and payload integrity checks.
-              </p>
+              <input
+                id="depth"
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={loaderVMDepth}
+                onChange={(e) => setLoaderVMDepth(parseInt(e.target.value, 10))}
+                disabled={running}
+                className="w-40"
+              />
             </div>
-            <Switch id="dual-vm" checked={dualVm} onCheckedChange={setDualVm} disabled={running} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button onClick={runObf} disabled={running || !code.trim()} className="btn-primary">

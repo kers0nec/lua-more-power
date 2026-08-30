@@ -269,14 +269,41 @@ export const deleteScript = createServerFn({ method: "POST" })
 // Standalone: obfuscate arbitrary code without saving it.
 export const obfuscateCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { code: string; dualVm?: boolean }) =>
-    z
-      .object({ code: z.string().min(1).max(1_000_000_000), dualVm: z.boolean().optional() })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      code: string;
+      dualVm?: boolean;
+      encryptStrings?: boolean;
+      proxifyLocals?: boolean;
+      proxifyFunctions?: boolean;
+      antiTamper?: boolean;
+      controlFlowFlattening?: boolean;
+      isLuauRuntime?: boolean;
+      loaderVMDepth?: number;
+    }) =>
+      z
+        .object({
+          code: z.string().min(1).max(1_000_000_000),
+          dualVm: z.boolean().optional(),
+          encryptStrings: z.boolean().optional(),
+          proxifyLocals: z.boolean().optional(),
+          proxifyFunctions: z.boolean().optional(),
+          antiTamper: z.boolean().optional(),
+          controlFlowFlattening: z.boolean().optional(),
+          isLuauRuntime: z.boolean().optional(),
+          loaderVMDepth: z.number().int().min(1).max(5).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data }) => {
     const { obfuscateLuaWithOptions } = await import("@/lib/obfuscator.server");
-    const dualVm = data.dualVm ?? true;
-    const obfuscated = obfuscateLuaWithOptions(data.code, { dualVm });
-    return { obfuscated, size: obfuscated.length, sourceSize: data.code.length, dualVm };
+    const { code, ...opts } = data;
+    const obfuscated = obfuscateLuaWithOptions(code, opts);
+    return {
+      obfuscated,
+      size: obfuscated.length,
+      sourceSize: code.length,
+      dualVm: opts.dualVm ?? true,
+      loaderVMDepth: opts.loaderVMDepth,
+    };
   });

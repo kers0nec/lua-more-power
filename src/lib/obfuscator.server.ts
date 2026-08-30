@@ -518,6 +518,13 @@ end
 export type ObfuscationOptions = {
   dualVm?: boolean;
   antiTamper?: boolean;
+  // Extended settings (accepted from the public API; the current engine always applies these)
+  encryptStrings?: boolean;
+  proxifyLocals?: boolean;
+  proxifyFunctions?: boolean;
+  controlFlowFlattening?: boolean;
+  isLuauRuntime?: boolean;
+  loaderVMDepth?: number; // 1-5, overrides dualVm when provided
 };
 
 export function obfuscateLua(source: string): string {
@@ -539,8 +546,12 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   }
   guardedPayload += source;
 
-  const dualVm = options.dualVm ?? true;
-  const layers = dualVm ? 2 : 1;
+  const depthRaw = options.loaderVMDepth;
+  const depth =
+    typeof depthRaw === "number" && depthRaw >= 1 && depthRaw <= 5
+      ? Math.floor(depthRaw)
+      : (options.dualVm ?? true) ? 2 : 1;
+  const layers = depth;
 
   let current: Uint8Array = enc.encode(guardedPayload);
   let wrapped = "";
