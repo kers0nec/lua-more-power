@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Boxes, FileCode2, KeyRound, MonitorSmartphone, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/features")({
+export const Route = createFileRoute("/features/")({
   head: () => ({
     meta: [
       { title: "Features — LuaMore" },
