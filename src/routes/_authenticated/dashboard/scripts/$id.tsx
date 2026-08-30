@@ -221,3 +221,41 @@ function ScriptDetail() {
     </div>
   );
 }
+
+function LoadstringBox({ script }: { script: any }) {
+  const [copied, setCopied] = useState(false);
+  const url = `https://luamore.app/scripts/hosted/${script.public_id}.lua`;
+  const snippet = script.ffa
+    ? `loadstring(game:HttpGet("${url}"))()`
+    : `script_key = "YOUR_KEY_HERE"\nloadstring(game:HttpGet("${url}"))()`;
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(snippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  return (
+    <div>
+      <div
+        className="flex items-center justify-between mb-1 text-xs"
+        style={{ color: "var(--muted-foreground)" }}
+      >
+        <span>Loadstring {script.ffa ? "(FFA)" : "(set script_key first)"}</span>
+        <button onClick={copy} className="btn-outline text-xs">
+          {copied ? "✓ Copied" : "Copy"}
+        </button>
+      </div>
+      <code
+        className="block text-xs px-3 py-2 rounded break-all font-mono whitespace-pre-wrap"
+        style={{ background: "var(--accent-light)", border: "1px solid var(--border)" }}
+      >
+        {snippet}
+      </code>
+    </div>
+  );
+}
