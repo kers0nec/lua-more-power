@@ -100,23 +100,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: "LuaMore is an advanced Lua script hosting and protection platform.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7d848c7-944a-4697-9b02-330f3bb9068f/id-preview-006996d0--7bd6e7b4-0ac9-4ece-9325-2e293b32357d.lovable.app-1785378626653.png",
-      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap",
       },
 
       {

@@ -7,14 +7,8 @@ import { DISCORD_INVITE } from "@/lib/site";
 const LINKS = [
   { to: "/features", label: "Features" },
   { to: "/how", label: "How" },
-  { to: "/keys", label: "Keys" },
-  { to: "/obfuscators", label: "Obfuscators" },
-  { to: "/loading-screens", label: "Loading" },
-  { to: "/commands", label: "Commands" },
   { to: "/docs", label: "Docs" },
   { to: "/pricing", label: "Pricing" },
-  { to: "/faq", label: "FAQ" },
-  { to: "/changelog", label: "Changelog" },
 ];
 
 export function SiteNav() {
@@ -33,12 +27,12 @@ export function SiteNav() {
         borderColor: "var(--border)",
       }}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
         <Link to="/" className="min-w-0">
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex">
+        <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
             const active =
               loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
@@ -46,7 +40,7 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-2.5 py-1.5 text-[13px] transition-colors"
+                className="rounded-md px-3 py-2 text-[13px] transition-colors hover:bg-muted"
                 style={{
                   color: active ? "var(--foreground)" : "var(--muted-foreground)",
                   fontWeight: active ? 500 : 400,
@@ -58,7 +52,7 @@ export function SiteNav() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <a
             href={DISCORD_INVITE}
             target="_blank"
@@ -81,7 +75,7 @@ export function SiteNav() {
         </div>
 
         <button
-          className="btn-ghost shrink-0 px-2 py-1 lg:hidden"
+          className="btn-ghost shrink-0 px-2 py-1 md:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -92,7 +86,7 @@ export function SiteNav() {
 
       {open && (
         <div
-          className="border-t px-6 py-4 lg:hidden"
+          className="border-t px-6 py-4 md:hidden"
           style={{ borderColor: "var(--border)", background: "var(--background)" }}
         >
           <nav className="flex flex-col gap-0.5">
@@ -113,12 +107,6 @@ export function SiteNav() {
             >
               Discord
             </a>
-            <Link
-              to="/settings"
-              className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)]"
-            >
-              Settings
-            </Link>
           </nav>
           <div className="mt-4 flex flex-col gap-2">
             <Link to="/login" className="btn-outline">

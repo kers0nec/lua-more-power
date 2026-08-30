@@ -37,35 +37,35 @@
   --shadow-hover: var(--shadow-hover);
   --gradient-primary: var(--gradient-primary);
   --gradient-hero: var(--gradient-hero);
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
   --radius: 0.625rem;
 
-  /* Deep midnight navy into pitch black theme — dark blue & dark black */
-  --background: #010309;
-  --foreground: #eaf0f9;
+  /* LuaMore midnight system */
+  --background: #03060c;
+  --foreground: #f6f8fc;
 
-  --card: #050d1c;
-  --card-foreground: #eaf0f9;
+  --card: #070c15;
+  --card-foreground: #f6f8fc;
 
-  --popover: #050d1c;
-  --popover-foreground: #eaf0f9;
+  --popover: #070c15;
+  --popover-foreground: #f6f8fc;
 
   --primary: #3b82f6;
   --primary-foreground: #ffffff;
   --primary-dark: #1d4ed8;
 
-  --secondary: #07132a;
-  --secondary-foreground: #eaf0f9;
+  --secondary: #080d16;
+  --secondary-foreground: #f6f8fc;
 
-  --muted: #0a1424;
-  --muted-foreground: #8298be;
+  --muted: #0d1523;
+  --muted-foreground: #8b96a9;
 
-  --accent: #0c1f42;
+  --accent: #10223e;
   --accent-foreground: #ffffff;
   --accent-light: #0a1a36;
 
@@ -74,24 +74,18 @@
   --success: #34d399;
   --warning: #fbbf24;
 
-  --border: #162947;
+  --border: #172131;
   --border-strong: #3b82f6;
-  --input: #030812;
+  --input: #050a12;
   --ring: #3b82f6;
 
   --shadow-card: 0 10px 35px rgba(0, 0, 0, 0.7);
   --shadow-hover: 0 16px 48px rgba(37, 99, 235, 0.3);
 
   --gradient-primary: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
-  --gradient-hero: radial-gradient(
-    85% 65% at 50% 0%,
-    #0a1f4a 0%,
-    #051329 35%,
-    #020810 70%,
-    #000205 100%
-  );
+  --gradient-hero: radial-gradient(80% 75% at 72% 8%, #0c2755 0%, #07152d 28%, #030811 62%, #03060c 100%);
 
-  --sidebar: #020510;
+  --sidebar: #040812;
   --sidebar-foreground: #eaf0f9;
   --sidebar-primary: #3b82f6;
   --sidebar-primary-foreground: #ffffff;
@@ -123,8 +117,8 @@
   h4,
   .font-display {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: 0.01em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.1;
   }
 
@@ -190,6 +184,25 @@
   background-size: 64px 64px;
 }
 
+@utility dot-bg {
+  background-image: radial-gradient(circle, color-mix(in oklab, var(--primary) 24%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility site-section {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@utility glass-panel {
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 80px color-mix(in oklab, var(--background) 75%, transparent);
+  backdrop-filter: blur(18px);
+}
+
 @utility mask-fade {
   mask-image: radial-gradient(120% 70% at 50% 0%, #000 30%, transparent 78%);
   -webkit-mask-image: radial-gradient(120% 70% at 50% 0%, #000 30%, transparent 78%);
@@ -225,6 +238,15 @@
   }
 }
 
+@utility lift-card {
+  transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+  &:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--primary) 65%, var(--border));
+    background: color-mix(in oklab, var(--card) 90%, var(--primary));
+  }
+}
+
 @utility card-flat {
   background: var(--card);
   border: 1px solid var(--border);
@@ -236,6 +258,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 2.6rem;
   padding: 0.7rem 1.35rem;
   border-radius: var(--radius-md);
   background: var(--primary);
@@ -264,6 +287,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 2.6rem;
   padding: 0.7rem 1.35rem;
   border-radius: var(--radius-md);
   background: transparent;
@@ -296,6 +320,15 @@
   &:hover {
     background: var(--muted);
     color: var(--foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

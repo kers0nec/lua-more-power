@@ -1,5 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CheckCircle2, FileCode2, KeyRound, Bot, Link2, Zap, Shield } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  Check,
+  FileCode2,
+  Gauge,
+  KeyRound,
+  Link2,
+  LockKeyhole,
+  ShieldCheck,
+  TerminalSquare,
+} from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { DISCORD_INVITE } from "@/lib/site";
@@ -7,11 +18,18 @@ import { DISCORD_INVITE } from "@/lib/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LuaMore — Control who can run your scripts." },
+      { title: "LuaMore — Script access and delivery" },
       {
         name: "description",
-        content: "Add a script, choose how access works, then copy the loader. Free forever.",
+        content: "Host Lua scripts, issue keys, bind devices, and deliver protected loaders for free.",
       },
+      { property: "og:title", content: "LuaMore — Script access and delivery" },
+      {
+        property: "og:description",
+        content: "Host Lua scripts, issue keys, bind devices, and deliver protected loaders for free.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,
@@ -20,291 +38,203 @@ export const Route = createFileRoute("/")({
 const features = [
   {
     icon: FileCode2,
-    title: "Scripts",
-    desc: "Store a script, choose protection, and copy its loader. Unlimited scripts, stored permanently.",
+    title: "Script hosting",
+    desc: "Save source, publish updates, and keep every loader pointed at the latest release.",
+    detail: "Version history included",
   },
   {
     icon: KeyRound,
-    title: "Keys",
-    desc: "Create timed or permanent keys and bind them to a device. HWID locking and batch generation.",
+    title: "License keys",
+    desc: "Issue temporary or permanent keys with expiration, notes, and device binding.",
+    detail: "Batch generation built in",
   },
   {
     icon: Bot,
-    title: "Discord",
-    desc: "Post key panels and manage users with slash commands. Auto-assign buyer roles on redeem.",
+    title: "Discord controls",
+    desc: "Post panels and manage access from your server with registered slash commands.",
+    detail: "Admin permission checks",
   },
   {
     icon: Link2,
-    title: "Delivery",
-    desc: "Signed loader URLs, keyless mode, loading screen presets, and encrypted route delivery.",
+    title: "Hosted delivery",
+    desc: "Give users one compact loadstring while LuaMore handles source delivery behind it.",
+    detail: "FFA and keyed modes",
   },
 ];
 
-const steps = [
-  { n: "01", title: "Create a project", desc: "Add the script you want to deliver." },
-  { n: "02", title: "Choose access", desc: "Use keys, Discord, or keyless mode." },
-  { n: "03", title: "Copy the loader", desc: "Paste the loader where your users can find it." },
-  { n: "04", title: "Check activity", desc: "See runs, errors, and active devices." },
-];
-
-const demoKeys = [
-  { key: "LM-A7X2-9KQM-4RPL", status: "active" },
-  { key: "LM-B3N8-2WXT-7HJD", status: "used" },
-  { key: "LM-C9P1-5LMQ-8VZK", status: "active" },
-  { key: "LM-D4R6-1YHN-3QWB", status: "expired" },
+const workflow = [
+  ["01", "Add your source", "Paste Luau or upload a .lua file from the dashboard."],
+  ["02", "Set access rules", "Choose key-required or free-for-all delivery."],
+  ["03", "Copy the loader", "Use the generated loadstring in your distribution flow."],
+  ["04", "Manage in one place", "Update code, keys, devices, panels, and releases."],
 ];
 
 function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SiteNav />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
-        <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <span className="badge-blue">luamore · loader</span>
-              <h1 className="mt-6 font-display text-5xl leading-[1.02] md:text-7xl">
-                Control who can run
-                <br />
-                your scripts.
+      <main>
+        <section className="relative overflow-hidden border-b border-border">
+          <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
+          <div className="dot-bg mask-fade pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+          <div className="site-section relative grid min-h-[calc(100vh-4rem)] items-center gap-14 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:py-28">
+            <div className="rise max-w-xl">
+              <div className="eyebrow">LuaMore / script access</div>
+              <h1 className="mt-5 font-display text-5xl leading-[0.98] sm:text-6xl lg:text-7xl">
+                Control who can run your scripts.
               </h1>
-              <p className="mt-6 max-w-lg text-lg" style={{ color: "var(--muted-foreground)" }}>
-                Add a script, choose how access works, then copy the loader. LuaMore is free — no
-                plans, no billing, no paywalls.
+              <p className="mt-6 max-w-lg text-lg leading-8 text-muted-foreground">
+                Store Lua source, choose how access works, and ship a clean hosted loader. No paid
+                tiers, no checkout, and no limit on projects.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Link to="/register" className="btn-primary">
-                  Create account <ArrowRight size={16} />
+                  Start building <ArrowRight size={16} />
                 </Link>
-                <Link to="/how" className="btn-outline">
-                  How it works
+                <Link to="/features" className="btn-outline">
+                  Explore features
                 </Link>
               </div>
-            </div>
-
-            {/* Loader preview card */}
-            <div
-              className="overflow-hidden rounded-xl border"
-              style={{
-                borderColor: "var(--border-strong)",
-                background: "linear-gradient(180deg, #050d1c 0%, #030810 100%)",
-                boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.1)",
-              }}
-            >
-              <div
-                className="flex items-center justify-between border-b px-4 py-3"
-                style={{ borderColor: "var(--border)" }}
-              >
-                <span className="font-mono text-xs">loader.lua</span>
-                <span
-                  className="font-mono text-[10px]"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  encrypted route · 42ms
-                </span>
-              </div>
-              <pre
-                className="overflow-x-auto p-5 text-[12px] leading-relaxed"
-                style={{ fontFamily: "var(--font-mono)", color: "var(--foreground)" }}
-              >
-                {`_G.script_key = "LM-A7X2-9KQM-4RPL"
-local loader = game:HttpGet(
-  "https://luamore.app/v1/load/demo"
-)
-loadstring(loader)()`}
-              </pre>
-              <div className="border-t p-4" style={{ borderColor: "var(--border)" }}>
-                <div className="eyebrow mb-3">keys</div>
-                <ul className="space-y-2 text-sm">
-                  {demoKeys.map((k) => (
-                    <li key={k.key} className="flex items-center justify-between font-mono text-xs">
-                      <span>{k.key}</span>
-                      <span
-                        style={{
-                          color:
-                            k.status === "active"
-                              ? "var(--success)"
-                              : k.status === "expired"
-                                ? "var(--destructive)"
-                                : "var(--muted-foreground)",
-                        }}
-                      >
-                        {k.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="eyebrow">What it does</div>
-        <h2 className="mt-3 font-display text-4xl md:text-5xl">The parts you actually use</h2>
-        <p className="mt-4 max-w-xl text-base" style={{ color: "var(--muted-foreground)" }}>
-          Scripts, keys, Discord, and delivery — everything included, everything free.
-        </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => (
-            <div key={f.title} className="card-blue p-6">
-              <f.icon size={18} style={{ color: "var(--primary)" }} />
-              <h3 className="mt-4 font-display text-xl">{f.title}</h3>
-              <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section
-        id="how"
-        className="border-y"
-        style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
-      >
-        <div className="mx-auto max-w-6xl px-6 py-24">
-          <div className="eyebrow">Setup</div>
-          <h2 className="mt-3 font-display text-4xl md:text-5xl">Four steps, then you are done</h2>
-          <div className="mt-12 grid gap-8 md:grid-cols-4">
-            {steps.map((s) => (
-              <div
-                key={s.n}
-                className="border-t pt-6"
-                style={{ borderColor: "var(--border-strong)" }}
-              >
-                <div className="font-mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  {s.n}
-                </div>
-                <h3 className="mt-4 font-display text-2xl">{s.title}</h3>
-                <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Free Forever */}
-      <section id="pricing" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="eyebrow">Pricing</div>
-          <h2 className="mt-3 font-display text-4xl md:text-5xl">Everything is free</h2>
-          <p
-            className="mx-auto mt-4 max-w-lg text-base"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            No Stripe. No tiers. Unlimited scripts, keys, obfuscation, and Discord panels.
-          </p>
-        </div>
-        <div className="mx-auto mt-12 max-w-md">
-          <div
-            className="card-blue relative overflow-hidden p-8"
-            style={{ borderColor: "var(--foreground)" }}
-          >
-            <div
-              className="absolute -top-20 -right-20 h-40 w-40 rounded-full opacity-15 blur-3xl"
-              style={{ background: "var(--primary)" }}
-            />
-            <div className="relative">
-              <h3 className="font-display text-2xl">LuaMore</h3>
-              <div className="mt-4 font-display text-6xl tracking-tight">
-                $0
-                <span
-                  className="font-sans text-sm font-normal"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {" "}
-                  forever
-                </span>
-              </div>
-              <ul className="mt-8 space-y-3 text-sm">
-                {[
-                  "Unlimited projects, scripts, and keys",
-                  "LuaMore VM obfuscation with anti-hook",
-                  "HWID binding and license keys",
-                  "Discord panels and slash commands",
-                  "Loading screen presets (4 styles)",
-                  "No extra ads. No billing.",
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5">
-                    <CheckCircle2
-                      size={15}
-                      className="mt-0.5 shrink-0"
-                      style={{ color: "var(--primary)" }}
-                    />
-                    <span style={{ color: "var(--muted-foreground)" }}>{f}</span>
-                  </li>
+              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                {['Free forever', 'No payment setup', 'Discord ready'].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-2">
+                    <Check size={14} className="text-primary" /> {item}
+                  </span>
                 ))}
-              </ul>
-              <Link to="/register" className="btn-primary mt-8 w-full">
-                <Zap size={15} /> Create account
-              </Link>
+              </div>
+            </div>
+
+            <div className="glass-panel rise relative overflow-hidden rounded-lg" style={{ animationDelay: "120ms" }}>
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <div className="flex items-center gap-2">
+                  <TerminalSquare size={15} className="text-primary" />
+                  <span className="font-mono text-xs text-muted-foreground">delivery.lua</span>
+                </div>
+                <span className="badge-blue">live</span>
+              </div>
+              <div className="border-b border-border p-5 sm:p-7">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-display text-lg">Nightfall Hub</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Key required · HWID enabled</p>
+                  </div>
+                  <ShieldCheck size={22} className="text-primary" />
+                </div>
+                <pre className="overflow-x-auto rounded-md border border-border bg-input p-4 font-mono text-xs leading-6 text-card-foreground">
+{`script_key = "YOUR_KEY_HERE"
+loadstring(game:HttpGet(
+  "https://luamore.app/scripts/hosted/LM-demo.lua"
+))()`}
+                </pre>
+              </div>
+              <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                {[
+                  ["4,284", "successful runs"],
+                  ["37ms", "average response"],
+                  ["128", "active licenses"],
+                ].map(([value, label]) => (
+                  <div key={label} className="p-5">
+                    <p className="font-display text-2xl">{value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Protection highlight */}
-      <section
-        className="border-t"
-        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-      >
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                icon: Shield,
-                title: "Anti-Hook Engine",
-                desc: "Silent Entropy Poisoning corrupts decryption keys when hooks are detected. Dual FNV-1a & djb2 checksums.",
-              },
-              {
-                icon: Zap,
-                title: "Instant Delivery",
-                desc: "Global edge network caches and delivers obfuscated payloads in under 35ms with 99.99% uptime.",
-              },
-              {
-                icon: KeyRound,
-                title: "HWID Locking",
-                desc: "Bind scripts to device hardware on first run. Block unauthorized devices until you reset.",
-              },
-            ].map((item) => (
-              <div key={item.title} className="card-blue p-6">
-                <item.icon size={20} style={{ color: "var(--primary)" }} />
-                <h3 className="mt-4 font-display text-xl">{item.title}</h3>
-                <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                  {item.desc}
-                </p>
-              </div>
+        <section className="site-section py-24">
+          <div className="max-w-2xl">
+            <div className="eyebrow">The workspace</div>
+            <h2 className="mt-4 font-display text-4xl sm:text-5xl">The parts you actually use.</h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              A focused control room for scripts, access, delivery, and Discord—not another crowded
+              admin template.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2">
+            {features.map((feature) => (
+              <article key={feature.title} className="card-blue lift-card p-7">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-accent">
+                    <feature.icon size={18} className="text-primary" />
+                  </div>
+                  <span className="font-mono text-[11px] text-muted-foreground">{feature.detail}</span>
+                </div>
+                <h3 className="mt-8 font-display text-2xl">{feature.title}</h3>
+                <p className="mt-3 max-w-md leading-7 text-muted-foreground">{feature.desc}</p>
+              </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section className="border-t" style={{ borderColor: "var(--border)" }}>
-        <div className="relative mx-auto max-w-3xl px-6 py-24 text-center">
-          <h2 className="font-display text-4xl md:text-5xl">Start with one script.</h2>
-          <p className="mt-4 text-base" style={{ color: "var(--muted-foreground)" }}>
-            Create a free account and protect your first script in under a minute.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/register" className="btn-primary">
-              Create account
-            </Link>
-            <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="btn-outline">
-              Discord
-            </a>
+        <section className="border-y border-border bg-secondary">
+          <div className="site-section py-24">
+            <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
+              <div>
+                <div className="eyebrow">Workflow</div>
+                <h2 className="mt-4 font-display text-4xl sm:text-5xl">Four steps. Then ship.</h2>
+                <p className="mt-5 leading-7 text-muted-foreground">
+                  Move from raw source to a managed loader without stitching together separate key,
+                  hosting, and bot services.
+                </p>
+                <Link to="/how" className="btn-outline mt-8">
+                  See the full setup <ArrowRight size={15} />
+                </Link>
+              </div>
+              <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+                {workflow.map(([number, title, description]) => (
+                  <div key={number} className="bg-card p-7">
+                    <span className="font-mono text-xs text-primary">{number}</span>
+                    <h3 className="mt-8 font-display text-xl">{title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section className="site-section py-24">
+          <div className="grid gap-5 lg:grid-cols-3">
+            {[
+              [LockKeyhole, "Device-bound access", "Bind a key to its first device and reset it from the dashboard or Discord."],
+              [Gauge, "Clear activity", "Inspect current keys, script releases, and recent account activity without digging."],
+              [ShieldCheck, "Controlled delivery", "Keep source behind your hosted loader and change the script without changing its URL."],
+            ].map(([Icon, title, body]) => {
+              const FeatureIcon = Icon as typeof LockKeyhole;
+              return (
+                <div key={title as string} className="border-t border-border pt-6">
+                  <FeatureIcon size={19} className="text-primary" />
+                  <h3 className="mt-5 font-display text-xl">{title as string}</h3>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{body as string}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="border-t border-border">
+          <div className="site-section py-24">
+            <div className="relative overflow-hidden rounded-lg border border-border bg-card px-6 py-14 text-center sm:px-12">
+              <div className="dot-bg pointer-events-none absolute inset-0 opacity-40" aria-hidden />
+              <div className="relative mx-auto max-w-2xl">
+                <div className="eyebrow">No tiers. No billing.</div>
+                <h2 className="mt-4 font-display text-4xl sm:text-5xl">Start with one script.</h2>
+                <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
+                  Create your workspace, add the source, and copy the generated loader. Every LuaMore
+                  feature is included for free.
+                </p>
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                  <Link to="/register" className="btn-primary">Create account</Link>
+                  <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="btn-outline">Join Discord</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       <SiteFooter />
     </div>
