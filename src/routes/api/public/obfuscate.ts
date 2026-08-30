@@ -88,22 +88,55 @@ export const Route = createFileRoute("/api/public/obfuscate")({
         if (!keyRow) return json({ error: "invalid api key" }, 401);
 
         try {
-          const { obfuscateLua } = await import("@/lib/obfuscator.server");
-          const out = obfuscateLua(source);
-          // fire-and-forget last_used bump
+          const { obfuscateLuaWithOptions } = await import("@/lib/obfuscator.server");
+          const rawSettings =
+            body && typeof body["settings"] === "object" && body["settings"] !== null
+              ? (body["settings"] as Record<string, unknown>)
+              : {};
+          const b = (k: string) =>
+            typeof rawSettings[k] === "boolean" ? (rawSettings[k] as boolean) : undefined;
+          const depthRaw = rawSettings["loaderVMDepth"];
+          const depth =
+            typeof depthRaw === "number" && depthRaw >= 1 && depthRaw <= 5
+              ? Math.floor(depthRaw)
+              : undefined;
+          const out = obfuscateLuaWithOptions(source, {
+            encryptStrings: b("encryptStrings"),
+            proxifyLocals: b("proxifyLocals"),
+            proxifyFunctions: b("proxifyFunctions"),
+            antiTamper: b("antiTamper"),
+            controlFlowFlattening: b("controlFlowFlattening"),
+            isLuauRuntime: b("isLuauRuntime"),
+            dualVm: b("dualVm"),
+            loaderVMDepth: depth,
+          });
           void supabaseAdmin
             .from("api_keys")
             .update({ last_used_at: new Date().toISOString() })
             .eq("id", keyRow.id);
           return json({
+            status: "success",
             ok: true,
+            result: out,
             obfuscated: out,
             bytes_in: source.length,
             bytes_out: out.length,
-            engine: "LuaMore VM v11",
+            engine: "LuaMore VM v12",
+            settings: {
+              encryptStrings: b("encryptStrings") ?? true,
+              proxifyLocals: b("proxifyLocals") ?? true,
+              proxifyFunctions: b("proxifyFunctions") ?? true,
+              antiTamper: b("antiTamper") ?? true,
+              controlFlowFlattening: b("controlFlowFlattening") ?? true,
+              isLuauRuntime: b("isLuauRuntime") ?? true,
+              loaderVMDepth: depth ?? (b("dualVm") === false ? 1 : 2),
+            },
           });
         } catch (e) {
-          return json({ error: e instanceof Error ? e.message : "obfuscation failed" }, 500);
+          return json(
+            { status: "error", error: e instanceof Error ? e.message : "obfuscation failed" },
+            500,
+          );
         }
       },
     },
