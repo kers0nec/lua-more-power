@@ -34,7 +34,7 @@ function ScriptDetail() {
   const upd = useServerFn(updateScript);
   const obf = useServerFn(obfuscateScriptNow);
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["script", id], queryFn: () => get({ data: { id } }) });
+  const q = useQuery({ queryKey: ["script", id], queryFn: () => get({ data: { id } }) }) as { data?: { script?: any; releases?: any[] } };
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [ffa, setFfa] = useState(false);

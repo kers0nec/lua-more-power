@@ -36,12 +36,12 @@ export const listScripts = createServerFn({ method: "GET" })
       }
 
       // Merge remote and local
-      const map = new Map<string, Record<string, unknown>>();
-      for (const item of localList) map.set(item.id, item as unknown as Record<string, unknown>);
+      const map = new Map<string, Record<string, any>>();
+      for (const item of localList) map.set(item.id, item as unknown as Record<string, any>);
       for (const item of data) {
         map.set(item.id, {
           ...map.get(item.id),
-          ...(item as unknown as Record<string, unknown>),
+          ...(item as unknown as Record<string, any>),
         });
       }
 
@@ -58,8 +58,8 @@ export const getScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    let script: Record<string, unknown> | null = null;
-    let releases: Record<string, unknown>[] = [];
+    let script: Record<string, any> | null = null;
+    let releases: Record<string, any>[] = [];
 
     try {
       const { data: dbScript } = await context.supabase
@@ -70,13 +70,13 @@ export const getScript = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (dbScript) {
-        script = dbScript as unknown as Record<string, unknown>;
+        script = dbScript as unknown as Record<string, any>;
         const { data: rels } = await context.supabase
           .from("script_releases")
           .select("*")
           .eq("script_id", data.id)
           .order("version", { ascending: false });
-        releases = (rels ?? []) as unknown as Record<string, unknown>[];
+        releases = (rels ?? []) as unknown as Record<string, any>[];
       }
     } catch {
       // ignore
@@ -85,7 +85,7 @@ export const getScript = createServerFn({ method: "POST" })
     if (!script) {
       const local = getScriptById(data.id, context.userId);
       if (!local) throw new Error("Script not found");
-      script = local as unknown as Record<string, unknown>;
+      script = local as unknown as Record<string, any>;
     }
 
     return { script, releases };
@@ -104,7 +104,7 @@ export const createScript = createServerFn({ method: "POST" })
     }) => z.object({ ...metaShape, code: z.string().max(1_000_000_000).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    let row: Record<string, unknown> | null = null;
+    let row: Record<string, any> | null = null;
 
     try {
       const { data: dbRow } = await context.supabase
@@ -120,7 +120,7 @@ export const createScript = createServerFn({ method: "POST" })
         })
         .select("*")
         .maybeSingle();
-      if (dbRow) row = dbRow as unknown as Record<string, unknown>;
+      if (dbRow) row = dbRow as unknown as Record<string, any>;
     } catch {
       // ignore
     }

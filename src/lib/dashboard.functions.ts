@@ -61,7 +61,13 @@ export const updateProfile = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const updatePayload: Record<string, unknown> = {
+    const updatePayload: {
+      display_name: string;
+      plan: string;
+      max_scripts: number;
+      max_panels: number;
+      discord_id?: string | null;
+    } = {
       display_name: data.display_name,
       plan: "free",
       max_scripts: 999999999,
