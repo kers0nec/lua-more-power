@@ -26,6 +26,7 @@ function PanelsPage() {
   const create = useServerFn(createPanel);
   const remove = useServerFn(deletePanel);
   const send = useServerFn(sendPanel);
+  const update = useServerFn(updatePanel);
   const sync = useServerFn(syncDiscordCommands);
   const scriptsFn = useServerFn(listScripts);
   const statsFn = useServerFn(getDashboardStats);
@@ -76,7 +77,7 @@ function PanelsPage() {
       <div className="grid grid-cols-[1fr_auto] items-center border-b border-border py-3"><span className="eyebrow">Your panels</span><span className="font-mono text-xs text-muted-foreground">{panels.data?.length ?? 0} total</span></div>
       {panels.isLoading && <div className="py-14 text-center text-sm text-muted-foreground">Loading panels…</div>}
       {!panels.isLoading && (panels.data ?? []).length === 0 && <div className="py-14 text-center"><Bot className="mx-auto text-muted-foreground" size={24} /><p className="mt-3 text-sm text-muted-foreground">No panels yet. Create one to start delivering access in Discord.</p></div>}
-      <div className="divide-y divide-border">{(panels.data ?? []).map((panel) => <PanelRow key={panel.id} panel={panel} scripts={scripts.data ?? []} updatePanelFn={useServerFn(updatePanel)} sendPanelFn={send} onRefresh={refresh} onDelete={() => confirm(`Delete ${panel.name}?`) && deleteMutation.mutate(panel.id)} setStatus={setStatus} />)}</div>
+      <div className="divide-y divide-border">{(panels.data ?? []).map((panel) => <PanelRow key={panel.id} panel={panel} scripts={scripts.data ?? []} updatePanelFn={update} sendPanelFn={send} onRefresh={refresh} onDelete={() => confirm(`Delete ${panel.name}?`) && deleteMutation.mutate(panel.id)} setStatus={setStatus} />)}</div>
     </div>
   </div>;
 }

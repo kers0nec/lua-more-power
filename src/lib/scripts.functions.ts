@@ -80,7 +80,18 @@ export const updateScript = createServerFn({ method: "POST" })
       const { data: current } = await context.supabase.from("scripts").select("code").eq("id", id).eq("user_id", context.userId).maybeSingle();
       if (current?.code?.trim()) throw new Error("Refusing to overwrite saved source with an empty editor.");
     }
-    const update: Record<string, unknown> = { ...patch };
+    const update = {
+      name: patch.name,
+      code: patch.code,
+      ffa: patch.ffa,
+      description: patch.description,
+      category: patch.category,
+      tags: patch.tags,
+      is_active: patch.is_active,
+      is_protected: patch.is_protected,
+      obfuscated_code: undefined as string | undefined,
+      obfuscator: undefined as string | undefined,
+    };
     if (patch.is_protected && typeof patch.code === "string" && patch.code.length > 0) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       update.obfuscated_code = obfuscateLua(patch.code);
