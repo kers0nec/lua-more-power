@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/public/auth/login")({
           const hash = await sha256Hex(value);
           const { data: keyRow, error: keyErr } = await supabaseAdmin
             .from("api_keys")
-            .select("id, name, user_id, last_used_at, created_at")
+            .select("id, label, user_id, last_used_at, created_at")
             .eq("key_hash", hash)
             .maybeSingle();
 
@@ -80,20 +80,20 @@ export const Route = createFileRoute("/api/public/auth/login")({
 
           const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("id, username, email, discord_id, tier, created_at")
+            .select("id, display_name, email, discord_id, plan, created_at")
             .eq("id", keyRow.user_id)
             .maybeSingle();
 
           return json({
             ok: true,
             authenticated_via: "api_key",
-            key: { id: keyRow.id, name: keyRow.name },
+            key: { id: keyRow.id, name: keyRow.label },
             user: {
               id: keyRow.user_id,
               email: profile?.email || null,
-              username: profile?.username || null,
+              username: profile?.display_name || null,
               discord_id: profile?.discord_id || null,
-              tier: profile?.tier || "free",
+              tier: profile?.plan || "free",
             },
           });
         }
@@ -107,7 +107,7 @@ export const Route = createFileRoute("/api/public/auth/login")({
         const user = userData.user;
         const { data: profile } = await supabaseAdmin
           .from("profiles")
-          .select("id, username, email, discord_id, tier, created_at")
+          .select("id, display_name, email, discord_id, plan, created_at")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -117,9 +117,9 @@ export const Route = createFileRoute("/api/public/auth/login")({
           user: {
             id: user.id,
             email: user.email,
-            username: profile?.username || user.user_metadata?.username || null,
+            username: profile?.display_name || user.user_metadata?.username || null,
             discord_id: profile?.discord_id || null,
-            tier: profile?.tier || "free",
+            tier: profile?.plan || "free",
           },
         });
       },
@@ -151,7 +151,7 @@ export const Route = createFileRoute("/api/public/auth/login")({
           const hash = await sha256Hex(apiKey);
           const { data: keyRow, error: keyErr } = await supabaseAdmin
             .from("api_keys")
-            .select("id, name, user_id, last_used_at, created_at")
+            .select("id, label, user_id, last_used_at, created_at")
             .eq("key_hash", hash)
             .maybeSingle();
 
@@ -167,20 +167,20 @@ export const Route = createFileRoute("/api/public/auth/login")({
 
           const { data: profile } = await supabaseAdmin
             .from("profiles")
-            .select("id, username, email, discord_id, tier, created_at")
+            .select("id, display_name, email, discord_id, plan, created_at")
             .eq("id", keyRow.user_id)
             .maybeSingle();
 
           return json({
             ok: true,
             authenticated_via: "api_key",
-            key: { id: keyRow.id, name: keyRow.name },
+            key: { id: keyRow.id, name: keyRow.label },
             user: {
               id: keyRow.user_id,
               email: profile?.email || null,
-              username: profile?.username || null,
+              username: profile?.display_name || null,
               discord_id: profile?.discord_id || null,
-              tier: profile?.tier || "free",
+              tier: profile?.plan || "free",
             },
           });
         }
@@ -250,7 +250,7 @@ export const Route = createFileRoute("/api/public/auth/login")({
 
         const { data: profile } = await supabaseAdmin
           .from("profiles")
-          .select("id, username, email, discord_id, tier, created_at")
+          .select("id, display_name, email, discord_id, plan, created_at")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -260,9 +260,9 @@ export const Route = createFileRoute("/api/public/auth/login")({
           user: {
             id: user.id,
             email: user.email,
-            username: profile?.username || user.user_metadata?.username || null,
+            username: profile?.display_name || user.user_metadata?.username || null,
             discord_id: profile?.discord_id || null,
-            tier: profile?.tier || "free",
+            tier: profile?.plan || "free",
           },
           session: {
             access_token: session.access_token,
