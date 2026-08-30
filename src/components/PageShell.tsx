@@ -21,10 +21,10 @@ export function PageShell({
           className="relative overflow-hidden border-b"
           style={{ background: "var(--gradient-hero)", borderColor: "var(--border)" }}
         >
-          <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
-          <div className="relative mx-auto w-full max-w-5xl px-6 py-16 md:py-20">
+          <div className="dot-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
+          <div className="relative mx-auto w-full max-w-5xl px-6 py-20 md:py-28">
             {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
-            <h1 className="mt-3 font-display text-4xl font-medium tracking-tight md:text-6xl">
+            <h1 className="mt-3 max-w-3xl font-display text-4xl md:text-6xl">
               {title}
             </h1>
             {subtitle ? (
@@ -34,7 +34,7 @@ export function PageShell({
             ) : null}
           </div>
         </section>
-        <div className="mx-auto w-full max-w-5xl px-6 py-14">{children}</div>
+        <div className="mx-auto w-full max-w-5xl px-6 py-16 md:py-20">{children}</div>
       </main>
       <SiteFooter />
     </div>
