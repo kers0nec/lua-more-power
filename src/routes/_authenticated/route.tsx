@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   LogOut,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +56,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { to: "/dashboard/keys", label: "Keys", icon: KeyRound },
       { to: "/dashboard/batches", label: "Key Batches", icon: Layers },
       { to: "/dashboard/hwid", label: "HWID Bans", icon: Ban },
+      { to: "/dashboard/logs", label: "Execution Logs", icon: Activity },
     ],
   },
   {
