@@ -29,7 +29,7 @@ function Page() {
   const getStats = useServerFn(getDashboardStats);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["panels"], queryFn: () => list() });
-  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() });
+  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() }) as { data?: any[] };
   const statsQ = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => getStats() });
   const isOwner = Boolean(statsQ.data?.isOwner);
 
