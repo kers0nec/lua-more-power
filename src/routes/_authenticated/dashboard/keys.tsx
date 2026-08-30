@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { deleteKey, generateKey, listKeys } from "@/lib/keys.functions";
 import { listScripts } from "@/lib/scripts.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/keys")({
   head: () => ({ meta: [{ title: "License Keys — LuaMore" }] }),
@@ -42,8 +44,8 @@ function Keys() {
   });
 
   return (
-    <div className="p-8 max-w-6xl">
-      <h1 className="text-3xl font-bold">License Keys</h1>
+    <div className="app-page">
+      <DashboardHeader eyebrow="Access control" title="License keys" description="Generate, bind, inspect, and revoke access credentials across your scripts." action={<span className="badge-blue"><KeyRound size={12} /> {(keys.data ?? []).length} keys</span>} />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-5 items-end">
         <div>
