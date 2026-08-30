@@ -52,6 +52,13 @@ function ObfuscatePage() {
   const [logs, setLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [dualVm, setDualVm] = useState(true);
+  const [encryptStrings, setEncryptStrings] = useState(true);
+  const [proxifyLocals, setProxifyLocals] = useState(true);
+  const [proxifyFunctions, setProxifyFunctions] = useState(true);
+  const [antiTamper, setAntiTamper] = useState(true);
+  const [controlFlowFlattening, setControlFlowFlattening] = useState(true);
+  const [isLuauRuntime, setIsLuauRuntime] = useState(true);
+  const [loaderVMDepth, setLoaderVMDepth] = useState(2);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
