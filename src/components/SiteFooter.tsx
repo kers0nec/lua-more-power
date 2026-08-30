@@ -45,59 +45,14 @@ const COLS: { title: string; links: { label: string; to?: string; href?: string 
 
 export function SiteFooter() {
   return (
-    <footer
-      className="border-t"
-      style={{ background: "var(--secondary)", borderColor: "var(--border)" }}
-    >
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_repeat(4,1fr)]">
-        <div className="space-y-4">
-          <Logo />
-          <p className="max-w-xs text-sm" style={{ color: "var(--muted-foreground)" }}>
-            LuaMore is free. Store scripts, issue keys, and copy a loader — no billing, no
-            paywalls. Everything included for every account.
-          </p>
-          <p
-            className="font-mono text-[11px] uppercase tracking-[0.16em]"
-            style={{ color: "var(--primary)" }}
-          >
-            {SITE_TAGLINE}
-          </p>
-        </div>
-        {COLS.map((col) => (
-          <div key={col.title}>
-            <h4 className="eyebrow mb-4">{col.title}</h4>
-            <ul className="space-y-2.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              {col.links.map((l) => (
-                <li key={l.label}>
-                  {l.to ? (
-                    <Link
-                      to={l.to}
-                      className="transition-colors hover:text-[color:var(--foreground)]"
-                    >
-                      {l.label}
-                    </Link>
-                  ) : (
-                    <a
-                      href={l.href}
-                      target={l.href?.startsWith("http") ? "_blank" : undefined}
-                      rel={l.href?.startsWith("http") ? "noreferrer" : undefined}
-                      className="transition-colors hover:text-[color:var(--foreground)]"
-                    >
-                      {l.label}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+    <footer className="border-t border-border bg-secondary">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 md:flex-row md:items-center md:justify-between">
+        <div><Logo size={28} /><p className="mt-3 max-w-sm text-sm text-muted-foreground">Scripts, keys, Discord panels, and hosted delivery in one free workspace.</p></div>
+        <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
+          {COLS.flatMap((col) => col.links).filter((item, index, all) => all.findIndex((x) => x.label === item.label) === index).slice(0, 8).map((l) => l.to ? <Link key={l.label} to={l.to} className="hover:text-foreground">{l.label}</Link> : <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className="hover:text-foreground">{l.label}</a>)}
+        </nav>
       </div>
-      <div
-        className="border-t py-5 text-center font-mono text-[11px] uppercase tracking-[0.18em]"
-        style={{ color: "var(--muted-foreground)", borderColor: "var(--border)" }}
-      >
-        © {new Date().getFullYear()} LuaMore
-      </div>
+      <div className="border-t border-border px-6 py-4 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">© {new Date().getFullYear()} LuaMore · {SITE_TAGLINE}</div>
     </footer>
   );
 }

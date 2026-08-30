@@ -12,6 +12,8 @@ import {
 } from "@/lib/panels.functions";
 import { listScripts } from "@/lib/scripts.functions";
 import { getDashboardStats } from "@/lib/dashboard.functions";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { Bot, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
   head: () => ({ meta: [{ title: "Panels — LuaMore" }] }),
@@ -105,25 +107,8 @@ function Page() {
   });
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Discord Panels</h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            Create control panels with redeem / script / role / HWID / stats buttons and post them
-            straight to a Discord channel.
-          </p>
-        </div>
-        {isOwner && (
-          <button
-            onClick={() => syncMut.mutate()}
-            disabled={syncMut.isPending}
-            className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
-          >
-            <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
-          </button>
-        )}
-      </div>
+    <div className="app-page">
+      <DashboardHeader eyebrow="Discord integration" title="Control panels" description="Create interactive redeem, script, role, HWID, and stats panels, then post them directly to a channel." action={isOwner ? <button onClick={() => syncMut.mutate()} disabled={syncMut.isPending} className="btn-outline text-xs"><RefreshCw size={14} className={syncMut.isPending ? "animate-spin" : ""} />{syncMut.isPending ? "Syncing" : "Sync commands"}</button> : <span className="badge-blue"><Bot size={12} /> Discord</span>} />
 
       {/* Auto-registration info badge (Owner Only) */}
       {isOwner && (
