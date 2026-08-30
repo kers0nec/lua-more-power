@@ -518,17 +518,172 @@ end
 export type ObfuscationOptions = {
   dualVm?: boolean;
   antiTamper?: boolean;
-  // Extended settings (accepted from the public API; the current engine always applies these)
   encryptStrings?: boolean;
   proxifyLocals?: boolean;
   proxifyFunctions?: boolean;
   controlFlowFlattening?: boolean;
   isLuauRuntime?: boolean;
   loaderVMDepth?: number; // 1-5, overrides dualVm when provided
+  /** Wrap the final payload in an additional Base64 + polymorphic VM bytecode + XOR stage. */
+  polymorphicVM?: boolean;
 };
 
+/** ---------------- Polymorphic VM outer stage (Base64 + bytecode + XOR) ---------------- */
+const B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function b64encode(bytes: number[]): string {
+  let out = "";
+  const n = bytes.length;
+  for (let i = 0; i < n; i += 3) {
+    const b1 = bytes[i] & 0xff;
+    const b2 = i + 1 < n ? bytes[i + 1] & 0xff : 0;
+    const b3 = i + 2 < n ? bytes[i + 2] & 0xff : 0;
+    const c1 = b1 >> 2;
+    const c2 = ((b1 & 3) << 4) | (b2 >> 4);
+    const c3 = ((b2 & 15) << 2) | (b3 >> 6);
+    const c4 = b3 & 63;
+    out += B64_ALPHABET[c1] + B64_ALPHABET[c2];
+    out += i + 1 < n ? B64_ALPHABET[c3] : "=";
+    out += i + 2 < n ? B64_ALPHABET[c4] : "=";
+  }
+  return out;
+}
+
+/**
+ * Polymorphic VM stage:
+ *  - Payload bytes XORed with rotating multi-byte key + index-derived rotor.
+ *  - Compiled to a bytecode of (op, arg) pairs. Opcode IDs are randomized per
+ *    build (polymorphic). Real ops: EMIT, NOP, SKIP2, XORADV.
+ *  - Bytecode is Base64-encoded for safe transport.
+ *  - A tiny Lua dispatcher decodes Base64, walks bytes, reconstructs the
+ *    payload string, then loadstring()s it.
+ */
+function polymorphicWrap(payload: string): string {
+  const enc = new TextEncoder();
+  const src = Array.from(enc.encode(payload));
+
+  const keyLen = 24 + rand(16);
+  const key: number[] = [];
+  for (let i = 0; i < keyLen; i++) key.push(randByte());
+  const rot0 = 1 + rand(250);
+
+  const opIds = new Set<number>();
+  const pickOp = () => {
+    for (;;) {
+      const v = 1 + rand(250);
+      if (!opIds.has(v)) {
+        opIds.add(v);
+        return v;
+      }
+    }
+  };
+  const OP_EMIT = pickOp();
+  const OP_NOP = pickOp();
+  const OP_SKIP2 = pickOp();
+  const OP_XORADV = pickOp();
+
+  const bc: number[] = [];
+  let rot = rot0;
+  for (let i = 0; i < src.length; i++) {
+    if (rand(11) === 0) bc.push(OP_NOP, randByte());
+    if (rand(23) === 0) bc.push(OP_SKIP2, randByte(), randByte(), randByte());
+    if (rand(37) === 0) {
+      const delta = 1 + rand(200);
+      bc.push(OP_XORADV, delta);
+      rot = (rot + delta) & 0xff;
+    }
+    const kb = key[i % keyLen];
+    const rb = (i * rot) & 0xff;
+    const c = (src[i] ^ kb ^ rb) & 0xff;
+    bc.push(OP_EMIT, c);
+  }
+
+  const b64 = b64encode(bc);
+  const used = new Set<string>();
+  const B = randName(used), DEC = randName(used), OUT = randName(used);
+  const KEY = randName(used), N = randName(used), I = randName(used);
+  const K = randName(used), OP = randName(used), AR = randName(used);
+  const XOR = randName(used), FN = randName(used), ERR = randName(used);
+  const ROT = randName(used), SRC = randName(used), ALPH = randName(used);
+  const IDX = randName(used), C1 = randName(used), C2 = randName(used);
+  const C3 = randName(used), C4 = randName(used), J = randName(used);
+  const CH = randName(used), LOAD = randName(used), TC = randName(used);
+  const SCHAR = randName(used);
+  const keyLua = "{" + key.map((b) => num(b)).join(",") + "}";
+
+  return `--[[LM/poly]]
+local ${LOAD}=(function()
+  if type(loadstring)=="function" then return loadstring end
+  if type(load)=="function" then return load end
+end)()
+local ${TC}=table.concat
+local ${SCHAR}=string.char
+local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
+  local r,p=0,1
+  for _=1,32 do
+    local x,y=a%2,b%2
+    if x~=y then r=r+p end
+    a,b,p=(a-x)/2,(b-y)/2,p*2
+  end
+  return r
+end
+local ${ALPH}="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+local ${IDX}={}
+for ${I}=1,#${ALPH} do ${IDX}[${ALPH}:sub(${I},${I})]=${I}-1 end
+local ${B}=${JSON.stringify(b64)}
+local ${DEC}={}
+do
+  local ${N}=#${B}
+  local ${I}=1
+  local ${J}=1
+  while ${I}<=${N} do
+    local ${C1}=${IDX}[${B}:sub(${I},${I})] or 0
+    local ${C2}=${IDX}[${B}:sub(${I}+1,${I}+1)] or 0
+    local c3s=${B}:sub(${I}+2,${I}+2)
+    local c4s=${B}:sub(${I}+3,${I}+3)
+    local ${C3}=${IDX}[c3s]
+    local ${C4}=${IDX}[c4s]
+    ${DEC}[${J}]=(${C1}*4+math.floor(${C2}/16))%256; ${J}=${J}+1
+    if c3s~="=" and ${C3} then
+      ${DEC}[${J}]=((${C2}%16)*16+math.floor(${C3}/4))%256; ${J}=${J}+1
+    end
+    if c4s~="=" and ${C4} then
+      ${DEC}[${J}]=(((${C3} or 0)%4)*64+${C4})%256; ${J}=${J}+1
+    end
+    ${I}=${I}+4
+  end
+end
+local ${KEY}=${keyLua}
+local ${OUT}={}
+local ${ROT}=${num(rot0)}
+local ${K}=0
+local ${I}=1
+local ${N}=#${DEC}
+while ${I}<=${N} do
+  local ${OP}=${DEC}[${I}]
+  local ${AR}=${DEC}[${I}+1] or 0
+  ${I}=${I}+2
+  if ${OP}==${num(OP_EMIT)} then
+    local kb=${KEY}[(${K}%${keyLen})+1]
+    local rb=(${K}*${ROT})%256
+    local ${CH}=${XOR}(${XOR}(${AR},kb),rb)
+    ${OUT}[#${OUT}+1]=${SCHAR}(${CH})
+    ${K}=${K}+1
+  elseif ${OP}==${num(OP_SKIP2)} then
+    ${I}=${I}+2
+  elseif ${OP}==${num(OP_XORADV)} then
+    ${ROT}=(${ROT}+${AR})%256
+  end
+end
+local ${SRC}=${TC}(${OUT})
+if not ${LOAD} then return error("[LuaMore] no loader",0) end
+local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore/poly")
+if not ${FN} then return error("[LuaMore Execution Error] "..tostring(${ERR}),0) end
+return ${FN}()
+`;
+}
+
 export function obfuscateLua(source: string): string {
-  return obfuscateLuaWithOptions(source, { dualVm: true, antiTamper: true });
+  return obfuscateLuaWithOptions(source, { dualVm: true, antiTamper: true, polymorphicVM: true });
 }
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
@@ -565,14 +720,20 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
     }
   }
 
+  if (options.polymorphicVM) {
+    wrapped = polymorphicWrap(wrapped);
+  }
+
   const minified = minifyLua(wrapped);
   const stamp = Math.random().toString(36).slice(2, 10);
+  const stageLabel = options.polymorphicVM ? " + Polymorphic Base64/XOR" : "";
   const banner = `--[[
-  LuaMore Obfuscator v12  //  Build ${stamp}  //  ${layers}-Layer VM
-  Protected with dynamic 4-key rotating XOR, RC4 stream cipher, and dual FNV-1a/djb2 integrity verification.
+  LuaMore Obfuscator v13  //  Build ${stamp}  //  ${layers}-Layer VM${stageLabel}
+  Protected with dynamic 4-key rotating XOR, RC4 stream cipher, dual FNV-1a/djb2 integrity, and optional polymorphic Base64/XOR outer stage.
   https://luamore.app
 ]]
 `;
 
   return banner + minified;
 }
+

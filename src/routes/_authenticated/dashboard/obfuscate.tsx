@@ -59,6 +59,7 @@ function ObfuscatePage() {
   const [controlFlowFlattening, setControlFlowFlattening] = useState(true);
   const [isLuauRuntime, setIsLuauRuntime] = useState(true);
   const [loaderVMDepth, setLoaderVMDepth] = useState(2);
+  const [polymorphicVM, setPolymorphicVM] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -111,6 +112,7 @@ function ObfuscatePage() {
           controlFlowFlattening,
           isLuauRuntime,
           loaderVMDepth,
+          polymorphicVM,
         },
         signal: controller.signal,
       });
@@ -245,6 +247,12 @@ function ObfuscatePage() {
                 ],
                 ["isLuauRuntime", isLuauRuntime, setIsLuauRuntime, "Luau runtime (Roblox)"],
                 ["dualVm", dualVm, setDualVm, "Dual VM"],
+                [
+                  "polymorphicVM",
+                  polymorphicVM,
+                  setPolymorphicVM,
+                  "Polymorphic VM (Base64 + bytecode + XOR)",
+                ],
               ] as const
             ).map(([id, val, set, label]) => (
               <div key={id} className="flex items-center justify-between gap-4">

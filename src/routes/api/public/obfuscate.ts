@@ -109,6 +109,7 @@ export const Route = createFileRoute("/api/public/obfuscate")({
             isLuauRuntime: b("isLuauRuntime"),
             dualVm: b("dualVm"),
             loaderVMDepth: depth,
+            polymorphicVM: b("polymorphicVM"),
           });
           void supabaseAdmin
             .from("api_keys")
@@ -121,7 +122,7 @@ export const Route = createFileRoute("/api/public/obfuscate")({
             obfuscated: out,
             bytes_in: source.length,
             bytes_out: out.length,
-            engine: "LuaMore VM v12",
+            engine: "LuaMore VM v13",
             settings: {
               encryptStrings: b("encryptStrings") ?? true,
               proxifyLocals: b("proxifyLocals") ?? true,
@@ -130,6 +131,7 @@ export const Route = createFileRoute("/api/public/obfuscate")({
               controlFlowFlattening: b("controlFlowFlattening") ?? true,
               isLuauRuntime: b("isLuauRuntime") ?? true,
               loaderVMDepth: depth ?? (b("dualVm") === false ? 1 : 2),
+              polymorphicVM: b("polymorphicVM") ?? false,
             },
           });
         } catch (e) {
