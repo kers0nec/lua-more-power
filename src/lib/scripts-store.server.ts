@@ -26,14 +26,18 @@ const DATA_DIR = path.join(process.cwd(), ".data");
 const SCRIPTS_FILE = path.join(DATA_DIR, "scripts-store.json");
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem (e.g. Cloudflare Workers) — no-op.
   }
 }
 
 function loadScripts(): Record<string, StoredScript> {
-  ensureDataDir();
   try {
+    ensureDataDir();
     if (fs.existsSync(SCRIPTS_FILE)) {
       const raw = fs.readFileSync(SCRIPTS_FILE, "utf-8");
       return JSON.parse(raw);
@@ -45,13 +49,14 @@ function loadScripts(): Record<string, StoredScript> {
 }
 
 function saveScripts(scripts: Record<string, StoredScript>) {
-  ensureDataDir();
   try {
+    ensureDataDir();
     fs.writeFileSync(SCRIPTS_FILE, JSON.stringify(scripts, null, 2), "utf-8");
   } catch (err) {
     console.error("Failed to write scripts store:", err);
   }
 }
+
 
 function generatePublicId(): string {
   return "s_" + crypto.randomBytes(6).toString("base64url").slice(0, 8);
