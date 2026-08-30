@@ -115,23 +115,28 @@ function ScriptDetail() {
         </button>
       </div>
       {script && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="badge-blue">public id: {script.public_id}</span>
             <span className="badge-blue">{script.ffa ? "FFA (no key)" : "Key required"}</span>
+            {script.is_protected && <span className="badge-blue">Protected</span>}
           </div>
-          <div>
-            <div className="text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Loadstring {script.ffa ? "(FFA)" : "(set script_key first)"}
-            </div>
-            <code
-              className="block text-xs px-3 py-2 rounded break-all font-mono"
-              style={{ background: "var(--accent-light)", border: "1px solid var(--border)" }}
+          <LoadstringBox script={script} />
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => obfMut.mutate()}
+              disabled={obfMut.isPending}
+              className="btn-primary relative"
             >
-              {script.ffa
-                ? `loadstring(game:HttpGet("https://luamore.app/scripts/hosted/${script.public_id}.lua"))()`
-                : `script_key = "YOUR_KEY_HERE"\nloadstring(game:HttpGet("https://luamore.app/scripts/hosted/${script.public_id}.lua"))()`}
-            </code>
+              {obfMut.isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                  Protecting…
+                </span>
+              ) : (
+                "Protect script"
+              )}
+            </button>
           </div>
         </div>
       )}
