@@ -2,14 +2,10 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-import { autoRegisterDiscordCommands } from "./lib/discord-commands.server";
-
-// Automatically register Discord slash commands when the server starts up (e.g. on Wasmer / GitHub deployment)
-if (typeof process !== "undefined" && process.env) {
-  setTimeout(() => {
-    void autoRegisterDiscordCommands().catch(() => undefined);
-  }, 1000);
-}
+// Note: Discord command auto-registration was previously scheduled here via
+// setTimeout at module scope. Cloudflare Workers disallow I/O in global scope
+// and every request returned HTTP 500. Register commands on demand via
+// POST /api/public/discord/register-commands instead.
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
