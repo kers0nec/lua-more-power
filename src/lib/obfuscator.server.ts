@@ -762,7 +762,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   }
 
   if (options.polymorphicVM) {
-    wrapped = polymorphicWrap(wrapped);
+    wrapped = polymorphicWrap(wrapped, options.context);
   }
 
   const minified = minifyLua(wrapped);
