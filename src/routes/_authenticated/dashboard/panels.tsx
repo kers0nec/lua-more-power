@@ -1,119 +1,467 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
-import { Bot, Check, ChevronDown, RefreshCw, Send, Settings2, Trash2 } from "lucide-react";
-import { createPanel, deletePanel, listPanels, sendPanel, syncDiscordCommands, updatePanel } from "@/lib/panels.functions";
+import { useState } from "react";
+import {
+  createPanel,
+  deletePanel,
+  listPanels,
+  sendPanel,
+  syncDiscordCommands,
+  updatePanel,
+} from "@/lib/panels.functions";
 import { listScripts } from "@/lib/scripts.functions";
 import { getDashboardStats } from "@/lib/dashboard.functions";
-import { DashboardHeader } from "@/components/DashboardHeader";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
-  head: () => ({ meta: [{ title: "Discord Panels — LuaMore" }, { name: "description", content: "Create and deploy LuaMore access panels to Discord channels." }, { property: "og:title", content: "Discord Panels — LuaMore" }, { property: "og:description", content: "Create and deploy LuaMore access panels to Discord channels." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
-  component: PanelsPage,
+  head: () => ({ meta: [{ title: "Panels — LuaMore" }] }),
+  component: Page,
 });
 
-type Panel = {
-  id: string; name: string; description: string | null; script_id: string | null;
-  channel_id: string | null; whitelist_channel_id: string | null;
-  discord_role_id: string | null; admin_role_ids: string[];
-  webhook_url: string | null;
-};
-
-type ScriptOption = { id: string; name: string };
-
-function PanelsPage() {
+function Page() {
   const list = useServerFn(listPanels);
   const create = useServerFn(createPanel);
-  const remove = useServerFn(deletePanel);
+  const del = useServerFn(deletePanel);
   const send = useServerFn(sendPanel);
-  const update = useServerFn(updatePanel);
-  const sync = useServerFn(syncDiscordCommands);
-  const scriptsFn = useServerFn(listScripts);
-  const statsFn = useServerFn(getDashboardStats);
-  const queryClient = useQueryClient();
-  const panels = useQuery({ queryKey: ["panels"], queryFn: () => list() }) as { data?: Panel[]; isLoading: boolean; error: unknown };
-  const scripts = useQuery({ queryKey: ["scripts"], queryFn: () => scriptsFn() }) as { data?: ScriptOption[] };
-  const stats = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => statsFn() });
-  const [showCreate, setShowCreate] = useState(false);
+  const upd = useServerFn(updatePanel);
+  const syncCmds = useServerFn(syncDiscordCommands);
+  const scripts = useServerFn(listScripts);
+  const getStats = useServerFn(getDashboardStats);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["panels"], queryFn: () => list() });
+  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() });
+  const statsQ = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => getStats() });
+  const isOwner = Boolean(statsQ.data?.isOwner);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [scriptId, setScriptId] = useState("");
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [channelId, setChannelId] = useState("");
   const [whitelistChannelId, setWhitelistChannelId] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<string>("");
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ["panels"] });
-  const createMutation = useMutation({
-    mutationFn: () => create({ data: { name, description: description || undefined, scriptId: scriptId || undefined, channelId: channelId || undefined, whitelistChannelId: whitelistChannelId || undefined } }),
-    onSuccess: () => { setName(""); setDescription(""); setScriptId(""); setChannelId(""); setWhitelistChannelId(""); setShowCreate(false); setStatus("✓ Panel created"); refresh(); },
-    onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not create panel"}`),
+  const syncMut = useMutation({
+    mutationFn: () => syncCmds(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        setStatus(
+          `✓ Auto-registered ${res.count ?? 5} slash commands with Discord (/help, /login, /setup, /whitelist, /resethwid)`,
+        );
+      } else {
+        setStatus(`✗ ${res.message}`);
+      }
+    },
+    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to sync commands"}`),
   });
-  const deleteMutation = useMutation({ mutationFn: (id: string) => remove({ data: { id } }), onSuccess: () => { setStatus("✓ Panel deleted"); refresh(); }, onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not delete panel"}`) });
-  const syncMutation = useMutation({ mutationFn: () => sync(), onSuccess: (result) => setStatus(result.ok ? `✓ Synced ${result.count ?? 0} Discord commands` : `✗ ${result.message}`), onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not sync commands"}`) });
 
-  return <div className="app-page">
-    <DashboardHeader eyebrow="Discord integration" title="Control panels" description="Configure your buyer experience and deploy it directly to a server channel." action={<button className="btn-primary" onClick={() => setShowCreate((value) => !value)}><Bot size={15} /> New panel</button>} />
+  const createMut = useMutation({
+    mutationFn: () =>
+      create({
+        data: {
+          name,
+          description: description || undefined,
+          scriptId: scriptId || undefined,
+          webhookUrl: webhookUrl || undefined,
+          channelId: channelId || undefined,
+          whitelistChannelId: whitelistChannelId || undefined,
+        },
+      }),
+    onSuccess: () => {
+      setName("");
+      setDescription("");
+      setScriptId("");
+      setWebhookUrl("");
+      setChannelId("");
+      setWhitelistChannelId("");
+      qc.invalidateQueries({ queryKey: ["panels"] });
+    },
+  });
 
-    <div className="mt-8 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-3">
-      <Metric label="Configured panels" value={String(panels.data?.length ?? 0)} />
-      <Metric label="Ready to send" value={String((panels.data ?? []).filter((panel) => panel.channel_id && panel.script_id).length)} />
-      <Metric label="Delivery" value="Discord bot" />
+  const updMut = useMutation({
+    mutationFn: (v: {
+      id: string;
+      roleId?: string;
+      adminRoleIds?: string;
+      channelId?: string;
+      whitelistChannelId?: string;
+      webhookUrl?: string;
+    }) =>
+      upd({
+        data: {
+          id: v.id,
+          roleId: v.roleId !== undefined ? v.roleId.trim() || null : undefined,
+          adminRoleIds:
+            v.adminRoleIds !== undefined
+              ? v.adminRoleIds.split(/[\s,]+/).filter(Boolean)
+              : undefined,
+          channelId: v.channelId !== undefined ? v.channelId.trim() || null : undefined,
+          whitelistChannelId:
+            v.whitelistChannelId !== undefined ? v.whitelistChannelId.trim() || null : undefined,
+          webhookUrl: v.webhookUrl !== undefined ? v.webhookUrl.trim() || null : undefined,
+        },
+      }),
+    onSuccess: () => {
+      setStatus("✓ Panel settings saved");
+      qc.invalidateQueries({ queryKey: ["panels"] });
+    },
+    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to update panel"}`),
+  });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => del({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["panels"] }),
+  });
+  const sendMut = useMutation({
+    mutationFn: (id: string) => send({ data: { id } }),
+    onSuccess: (res) => {
+      setStatus(
+        res.via === "bot"
+          ? "✓ Panel sent to Discord channel via Bot!"
+          : "✓ Panel sent to Discord channel via Webhook!",
+      );
+    },
+    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to send panel"}`),
+  });
+
+  return (
+    <div className="p-8 max-w-6xl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Discord Panels</h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
+            Create control panels with redeem / script / role / HWID / stats buttons and post them
+            straight to a Discord channel.
+          </p>
+        </div>
+        {isOwner && (
+          <button
+            onClick={() => syncMut.mutate()}
+            disabled={syncMut.isPending}
+            className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
+          >
+            <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Auto-registration info badge (Owner Only) */}
+      {isOwner && (
+        <div
+          className="card-blue p-4 mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+          style={{ borderColor: "rgba(59, 130, 246, 0.3)", background: "rgba(6, 14, 29, 0.8)" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold text-white">Slash Commands Auto-Registered:</span>
+            <span className="font-mono" style={{ color: "var(--primary)" }}>
+              /help, /login, /setup, /whitelist, /resethwid
+            </span>
+          </div>
+          <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            Authorized Owner Control Active.
+          </span>
+        </div>
+      )}
+
+      <div className="card-blue p-5 mt-4 grid gap-3 md:grid-cols-2 items-end">
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            NAME
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="input-blue mt-1"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            SCRIPT
+          </label>
+          <select
+            value={scriptId}
+            onChange={(e) => setScriptId(e.target.value)}
+            className="input-blue mt-1"
+          >
+            <option value="">None</option>
+            {(scriptsQ.data ?? []).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            DESCRIPTION
+          </label>
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="input-blue mt-1"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            DISCORD CHANNEL ID
+          </label>
+          <input
+            value={channelId}
+            onChange={(e) => setChannelId(e.target.value)}
+            className="input-blue mt-1"
+            placeholder="1234567890123456789"
+          />
+          <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+            Recommended — the bot posts here with working buttons.
+          </p>
+        </div>
+        <div>
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            WHITELIST ANNOUNCE CHANNEL ID
+          </label>
+          <input
+            value={whitelistChannelId}
+            onChange={(e) => setWhitelistChannelId(e.target.value)}
+            className="input-blue mt-1"
+            placeholder="optional"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            DISCORD WEBHOOK URL (FALLBACK)
+          </label>
+          <input
+            value={webhookUrl}
+            onChange={(e) => setWebhookUrl(e.target.value)}
+            className="input-blue mt-1"
+            placeholder="https://discord.com/api/webhooks/..."
+          />
+        </div>
+        <button
+          onClick={() => name && createMut.mutate()}
+          disabled={createMut.isPending}
+          className="btn-primary md:col-start-2"
+        >
+          Create panel
+        </button>
+      </div>
+
+      {status && (
+        <div
+          className="mt-4 text-sm rounded-md px-3 py-2"
+          style={{
+            background: status.startsWith("✓") ? "rgba(52,211,153,0.12)" : "rgba(244,63,94,0.12)",
+            color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
+          }}
+        >
+          {status}
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {(q.data ?? []).map((p) => (
+          <div key={p.id} className="card-blue p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">{p.name} Control Panel</h3>
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  {p.description || "—"}
+                </p>
+                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  {p.channel_id
+                    ? `Channel: ${p.channel_id}`
+                    : p.webhook_url
+                      ? "Webhook only"
+                      : "No destination set"}
+                </p>
+              </div>
+              <button
+                onClick={() => confirm("Delete panel?") && delMut.mutate(p.id)}
+                className="text-xs text-[color:var(--destructive)] hover:underline"
+              >
+                Delete
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div
+                className="text-center rounded-md py-2 text-white"
+                style={{ background: "#248046" }}
+              >
+                🔑 Redeem Key
+              </div>
+              <div
+                className="text-center rounded-md py-2 text-white"
+                style={{ background: "#5865f2" }}
+              >
+                🧵 Get Script
+              </div>
+              <div
+                className="text-center rounded-md py-2 text-white"
+                style={{ background: "#5865f2" }}
+              >
+                👤 Get Role
+              </div>
+              <div
+                className="text-center rounded-md py-2"
+                style={{ background: "var(--muted)", color: "var(--foreground)" }}
+              >
+                ⚙️ Reset HWID
+              </div>
+              <div
+                className="text-center rounded-md py-2 col-span-2"
+                style={{ background: "var(--muted)", color: "var(--foreground)" }}
+              >
+                📊 Get Stats
+              </div>
+            </div>
+            <PanelSettingsConfig
+              panel={p}
+              onSave={(data) => updMut.mutate({ id: p.id, ...data })}
+              saving={updMut.isPending}
+            />
+
+            <button
+              onClick={() => sendMut.mutate(p.id)}
+              disabled={sendMut.isPending || (!p.channel_id && !p.webhook_url)}
+              className="btn-primary w-full mt-4 text-sm"
+            >
+              {p.channel_id
+                ? "Send to Discord (Bot Channel)"
+                : p.webhook_url
+                  ? "Send to Discord (Webhook)"
+                  : "No channel or webhook set"}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
-
-    {stats.data?.isOwner && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border border-border bg-card px-4 py-3 text-sm"><span className="text-muted-foreground">Slash-command registration is available to the owner account.</span><button className="btn-outline text-xs" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}><RefreshCw size={14} className={syncMutation.isPending ? "animate-spin" : ""} /> Sync commands</button></div>}
-
-    {showCreate && <form className="mt-5 grid gap-4 border border-border bg-card p-5 md:grid-cols-2" onSubmit={(event) => { event.preventDefault(); createMutation.mutate(); }}>
-      <Field label="Panel name"><input className="input-blue" value={name} onChange={(event) => setName(event.target.value)} placeholder="Premium access" required /></Field>
-      <Field label="Attached script"><select className="input-blue" value={scriptId} onChange={(event) => setScriptId(event.target.value)} required><option value="">Choose a script</option>{(scripts.data ?? []).map((script) => <option key={script.id} value={script.id}>{script.name}</option>)}</select></Field>
-      <div className="md:col-span-2"><Field label="Description"><textarea className="input-blue min-h-24 resize-y" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What buyers see in Discord" /></Field></div>
-      <Field label="Discord channel ID"><input className="input-blue font-mono" value={channelId} onChange={(event) => setChannelId(event.target.value)} placeholder="1234567890123456789" required inputMode="numeric" /></Field>
-      <Field label="Whitelist log channel"><input className="input-blue font-mono" value={whitelistChannelId} onChange={(event) => setWhitelistChannelId(event.target.value)} placeholder="Optional" inputMode="numeric" /></Field>
-      <div className="md:col-span-2 flex justify-end gap-2"><button type="button" className="btn-ghost" onClick={() => setShowCreate(false)}>Cancel</button><button className="btn-primary" disabled={createMutation.isPending}>{createMutation.isPending ? "Creating…" : "Create panel"}</button></div>
-    </form>}
-
-    {status && <div className={`mt-5 border px-4 py-3 text-sm ${status.startsWith("✓") ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}`}>{status}</div>}
-
-    <div className="mt-8 border-y border-border">
-      <div className="grid grid-cols-[1fr_auto] items-center border-b border-border py-3"><span className="eyebrow">Your panels</span><span className="font-mono text-xs text-muted-foreground">{panels.data?.length ?? 0} total</span></div>
-      {panels.isLoading && <div className="py-14 text-center text-sm text-muted-foreground">Loading panels…</div>}
-      {!panels.isLoading && (panels.data ?? []).length === 0 && <div className="py-14 text-center"><Bot className="mx-auto text-muted-foreground" size={24} /><p className="mt-3 text-sm text-muted-foreground">No panels yet. Create one to start delivering access in Discord.</p></div>}
-      <div className="divide-y divide-border">{(panels.data ?? []).map((panel) => <PanelRow key={panel.id} panel={panel} scripts={scripts.data ?? []} updatePanelFn={update} sendPanelFn={send} onRefresh={refresh} onDelete={() => confirm(`Delete ${panel.name}?`) && deleteMutation.mutate(panel.id)} setStatus={setStatus} />)}</div>
-    </div>
-  </div>;
+  );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="bg-card p-5"><div className="font-display text-2xl">{value}</div><div className="eyebrow mt-2">{label}</div></div>;
-}
+type PanelConfigProps = {
+  discord_role_id?: string | null;
+  admin_role_ids?: string[] | null;
+  channel_id?: string | null;
+  whitelist_channel_id?: string | null;
+  webhook_url?: string | null;
+};
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block"><span className="eyebrow mb-2 block">{label}</span>{children}</label>;
-}
-
-function PanelRow({ panel, scripts, updatePanelFn, sendPanelFn, onRefresh, onDelete, setStatus }: { panel: Panel; scripts: ScriptOption[]; updatePanelFn: ReturnType<typeof useServerFn<typeof updatePanel>>; sendPanelFn: ReturnType<typeof useServerFn<typeof sendPanel>>; onRefresh: () => void; onDelete: () => void; setStatus: (value: string) => void }) {
+function PanelSettingsConfig({
+  panel,
+  onSave,
+  saving,
+}: {
+  panel: PanelConfigProps;
+  onSave: (data: {
+    roleId: string;
+    adminRoleIds: string;
+    channelId: string;
+    whitelistChannelId: string;
+    webhookUrl: string;
+  }) => void;
+  saving: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const initial = () => ({ name: panel.name, description: panel.description ?? "", scriptId: panel.script_id ?? "", channelId: panel.channel_id ?? "", whitelistChannelId: panel.whitelist_channel_id ?? "", roleId: panel.discord_role_id ?? "", adminRoleIds: (panel.admin_role_ids ?? []).join(", "), webhookUrl: panel.webhook_url ?? "" });
-  const [form, setForm] = useState(initial);
-  useEffect(() => setForm(initial()), [panel]);
-  const saveMutation = useMutation({ mutationFn: () => updatePanelFn({ data: { id: panel.id, name: form.name, description: form.description || null, scriptId: form.scriptId || null, channelId: form.channelId || null, whitelistChannelId: form.whitelistChannelId || null, roleId: form.roleId || null, adminRoleIds: form.adminRoleIds.split(/[\s,]+/).filter(Boolean), webhookUrl: form.webhookUrl || null } }), onSuccess: () => { setStatus("✓ Panel settings saved"); onRefresh(); setOpen(false); }, onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not save panel"}`) });
-  const sendMutation = useMutation({ mutationFn: () => sendPanelFn({ data: { id: panel.id } }), onSuccess: (result) => setStatus(`✓ Panel sent${result.channelName ? ` to #${result.channelName}` : ""}${result.messageId ? ` · message ${result.messageId}` : ""}`), onError: (error) => setStatus(`✗ ${error instanceof Error ? error.message : "Could not send panel"}`) });
-  const ready = Boolean(panel.channel_id && panel.script_id);
-  return <article className="py-5">
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-lg">{panel.name}</h2><span className={ready ? "badge-blue" : "eyebrow"}>{ready ? "Ready" : "Needs setup"}</span>{panel.webhook_url && <span className="eyebrow">webhook</span>}</div><p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{panel.description || "No description"}</p><div className="mt-2 flex flex-wrap gap-3 font-mono text-xs text-muted-foreground"><span>{panel.channel_id ? `channel ${panel.channel_id}` : "no channel"}</span><span>{panel.script_id ? "script attached" : "no script"}</span></div></div>
-      <div className="flex shrink-0 flex-wrap gap-2"><button className="btn-outline text-xs" onClick={() => setOpen((value) => !value)}><Settings2 size={14} /> Edit <ChevronDown size={13} className={open ? "rotate-180" : ""} /></button><button className="btn-primary text-xs" onClick={() => sendMutation.mutate()} disabled={!ready || sendMutation.isPending}><Send size={14} /> {sendMutation.isPending ? "Sending…" : "Send to channel"}</button><button className="btn-ghost px-2 text-destructive" onClick={onDelete} aria-label={`Delete ${panel.name}`} title="Delete panel"><Trash2 size={15} /></button></div>
+  const [buyer, setBuyer] = useState<string>(panel.discord_role_id ?? "");
+  const [admins, setAdmins] = useState<string>((panel.admin_role_ids ?? []).join(", "));
+  const [channel, setChannel] = useState<string>(panel.channel_id ?? "");
+  const [wlChannel, setWlChannel] = useState<string>(panel.whitelist_channel_id ?? "");
+  const [webhook, setWebhook] = useState<string>(panel.webhook_url ?? "");
+
+  return (
+    <div className="mt-4 rounded-md p-3" style={{ background: "var(--muted)" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-xs font-semibold text-left"
+        style={{ color: "var(--foreground)" }}
+      >
+        <span>⚙️ Channel, Webhook & Role Settings</span>
+        <span className="text-[11px]" style={{ color: "var(--primary)" }}>
+          {open ? "Hide ▲" : "Configure ▼"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-3 pt-2 border-t" style={{ borderColor: "var(--border)" }}>
+          <div>
+            <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              DISCORD CHANNEL ID
+            </label>
+            <input
+              value={channel}
+              onChange={(e) => setChannel(e.target.value)}
+              className="input-blue mt-1"
+              placeholder="e.g. 1234567890123456789"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              DISCORD WEBHOOK URL (FALLBACK / DIRECT POST)
+            </label>
+            <input
+              value={webhook}
+              onChange={(e) => setWebhook(e.target.value)}
+              className="input-blue mt-1"
+              placeholder="https://discord.com/api/webhooks/..."
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              WHITELIST ANNOUNCE CHANNEL ID
+            </label>
+            <input
+              value={wlChannel}
+              onChange={(e) => setWlChannel(e.target.value)}
+              className="input-blue mt-1"
+              placeholder="optional"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              BUYER ROLE ID
+            </label>
+            <input
+              value={buyer}
+              onChange={(e) => setBuyer(e.target.value)}
+              className="input-blue mt-1"
+              placeholder="Given on redeem / whitelist"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+              ADMIN ROLE IDS
+            </label>
+            <input
+              value={admins}
+              onChange={(e) => setAdmins(e.target.value)}
+              className="input-blue mt-1"
+              placeholder="Comma separated role IDs"
+            />
+          </div>
+
+          <button
+            onClick={() =>
+              onSave({
+                roleId: buyer,
+                adminRoleIds: admins,
+                channelId: channel,
+                whitelistChannelId: wlChannel,
+                webhookUrl: webhook,
+              })
+            }
+            disabled={saving}
+            className="btn-outline w-full text-xs py-2 mt-2"
+          >
+            {saving ? "Saving..." : "Save Panel Configuration"}
+          </button>
+        </div>
+      )}
     </div>
-    {open && <div className="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
-      <Field label="Panel name"><input className="input-blue" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></Field>
-      <Field label="Attached script"><select className="input-blue" value={form.scriptId} onChange={(event) => setForm({ ...form, scriptId: event.target.value })}><option value="">Choose a script</option>{scripts.map((script) => <option key={script.id} value={script.id}>{script.name}</option>)}</select></Field>
-      <div className="md:col-span-2"><Field label="Description"><textarea className="input-blue min-h-20 resize-y" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></Field></div>
-      <Field label="Discord channel ID"><input className="input-blue font-mono" value={form.channelId} onChange={(event) => setForm({ ...form, channelId: event.target.value })} inputMode="numeric" /></Field>
-      <Field label="Whitelist log channel"><input className="input-blue font-mono" value={form.whitelistChannelId} onChange={(event) => setForm({ ...form, whitelistChannelId: event.target.value })} inputMode="numeric" /></Field>
-      <Field label="Buyer role ID"><input className="input-blue font-mono" value={form.roleId} onChange={(event) => setForm({ ...form, roleId: event.target.value })} inputMode="numeric" /></Field>
-      <Field label="Admin role IDs"><input className="input-blue font-mono" value={form.adminRoleIds} onChange={(event) => setForm({ ...form, adminRoleIds: event.target.value })} placeholder="Comma separated" /></Field>
-      <div className="md:col-span-2"><Field label="Execution webhook URL"><input className="input-blue font-mono" value={form.webhookUrl} onChange={(event) => setForm({ ...form, webhookUrl: event.target.value })} placeholder="https://discord.com/api/webhooks/…" /></Field><p className="mt-1 text-xs text-muted-foreground">Every execution of this panel's script POSTs an embed with the Roblox user, key, HWID and place to this URL.</p></div>
-      <div className="md:col-span-2 flex justify-end"><button className="btn-primary" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}><Check size={14} /> {saveMutation.isPending ? "Saving…" : "Save panel"}</button></div>
-    </div>}
-  </article>;
+  );
 }

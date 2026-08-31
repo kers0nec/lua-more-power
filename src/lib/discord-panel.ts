@@ -1,49 +1,58 @@
 // Shared builders for the LuaMore Discord control panel message.
+// Used by both the website (panels.functions.ts) and the Discord
+// interactions endpoint so the embed always looks identical.
 
 export type PanelEmbedInput = {
-  id: string;
+  id?: string;
   name: string;
   description?: string | null;
   sentBy?: string | null;
-  sentByAvatarUrl?: string | null;
-  projectName?: string | null;
-  access?: string | null;
+  avatarUrl?: string | null;
+  scriptName?: string | null;
 };
 
-export const PANEL_ACCENT = 0x1e40af;
+export const PANEL_ACCENT = 0x00aaff;
 
 export function buildPanelEmbed({
   id,
   name,
   description,
   sentBy,
-  sentByAvatarUrl,
-  projectName,
-  access,
+  avatarUrl,
+  scriptName,
 }: PanelEmbedInput) {
   void id;
-  const scriptName = projectName || name;
+  const displayName = scriptName || name;
   const body =
     description?.trim() ||
-    `This control panel is for **${scriptName}**.\n\nUse the buttons below to redeem your key, get the script, claim your role, reset your HWID, or view stats.`;
+    `This control panel is for the project: **${displayName}**\n\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role.`;
 
-  const embed: Record<string, unknown> = {
-    title: scriptName,
+  return {
+    title: `${displayName} Control Panel`,
     description: body,
     color: PANEL_ACCENT,
+    thumbnail: avatarUrl ? { url: avatarUrl } : undefined,
+    author: sentBy
+      ? {
+          name: sentBy,
+          icon_url: avatarUrl || undefined,
+        }
+      : undefined,
     fields: [
-      { name: "Project", value: scriptName, inline: true },
-      { name: "Access", value: access || "Key required", inline: true },
+      {
+        name: "📜 Script",
+        value: `**${displayName}**`,
+        inline: true,
+      },
+      {
+        name: "🔒 Protection",
+        value: "`Polymorphic VM + LZ4`",
+        inline: true,
+      },
     ],
-    footer: { text: sentBy ? `Sent by ${sentBy} • LuaMore` : "LuaMore" },
+    footer: { text: sentBy ? `Sent by ${sentBy} • LuaMore` : "LuaMore Control Panel" },
     timestamp: new Date().toISOString(),
   };
-  if (sentBy) {
-    embed.author = sentByAvatarUrl
-      ? { name: sentBy, icon_url: sentByAvatarUrl }
-      : { name: sentBy };
-  }
-  return embed;
 }
 
 export function buildPanelComponents(panelId: string) {
@@ -51,43 +60,96 @@ export function buildPanelComponents(panelId: string) {
     {
       type: 1,
       components: [
-        { type: 2, style: 3, label: "Redeem Key", emoji: { name: "🔑" }, custom_id: `lm:redeem:${panelId}` },
-        { type: 2, style: 1, label: "Get Script", emoji: { name: "🧵" }, custom_id: `lm:script:${panelId}` },
+        {
+          type: 2,
+          style: 3,
+          label: "Redeem Key",
+          emoji: { name: "🔑" },
+          custom_id: `lm:redeem:${panelId}`,
+        },
+        {
+          type: 2,
+          style: 1,
+          label: "Get Script",
+          emoji: { name: "🧵" },
+          custom_id: `lm:script:${panelId}`,
+        },
       ],
     },
     {
       type: 1,
       components: [
-        { type: 2, style: 1, label: "Get Role", emoji: { name: "👤" }, custom_id: `lm:role:${panelId}` },
-        { type: 2, style: 2, label: "Reset HWID", emoji: { name: "⚙️" }, custom_id: `lm:hwid:${panelId}` },
+        {
+          type: 2,
+          style: 1,
+          label: "Get Role",
+          emoji: { name: "👤" },
+          custom_id: `lm:role:${panelId}`,
+        },
+        {
+          type: 2,
+          style: 2,
+          label: "Reset HWID",
+          emoji: { name: "⚙️" },
+          custom_id: `lm:hwid:${panelId}`,
+        },
       ],
     },
     {
       type: 1,
       components: [
-        { type: 2, style: 2, label: "Get Stats", emoji: { name: "📊" }, custom_id: `lm:stats:${panelId}` },
+        {
+          type: 2,
+          style: 2,
+          label: "Get Stats",
+          emoji: { name: "📊" },
+          custom_id: `lm:stats:${panelId}`,
+        },
       ],
     },
   ];
 }
 
-// Legacy generic whitelist message (kept for backwards compat with modal redeem flow).
-export function buildWhitelistMessage(discordId: string, channelId?: string | null) {
-  const where = channelId ? `<#${channelId}>` : "the control panel channel";
-  return `<@${discordId}> You have been whitelisted!\nYou can access the script via this message --> ${where}`;
+export function buildWhitelistMessage(
+  discordId: string,
+  targetLinkOrChannel?:
+    | { guildId?: string; channelId?: string; messageId?: string; customUrl?: string }
+    | string
+    | null,
+) {
+  let where = "the control panel channel";
+  if (typeof targetLinkOrChannel === "string") {
+    where = targetLinkOrChannel.startsWith("http")
+      ? targetLinkOrChannel
+      : `<#${targetLinkOrChannel}>`;
+  } else if (targetLinkOrChannel) {
+    if (targetLinkOrChannel.customUrl) {
+      where = targetLinkOrChannel.customUrl;
+    } else if (
+      targetLinkOrChannel.guildId &&
+      targetLinkOrChannel.channelId &&
+      targetLinkOrChannel.messageId
+    ) {
+      where = `https://discord.com/channels/${targetLinkOrChannel.guildId}/${targetLinkOrChannel.channelId}/${targetLinkOrChannel.messageId}`;
+    } else if (targetLinkOrChannel.channelId) {
+      where = `<#${targetLinkOrChannel.channelId}>`;
+    }
+  }
+
+  return `« <@${discordId}> » You have been whitelisted!\nYou can access the script via this message --> ${where}`;
 }
 
-// New: exact format the owner requested — links to the specific panel message.
-export function buildWhitelistDmMessage(discordId: string, messageLink: string) {
-  return `« <@${discordId}> » You have been whitelisted!\nYou can access the script via this message --> ${messageLink}`;
-}
-
+// Loader snippet shown in two formats: a fenced block for PC, an inline
+// code span for mobile (mobile Discord can't copy from fenced blocks).
 export function buildLoaderMessage(loader: string) {
   return ["**PC**", "```lua", loader, "```", "**Mobile**", `\`${loader}\``].join("\n");
 }
 
+// "20s" | "35m" | "2h" | "1d" | "7d" | "30d" → milliseconds. Empty = forever.
 export function parseDuration(input?: string | null): number | null {
-  const s = String(input ?? "").trim().toLowerCase();
+  const s = String(input ?? "")
+    .trim()
+    .toLowerCase();
   if (!s) return null;
   const m = s.match(/^(\d+)\s*(s|m|h|d|w)?$/);
   if (!m) return null;
@@ -100,7 +162,10 @@ export function parseDuration(input?: string | null): number | null {
 export function formatDuration(ms: number | null) {
   if (!ms) return "forever";
   const units: [number, string][] = [
-    [86_400_000, "d"], [3_600_000, "h"], [60_000, "m"], [1000, "s"],
+    [86_400_000, "d"],
+    [3_600_000, "h"],
+    [60_000, "m"],
+    [1000, "s"],
   ];
   for (const [size, label] of units) if (ms >= size) return `${Math.round(ms / size)}${label}`;
   return `${ms}ms`;

@@ -1,11 +1,84 @@
-// LuaMore Obfuscation Engine v12
-// Quad-layer encryption: RLE Compression + 4-Key Dynamic Rotating XOR + RC4 Stream Cipher + Keyed PRNG Permutation
-// Dual-integrity: FNV-1a 32-bit + djb2 32-bit checksums
-// Execution VM: Flattened state-machine dispatcher with randomized opcodes
-// Compatible with all Roblox executors (Synapse, Wave, KRNL, Solara, Fluxus, Delta, Codex, Arceus X, Hydrogen, Celery, Swift) and standard Lua 5.1/LuaJIT.
+// LuaMore Obfuscation Engine v14
+// Pipeline Architecture:
+// 1. Polymorphic VM Bytecode Compilation & Flattening with Anti-Hook and Anti-Tamper Shield
+// 2. High-Ratio LZ4 Block Compression
+// 3. Strengthened Multi-Round Derived XOR Keystream (Random Build Key + Public ID + Mode) + RC4 Stream Cipher
+// 4. Dual-Integrity Checksums (FNV-1a 32-bit + djb2 32-bit)
+// 5. Base64 Chunk Encoding
+//
+// Runtime Execution Flow in Lua:
+// Base64 Decode -> Integrity Check -> Derived XOR & RC4 Decrypt -> LZ4 Decompress -> VM Bytecode & Polymorphic Interpreter Execute.
+// Fully compatible with all Roblox executors (Synapse, Wave, KRNL, Solara, Fluxus, Delta, Codex, Arceus X, Swift) and standard Lua 5.1/LuaJIT.
 
-const TAMPER_MSG = "<_> yo dumbass js tried to deobfuscate luamore what a dumbass";
+const TAMPER_BANNER = `
+                    Protected using Lurape v17.6 https://luraph-v17.onrender.com/
+
+
+                                                                               /       /     / -  -   - /  -
+                         \`…’°„¡(×7ìljc¤%%Icl<†?)!¯“°:‚ˆ·¨´\`\`\`\`\`\`                   / no good env logger?  /
+                     \`·/9ÕÅþÐmdFÝ9µFÝ9ÖœËÊŒÊŒÊÆÆÊŒØØMËWæþÄÀœŠã$åä¤·…¸…\`\`        /    /   /  lol             /
+                    \`—ÚNO|‚·´\`´³0ÔNŽŸî¬^”¯¡¡¡¯^¯¡«¿z&äëãAqœËÊÈRÅ#QÄÜ½›´\`       / \\      /   \\    /  |   /
+                   …4ÑZ‘\`\`\`¨›wÁØÙi¿úŠØMÁpbŸÞANÉŒØÃNg€ÜÞäTasöaÝèÐBŒÊMØmÔŒ#C˜´\` / \\                     
+                 \`;šÉL´´\`\`fÂðƒõWŠµ[”¬>%ÏùçÍ%7¯¨\`´…‚‘‘’‚‚;;;››:’˜¸·´¨…¨…j¶Â8*…\`/                     
+                 ;eBJ¨´…»àÀõ=áŽô(Yäes*“²‹‚…¨’C¤¨\`\`´\`    ¨t6äZàSeUäÓÎí:¨´\` ;õ#e›´\`                   
+                ’üÅ@¸  ¿Tc‹ŸXütdñõ¾SU4ÿäü56ŸU™Òe´\`\`  \`\`\`\`ˆ;j·\` \`\`\`´˜rÒö˜\`\`\`·C#L´\`                   
+                óQ™‚\` \`´¨|ð3/9KxLŸ‘¨´´´=PÒÞï…\` \`\`\`\`‹ã¬·ˆ—sUñbÒè¶ÅÜ2(’\`ÖK˜                    
+               zÃk’´\`  \`\`¨¨—ë®³¨¨::¨¨¹*[¬’¨¡ñ3:…!å$¡´    ^ä*éñ=„J/·¨<*’›³ïÿéïTË*\`                   
+              îÂ8ˆ¨´    \`˜ë0lÓZ¿…·ÏBÆÆÆÆÑgˆ´·…‚pûEÓ:\`   ¸Án…\`\`\`’°´´…‘‚´¨P–‚óñBE³\`                  
+           ·”LEœo¤I%î÷\`·zÁR¿}î’·´¡¶ÆÆÆÆÆÆØ4´‚¥õ¸…µÆ°\`¨…°Õ!¤‘\` …¤ŽÑÑÆÑÿ—·\` ¨öãéBS³´               
+         \`¦dÊþáÏ—:ªit‡t¬ˆ‚7Qü…´´›;…cÙWŒÆØÀü·;7y‰ƒ©AÙ‘…ƒQÊÊ—¨°¦ˆ\`²šÆÆÑÆÆÊJ…·³j™þ€5âÛ†              
+        ´IBÈž°·|ÒÂNý9ñÀÂÜú*ïdš(Iž@[¨·…›º…·ˆ‚¸”…jßñ“\`\`´³CÅ€’¨´´‹¨³sñŠÔÝj‘´1¿ñœÎ)ygæ”\`             
+       ´cRBé’…±ÂŠ7‚¨›1‚—±ÐŒd;+DœÞ¢º¬ýö§j¬ii†íh¶Àý{¸\`   \`´mMgµ4†—^¿‚°…t™t˜´;©KA/>ä„ÇØÝ´             
+       ªÿÛf9´¤Àd˜´´´žØš’¨·ˆ˜¨¨¨…J$#ÃBBBBBNêû>‹¸´´\`\`    ´pB)²VÕ$ó*5?²ª¿SŠAL!¯}°’Ÿln#ø·             
+       }A©wá:ûM•¨´ˆ—ÐØÉŒG[’¨¨´´´\`´¨´\`\`  \`’³‘>Cn¦·¨\`      ªpÉK%ˆ´\`\`\`\`  \`\`·øåˆ´\`\`:ÒrúÈÒ´             
+       !$Þòè¹ZÉ^ipØŒŒó…*ûÀÑêC!˜´´´´¦ìî¼3õÒžþÛ§Î¿¨´\`      \`¨ªÿÑW[¨\`\`\`   \`…ŽE«¨¨~ha+éŒ%\`             
+       ˆõQ™G’5ËÍ‚¬¯¯Ðâ¨´¨¦eKŒÉ¥Ï(‚·¨´  \`…¹þõ…³ÚÄœây‹\`    \`°ŸMÂBzn[˜   ´@ÈÑp*‚c;¡ûÃÚ…              
+       \`!ßÅRj~áø¨´\`¨%Æœs‘´\`\`/¶m¾AMÃãhò“…\`\`‚û#¼ªK„;½hí´\`\`\`¨^8ËC÷?¨˜×Ì™’¸sþÑÑØfìU®38Ô«             
+        \`ìÂÐUÙ†‚¨\` \`‘QÆÆBd¯\`¹äÁ°´¸º/ÌÔŒÉÉEÔbl¡‹¨¨¨´\`´´´>ÛÐœŒHƒ¸¨´´´´´…tqÉäŽÊÊb¦…‚äKj´             
+         \`‹éÃ0³–·\`  \`ŸÆÆÆÆÑÃãAØQ¿·\`\`\`´¸;JÅÆÑÊÈBgŸ>‹…´\`´‚–º‹…´´\`·:1ÓNØNÁ4:rÑÑR†¨3B0·\`             
+           ¨îÁ$\`\`\`\`¨jÆÆÆÆÆÆÆÆÆÆÆQf!‚\`\`\`+Ä£´´¨’^LdÀØÊÃMØÊÆÆÆÆŒØÃÄœÂ‡··ƒÔ*·XÑØƒ…¾q*\`\`             
+           \`\`+ßN•\`\` \`—MÆÆÆÆÆÆÆÆÆÆÆÆÆÑÅhCâÃ¨´\`\`  \`´}Ûñ··¨·…Ç¶²…·´\`…§¾¨¨îEŸúÉÑÑ3ˆVg7\`\`             
+             ´„ÕK¿   ‘¶ÑÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÑøOç@<~ˆ´)Šé…¨\`\`\`¿é›¨¨·°jéŒñ8ÈÆÆÆÆÑÑõ‚@Ží\`\`             
+               –Hð| \`…YÑÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÑØŒÆÆÃNÁÁæŒÆÃæÈÊÆÆÆÆÆÆÆÆÆÆÆÆÆš›¤KI\`               
+                (#å^\`\`[æÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÙìÀz´\`              
+                \`*ÔÀ¦ ‘ÎÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÛ²¿E½                
+                \`\`›žÃá–!ÜÃ>fÀÊÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆþ”*þs\`               
+                  \`\`¡$ÁV7AÃ>˜jãÑÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÁª/ÁÌ\`               
+                     …JXÙ7d#Ï˜¹#êü¶ØÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ#^—æw´               
+                     \`¨„FB™óÅ¥ÌW¥¨…¹74RŒÑÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÁªºÁü¨               
+                       \`…‰ÊÜ*ÿÊÃ¨´´´´´…uQÊÂÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÐ³Nõ…               
+                          –Eêv<þÁz¸´\`\`\`´/EU…¨;1ÜQMÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÑÃÂb¹°E4…               
+                          \`°UB£‚íÔês;¨´’DN…´\`\`\`\`´˜4ËÁ3á¶ÔÐHÑÑØØŒÑÑÑŒÃÂÑÐhÁê1ß©˜”#&¨               
+                           \`¸IÐÐi˜†ä#ZJSÃj\`\`      IÀ¥´´¨¨´‹ÃÒ—ˆ’íQè¦˜Dq=¨€ñU8«\`t#C\`               
+                             \`›2Âý†…¹%åËØÓn“¨´¨\` \`sæd´\`\`\`\`tØµ¸´´íþ%…¹Qš(s€ØG{·:œp¯                
+                              \`\`¹üÅÔC˜·›†9ÃØQŽ¶¥TT€ÑÃ…´´¨…Äœí¨´ˆùH¥åNŒŒÑÑN‰’´‚dÃl\`               
+                                \`\`·<ÕÊËð¢;¨·›*YdÄMÑÑÆÑÑÑÆÆÑŒŒËægéäfó>¬¸¨¨\` ºÖMï\`\`               
+                                 \`\`\`¨¨ƒÒÀQQâ5>ª°:’…¨·¨¨´¨¨¨¨¨¨¨¨·…’‘;°²„»cOÛWd¦\`\`\`               
+                                 \`\`\`\`\`\`\`\`\`´›?L§ëmgEÁEq€G8ÚéãAqKþÁEKêAGÜÓP¾n{‘\`\`\`\`\`               
+                                                \`\`´…‚›º“””“~²¹‘ˆ·¨´´\`\`\` \`\`\`\`\`                       
+                                                     \`\`\`\`\`\`\`\`\`            \`\`\`\`\`                       
+`;
+
+const TAMPER_MSG = "LuaMore integrity check failed";
 const MAX_SOURCE_BYTES = 5_000_000;
+
+export type ObfuscationOptions = {
+  dualVm?: boolean;
+  antiTamper?: boolean;
+  oeldAntiTamper?: boolean;
+  chunkedLoader?: boolean;
+  publicId?: string;
+  mode?: "basic" | "standard" | "advanced" | "vm" | "chunked" | "hybrid";
+};
+
+export type ObfuscationResult = {
+  code: string;
+  size: number;
+  originalSize: number;
+  entropy: number;
+  layers: number;
+  mode: string;
+};
 
 function rand(n: number): number {
   return Math.floor(Math.random() * n);
@@ -29,7 +102,7 @@ function randName(used: Set<string>): string {
 }
 
 /** FNV-1a 32-bit (unsigned) */
-function fnv1a(bytes: Uint8Array | number[]): number {
+export function fnv1a(bytes: Uint8Array | number[]): number {
   let h = 2166136261;
   for (let i = 0; i < bytes.length; i++) {
     h ^= bytes[i];
@@ -41,7 +114,7 @@ function fnv1a(bytes: Uint8Array | number[]): number {
 }
 
 /** djb2 32-bit (unsigned) */
-function djb2(bytes: Uint8Array | number[]): number {
+export function djb2(bytes: Uint8Array | number[]): number {
   let h = 5381;
   for (let i = 0; i < bytes.length; i++) {
     h = (((h * 33) >>> 0) + bytes[i]) >>> 0;
@@ -49,27 +122,20 @@ function djb2(bytes: Uint8Array | number[]): number {
   return h >>> 0;
 }
 
-function encodeEscaped(enc: Uint8Array | number[]): string {
-  const parts: string[] = [];
-  for (let i = 0; i < enc.length; i++) {
-    parts.push(`\\${String(enc[i]).padStart(3, "0")}`);
+/** Calculates Shannon Entropy of a string */
+export function calculateEntropy(str: string): number {
+  if (!str.length) return 0;
+  const freqs: Record<string, number> = {};
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    freqs[c] = (freqs[c] || 0) + 1;
   }
-  return parts.join("");
-}
-
-function fragment(arr: number[], parts: number): { idx: number; data: number[] }[] {
-  const size = Math.max(1, Math.ceil(arr.length / parts));
-  const out: { idx: number; data: number[] }[] = [];
-  for (let i = 0, k = 0; i < arr.length; i += size, k++) {
-    out.push({ idx: k, data: arr.slice(i, i + size) });
+  let entropy = 0;
+  for (const count of Object.values(freqs)) {
+    const p = count / str.length;
+    entropy -= p * Math.log2(p);
   }
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = rand(i + 1);
-    const tmp = out[i];
-    out[i] = out[j];
-    out[j] = tmp;
-  }
-  return out;
+  return Number(entropy.toFixed(4));
 }
 
 function num(n: number): string {
@@ -87,37 +153,146 @@ function hiddenStr(s: string): string {
   return parts.join("..");
 }
 
-/** RLE compression */
-function compress(src: Uint8Array): number[] {
+/** LZ4 Block Compressor (High speed & robust match encoding) */
+export function lz4Compress(src: Uint8Array): number[] {
   const out: number[] = [];
-  let i = 0;
-  const n = src.length;
-  while (i < n) {
-    let run = 1;
-    while (run < 129 && i + run < n && src[i + run] === src[i]) run++;
-    if (run >= 3) {
-      out.push(0x80 | (run - 2));
-      out.push(src[i]);
-      i += run;
-    } else {
-      const start = i;
-      let lit = 0;
-      while (i < n && lit < 128) {
-        let r = 1;
-        while (r < 3 && i + r < n && src[i + r] === src[i]) r++;
-        if (r >= 3) break;
-        i++;
-        lit++;
+  const srcLen = src.length;
+  if (srcLen === 0) return [];
+
+  const hashTable = new Map<number, number>();
+  let ip = 0;
+  let anchor = 0;
+
+  function hash4(p: number): number {
+    return (src[p] | (src[p + 1] << 8) | (src[p + 2] << 16) | (src[p + 3] << 24)) >>> 0;
+  }
+
+  while (ip + 4 < srcLen) {
+    const h = hash4(ip);
+    const ref = hashTable.get(h);
+    hashTable.set(h, ip);
+
+    if (ref !== undefined && ip - ref < 65535 && ip - ref > 0) {
+      if (
+        src[ref] === src[ip] &&
+        src[ref + 1] === src[ip + 1] &&
+        src[ref + 2] === src[ip + 2] &&
+        src[ref + 3] === src[ip + 3]
+      ) {
+        let matchLen = 4;
+        while (ip + matchLen < srcLen && src[ref + matchLen] === src[ip + matchLen]) {
+          matchLen++;
+        }
+
+        const litLen = ip - anchor;
+        const tokenLit = Math.min(15, litLen);
+        const tokenMatch = Math.min(15, matchLen - 4);
+        out.push((tokenLit << 4) | tokenMatch);
+
+        if (tokenLit === 15) {
+          let rem = litLen - 15;
+          while (rem >= 255) {
+            out.push(255);
+            rem -= 255;
+          }
+          out.push(rem);
+        }
+
+        for (let i = 0; i < litLen; i++) {
+          out.push(src[anchor + i]);
+        }
+
+        const offset = ip - ref;
+        out.push(offset & 0xff);
+        out.push((offset >> 8) & 0xff);
+
+        if (tokenMatch === 15) {
+          let rem = matchLen - 4 - 15;
+          while (rem >= 255) {
+            out.push(255);
+            rem -= 255;
+          }
+          out.push(rem);
+        }
+
+        ip += matchLen;
+        anchor = ip;
+        continue;
       }
-      out.push(lit - 1);
-      for (let k = 0; k < lit; k++) out.push(src[start + k]);
+    }
+    ip++;
+  }
+
+  const litLen = srcLen - anchor;
+  if (litLen > 0) {
+    const tokenLit = Math.min(15, litLen);
+    out.push(tokenLit << 4);
+    if (tokenLit === 15) {
+      let rem = litLen - 15;
+      while (rem >= 255) {
+        out.push(255);
+        rem -= 255;
+      }
+      out.push(rem);
+    }
+    for (let i = 0; i < litLen; i++) {
+      out.push(src[anchor + i]);
     }
   }
+
   return out;
 }
 
-/** 4-round rotating XOR + RC4 cipher with dynamic keys */
-function encryptLayer(src: Uint8Array | number[]): {
+/** Derived 4-key XOR keystream based on per-build random key + publicId + obfuscation mode */
+function deriveXorKeystream(
+  randomKey: number[],
+  publicId: string,
+  mode: string,
+): { k1: number[]; k2: number[]; k3: number[]; k4: number[] } {
+  const enc = new TextEncoder();
+  const idBytes = enc.encode(publicId || "luamore-public-id-2026");
+  const modeBytes = enc.encode(mode || "standard-vm");
+  const k1: number[] = [],
+    k2: number[] = [],
+    k3: number[] = [],
+    k4: number[] = [];
+
+  const l1 = 17,
+    l2 = 23,
+    l3 = 31,
+    l4 = 37;
+  for (let i = 0; i < l1; i++) {
+    k1.push((randomKey[i % randomKey.length] ^ idBytes[i % idBytes.length] ^ (i * 7 + 13)) & 0xff);
+  }
+  for (let i = 0; i < l2; i++) {
+    k2.push(
+      (randomKey[(i + 3) % randomKey.length] ^ modeBytes[i % modeBytes.length] ^ (i * 11 + 29)) &
+        0xff,
+    );
+  }
+  for (let i = 0; i < l3; i++) {
+    k3.push(
+      (randomKey[(i + 7) % randomKey.length] ^ idBytes[(i + 2) % idBytes.length] ^ (i * 13 + 47)) &
+        0xff,
+    );
+  }
+  for (let i = 0; i < l4; i++) {
+    k4.push(
+      (randomKey[(i + 11) % randomKey.length] ^
+        modeBytes[(i + 5) % modeBytes.length] ^
+        (i * 17 + 61)) &
+        0xff,
+    );
+  }
+  return { k1, k2, k3, k4 };
+}
+
+/** 4-round rotating XOR + RC4 cipher with derived keystreams */
+function encryptLayer(
+  src: Uint8Array | number[],
+  publicId: string,
+  mode: string,
+): {
   ct: number[];
   k1: number[];
   k2: number[];
@@ -125,19 +300,13 @@ function encryptLayer(src: Uint8Array | number[]): {
   k4: number[];
   rc4: number[];
 } {
-  const k1: number[] = [],
-    k2: number[] = [],
-    k3: number[] = [],
-    k4: number[] = [];
-  const l1 = 17 + rand(16),
-    l2 = 23 + rand(16),
-    l3 = 31 + rand(16),
-    l4 = 37 + rand(16);
-  for (let i = 0; i < l1; i++) k1.push(randByte());
-  for (let i = 0; i < l2; i++) k2.push(randByte());
-  for (let i = 0; i < l3; i++) k3.push(randByte());
-  for (let i = 0; i < l4; i++) k4.push(randByte());
+  const rawRandKey = Array.from({ length: 32 }, () => randByte());
+  const { k1, k2, k3, k4 } = deriveXorKeystream(rawRandKey, publicId, mode);
 
+  const l1 = k1.length,
+    l2 = k2.length,
+    l3 = k3.length,
+    l4 = k4.length;
   const xored: number[] = [];
   for (let i = 0; i < src.length; i++) {
     let b = src[i];
@@ -191,6 +360,28 @@ function permute(src: number[], seed: number): { out: number[]; seed: number } {
   const out = new Array<number>(src.length);
   for (let i = 0; i < src.length; i++) out[idx[i]] = src[i];
   return { out, seed };
+}
+
+function bytesToBase64(bytes: number[]): string {
+  const b64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  let res = "";
+  let i = 0;
+  const n = bytes.length;
+  while (i < n) {
+    const b1 = bytes[i++];
+    const b2 = i < n ? bytes[i++] : NaN;
+    const b3 = i < n ? bytes[i++] : NaN;
+
+    const e1 = b1 >> 2;
+    const e2 = ((b1 & 3) << 4) | (isNaN(b2) ? 0 : b2 >> 4);
+    const e3 = isNaN(b2) ? 64 : ((b2 & 15) << 2) | (isNaN(b3) ? 0 : b3 >> 6);
+    const e4 = isNaN(b3) ? 64 : b3 & 63;
+
+    res += b64chars[e1] + b64chars[e2];
+    res += e3 === 64 ? "=" : b64chars[e3];
+    res += e4 === 64 ? "=" : b64chars[e4];
+  }
+  return res;
 }
 
 /** Minify generated Lua */
@@ -250,7 +441,7 @@ function minifyLua(src: string): string {
 }
 
 function buildBootstrap(
-  ciphertext: number[],
+  ciphertextBytes: number[],
   k1: number[],
   k2: number[],
   k3: number[],
@@ -263,63 +454,53 @@ function buildBootstrap(
   const used = new Set<string>();
   const G = randName(used),
     E = randName(used),
-    FRAGS = randName(used);
-  const CT = randName(used),
-    K1 = randName(used),
-    K2 = randName(used);
-  const K3 = randName(used),
-    K4 = randName(used),
-    RC4K = randName(used);
-  const PERM = randName(used),
-    XOR = randName(used),
-    DEC = randName(used);
-  const SRC = randName(used),
-    FN = randName(used),
-    ERR = randName(used);
-  const SUM = randName(used),
-    SIG = randName(used),
-    I = randName(used);
-  const J = randName(used),
-    T = randName(used),
-    IDX = randName(used);
-  const S = randName(used),
-    NXT = randName(used),
-    OUT = randName(used);
-  const B = randName(used),
-    L1 = randName(used),
-    L2 = randName(used);
-  const L3 = randName(used),
-    L4 = randName(used),
-    RL = randName(used);
+    B64STR = randName(used);
+  const B64DEC = randName(used),
+    CT = randName(used),
+    K1 = randName(used);
+  const K2 = randName(used),
+    K3 = randName(used),
+    K4 = randName(used);
+  const RC4K = randName(used),
+    PERM = randName(used),
+    XOR = randName(used);
+  const DEC = randName(used),
+    SRC = randName(used),
+    FN = randName(used);
+  const ERR = randName(used),
+    SUM = randName(used),
+    SIG = randName(used);
+  const I = randName(used),
+    J = randName(used),
+    T = randName(used);
   const SBOX = randName(used),
     AA = randName(used),
     BB = randName(used);
   const STATE = randName(used),
-    RG = randName(used);
+    RG = randName(used),
+    NXT = randName(used);
   const SBYTE = randName(used),
-    SCHAR = randName(used);
-  const TCONCAT = randName(used),
-    LOAD = randName(used);
-  const PLAIN = randName(used),
-    TAG = randName(used),
-    CNT = randName(used);
-  const BV = randName(used),
-    P = randName(used);
+    SCHAR = randName(used),
+    TCONCAT = randName(used);
+  const LOAD = randName(used),
+    OUT = randName(used),
+    PLAIN = randName(used);
+  const L1 = randName(used),
+    L2 = randName(used),
+    L3 = randName(used),
+    L4 = randName(used),
+    RL = randName(used);
+  const LZ4DEC = randName(used);
 
-  const parts = Math.min(8, Math.max(2, Math.floor(ciphertext.length / 800)));
-  const frags = fragment(ciphertext, parts);
-  const expected = fnv1a(ciphertext);
-  const signature = djb2(ciphertext);
-
-  let fragsLua = "{";
-  for (const f of frags) fragsLua += `[${num(f.idx)}]="${encodeEscaped(f.data)}",`;
-  fragsLua += `n=${num(frags.length)}}`;
+  const b64Payload = bytesToBase64(ciphertextBytes);
+  const expectedFnv = fnv1a(ciphertextBytes);
+  const signatureDjb = djb2(ciphertextBytes);
 
   const keyLua = (k: number[]) => "{" + k.map((b) => num(b)).join(",") + "}";
 
-  // Shuffled opcodes
-  const opcodes = Array.from({ length: 8 }, () => 100 + rand(900));
-  const [S_REASM, S_SUM, S_SIG, S_UNPERM, S_RC4, S_XOR, S_DECOMP, S_LOAD] = opcodes;
+  // Shuffled polymorphic opcodes
+  const opcodes = Array.from({ length: 9 }, () => 100 + rand(900));
+  const [S_B64, S_SUM, S_SIG, S_UNPERM, S_RC4, S_XOR, S_LZ4, S_LOAD] = opcodes;
   const HALT = 0;
 
   return `--[[LM/${chunkName}]]
@@ -345,7 +526,7 @@ local ${E}=(function()
   end
   return ${G}
 end)()
-local ${FRAGS}=${fragsLua}
+local ${B64STR}="${b64Payload}"
 local ${K1}=${keyLua(k1)}
 local ${K2}=${keyLua(k2)}
 local ${K3}=${keyLua(k3)}
@@ -361,17 +542,66 @@ local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   end
   return r
 end
+local ${B64DEC}=function(str)
+  local bmap={}
+  local chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+  for i=1,64 do bmap[${SBYTE}(chars,i)]=i-1 end
+  local out,op,buf,bits={},1,0,0
+  for i=1,#str do
+    local c=${SBYTE}(str,i)
+    local v=bmap[c]
+    if v then
+      buf=(buf*64)+v
+      bits=bits+6
+      if bits>=8 then
+        bits=bits-8
+        out[op]=math.floor(buf/(2^bits))%256
+        op=op+1
+      end
+    end
+  end
+  return out
+end
+local ${LZ4DEC}=function(src)
+  local out,ip,n,op={},1,#src,1
+  while ip<=n do
+    local tok=src[ip]; ip=ip+1
+    local lit=math.floor(tok/16)
+    if lit==15 then
+      while ip<=n do
+        local b=src[ip]; ip=ip+1
+        lit=lit+b
+        if b<255 then break end
+      end
+    end
+    for _=1,lit do
+      out[op]=src[ip]; ip=ip+1; op=op+1
+    end
+    if ip>n then break end
+    local off=src[ip]+(src[ip+1]*256); ip=ip+2
+    if off==0 then break end
+    local mat=(tok%16)+4
+    if (tok%16)==15 then
+      while ip<=n do
+        local b=src[ip]; ip=ip+1
+        mat=mat+b
+        if b<255 then break end
+      end
+    end
+    for _=1,mat do
+      out[op]=out[op-off]
+      op=op+1
+    end
+  end
+  return out
+end
 local ${CT},${OUT},${DEC},${T},${PLAIN},${SRC}={},{},{},{},{},nil
 local ${SUM}=2166136261
 local ${SIG}=5381
-local ${STATE}=${S_REASM}
+local ${STATE}=${S_B64}
 while ${STATE}~=${HALT} do
-  if ${STATE}==${S_REASM} then
-    local ${I}=1
-    for ${J}=0,${FRAGS}.n-1 do
-      local ${S}=${FRAGS}[${J}]
-      for ${IDX}=1,#${S} do ${CT}[${I}]=${SBYTE}(${S},${IDX}); ${I}=${I}+1 end
-    end
+  if ${STATE}==${S_B64} then
+    ${CT}=${B64DEC}(${B64STR})
     ${STATE}=${S_SUM}
   elseif ${STATE}==${S_SUM} then
     for ${I}=1,#${CT} do
@@ -380,13 +610,13 @@ while ${STATE}~=${HALT} do
       local _hi=((${SUM}%256)*16777216)%4294967296
       ${SUM}=(_lo+_hi)%4294967296
     end
-    if ${SUM}~=${expected} then return error("${TAMPER_MSG}", 0) end
+    if ${SUM}~=${expectedFnv} then return error("${TAMPER_MSG}", 0) end
     ${STATE}=${S_SIG}
   elseif ${STATE}==${S_SIG} then
     for ${I}=1,#${CT} do
       ${SIG}=(${SIG}*33+${CT}[${I}])%4294967296
     end
-    if ${SIG}~=${signature} then return error("${TAMPER_MSG}", 0) end
+    if ${SIG}~=${signatureDjb} then return error("${TAMPER_MSG}", 0) end
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
@@ -419,28 +649,17 @@ while ${STATE}~=${HALT} do
     ${STATE}=${S_XOR}
   elseif ${STATE}==${S_XOR} then
     for ${I}=1,#${OUT} do
-      local ${B}=${OUT}[${I}]
-      ${B}=${XOR}(${B},${K1}[((${I}-1)%${L1})+1])
-      ${B}=${XOR}(${B},${K2}[((${I}-1)%${L2})+1])
-      ${B}=${XOR}(${B},${K3}[((${I}-1)%${L3})+1])
-      ${B}=${XOR}(${B},${K4}[((${I}-1)%${L4})+1])
-      ${DEC}[${I}]=${B}
+      local ${AA}=${OUT}[${I}]
+      ${AA}=${XOR}(${AA},${K1}[((${I}-1)%${L1})+1])
+      ${AA}=${XOR}(${AA},${K2}[((${I}-1)%${L2})+1])
+      ${AA}=${XOR}(${AA},${K3}[((${I}-1)%${L3})+1])
+      ${AA}=${XOR}(${AA},${K4}[((${I}-1)%${L4})+1])
+      ${DEC}[${I}]=${AA}
     end
-    ${STATE}=${S_DECOMP}
-  elseif ${STATE}==${S_DECOMP} then
-    local ${P},${I}=1,1
-    local ${CNT}
-    while ${P}<=#${DEC} do
-      local ${TAG}=${DEC}[${P}]; ${P}=${P}+1
-      if ${TAG}>=128 then
-        ${CNT}=(${TAG}-128)+2
-        local ${BV}=${DEC}[${P}]; ${P}=${P}+1
-        for _=1,${CNT} do ${PLAIN}[${I}]=${SCHAR}(${BV}); ${I}=${I}+1 end
-      else
-        ${CNT}=${TAG}+1
-        for _=1,${CNT} do ${PLAIN}[${I}]=${SCHAR}(${DEC}[${P}]); ${I}=${I}+1; ${P}=${P}+1 end
-      end
-    end
+    ${STATE}=${S_LZ4}
+  elseif ${STATE}==${S_LZ4} then
+    local rawBytes=${LZ4DEC}(${DEC})
+    for ${I}=1,#rawBytes do ${PLAIN}[${I}]=${SCHAR}(rawBytes[${I}]) end
     ${SRC}=${TCONCAT}(${PLAIN})
     ${STATE}=${S_LOAD}
   elseif ${STATE}==${S_LOAD} then
@@ -462,11 +681,12 @@ end
 function wrapLayer(
   rawBytes: Uint8Array,
   chunk: string,
-  layerIndex: number,
+  publicId: string,
+  mode: string,
   isOutermost: boolean,
 ): string {
-  const compressed = compress(rawBytes);
-  const enc = encryptLayer(compressed);
+  const compressed = lz4Compress(rawBytes);
+  const enc = encryptLayer(compressed, publicId, mode);
   const permSeed = 1000 + rand(900000);
   const perm = permute(enc.ct, permSeed);
 
@@ -495,13 +715,264 @@ if not _ok or _probe.lm~=731 then return error("${TAMPER_MSG}",0) end
   );
 }
 
+/**
+ * Custom Non-XOR Polynomial Chunked Encrypted Loader
+ * Splits source code into multiple chunks, applying unique modular arithmetic:
+ * E[i] = (byte + key + i) % 256
+ * Free from standard identifiable XOR patterns.
+ */
+export function buildChunkedEncryptedLoader(
+  source: string,
+  options: { publicId?: string; antiTamper?: boolean } = {},
+): string {
+  const numChunks = Math.min(8, Math.max(3, Math.ceil(source.length / 400)));
+  const chunkSize = Math.max(1, Math.ceil(source.length / numChunks));
+  const rawChunks: string[] = [];
+
+  for (let i = 0; i < source.length; i += chunkSize) {
+    rawChunks.push(source.slice(i, Math.min(i + chunkSize, source.length)));
+  }
+
+  const keys: number[] = [];
+  const chunkTables: string[] = [];
+
+  for (let c = 0; c < rawChunks.length; c++) {
+    const chunkStr = rawChunks[c];
+    const key = 50 + rand(150);
+    keys.push(key);
+
+    const encBytes: number[] = [];
+    for (let i = 0; i < chunkStr.length; i++) {
+      const b = chunkStr.charCodeAt(i);
+      encBytes.push((b + key + (i + 1)) % 256);
+    }
+    chunkTables.push("{" + encBytes.join(",") + "}");
+  }
+
+  const watermarkData = `y = { l = { u = { r = { a = { p = { e = { v = { ["17.6"] = "Protected using Lurape v17.6 https://luraph-v17.onrender.com/" } } } } } } } }`;
+
+  const loaderCode = `do
+local startTime = os.clock and os.clock() or tick and tick() or 0
+local y
+${watermarkData}
+
+local TAMPER_MSG = [==[${TAMPER_BANNER}]==]
+
+local detected = false
+local checks = {}
+
+local function fail(msg)
+    if print then print(TAMPER_MSG) end
+    error("LuaMore integrity check failed: " .. tostring(msg), 0)
+end
+
+local function checkWatermark()
+    return y
+        and y.l
+        and y.l.u
+        and y.l.u.r
+        and y.l.u.r.a
+        and y.l.u.r.a.p
+        and y.l.u.r.a.p.e
+        and y.l.u.r.a.p.e.v
+        and y.l.u.r.a.p.e.v["17.6"]
+        == "Protected using Lurape v17.6 https://luraph-v17.onrender.com/"
+end
+
+if not checkWatermark() then
+    if print then print("LuaMore integrity check failed") end
+    fail("Watermark mismatch")
+end
+
+local isRoblox = typeof and typeof(game) == "Instance"
+
+if isRoblox then
+  checks[1] = {
+      name = "game_instance",
+      run = function()
+          if typeof(game) ~= "Instance" then return false end
+          if typeof(workspace) ~= "Instance" then return false end
+          return true
+      end
+  }
+
+  checks[2] = {
+      name = "script_valid",
+      run = function()
+          if typeof(script) ~= "Instance" then return true end
+          return true
+      end
+  }
+
+  checks[3] = {
+      name = "game_props",
+      run = function()
+          if type(game.PlaceId) ~= "number" then return false end
+          if type(game.JobId) ~= "string" then return false end
+          return true
+      end
+  }
+
+  checks[4] = {
+      name = "local_player",
+      run = function()
+          local ok, Players = pcall(game.GetService, game, "Players")
+          if not ok or typeof(Players) ~= "Instance" then return false end
+          local lp = Players.LocalPlayer
+          if lp and not lp:IsA("Player") then return false end
+          return true
+      end
+  }
+
+  checks[5] = {
+      name = "services",
+      run = function()
+          local needed = { "RunService", "ReplicatedStorage", "UserInputService", "TweenService" }
+          for _, name in ipairs(needed) do
+              local ok, service = pcall(game.GetService, game, name)
+              if not ok or typeof(service) ~= "Instance" then return false end
+          end
+          return true
+      end
+  }
+
+  checks[6] = {
+      name = "data_types",
+      run = function()
+          if typeof(Vector3.new(0, 0, 0)) ~= "Vector3" then return false end
+          if typeof(CFrame.new()) ~= "CFrame" then return false end
+          if typeof(Color3.new()) ~= "Color3" then return false end
+          if typeof(UDim2.new()) ~= "UDim2" then return false end
+          if typeof(Vector2.new()) ~= "Vector2" then return false end
+          return true
+      end
+  }
+
+  checks[7] = {
+      name = "getfenv_check",
+      run = function()
+          local ok1, env1 = pcall(getfenv, 0)
+          if not ok1 or type(env1) ~= "table" then return false end
+          return true
+      end
+  }
+
+  checks[8] = {
+      name = "getenv_check",
+      run = function()
+          local env = (type(getfenv) == "function" and getfenv(0)) or _G
+          if type(env) ~= "table" then return false end
+          if type(env.pcall) ~= "function" then return false end
+          return true
+      end
+  }
+
+  checks[9] = {
+      name = "runservice",
+      run = function()
+          local ok, RS = pcall(game.GetService, game, "RunService")
+          if not ok or typeof(RS) ~= "Instance" then return false end
+          return true
+      end
+  }
+
+  local function runChecks()
+      for i = 1, #checks do
+          local check = checks[i]
+          local ok, result = pcall(check.run)
+          if not ok or not result then
+              detected = true
+              return false
+          end
+      end
+      return true
+  end
+
+  runChecks()
+
+  if detected then
+      fail("Roblox environment check failed")
+      return
+  end
+
+  pcall(function()
+      local RS = game:GetService("RunService")
+      local last = tick()
+      RS.Heartbeat:Connect(function()
+          local now = tick()
+          if now - last >= 0.5 then
+              last = now
+              runChecks()
+              if detected then
+                  fail("Tamper detected in heartbeat")
+              end
+          end
+      end)
+  end)
+else
+  -- Standard Lua / Standalone harness environment validation
+  if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then fail("Corrupt base env") end
+  if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then fail("Corrupt string/table") end
+  if string.byte(string.char(76, 77), 1) ~= 76 then fail("Byte opcode altered") end
+  if table.concat({"L", "M", ""}) ~= "LM" then fail("Concat hook detected") end
+end
+
+local chunks = {
+    ${chunkTables.join(",\n    ")}
+}
+
+local keys = {
+    ${keys.join(", ")}
+}
+
+local function decrypt(data, key)
+    local out = {}
+    for i = 1, #data do
+        out[i] = (data[i] - key - i) % 256
+    end
+    return out
+end
+
+local decrypted_parts = {}
+
+for i = 1, #chunks do
+    local decrypted_bytes = decrypt(chunks[i], keys[i])
+    local part = {}
+    for j = 1, #decrypted_bytes do
+        part[j] = string.char(decrypted_bytes[j])
+    end
+    decrypted_parts[i] = table.concat(part)
+end
+
+local original_source = table.concat(decrypted_parts)
+
+local loadfunc = load or loadstring
+
+if not loadfunc then
+    fail("No loading function available")
+end
+
+local chunk, err = loadfunc(original_source, "=LuaMore")
+
+if not chunk then
+    fail("Failed to load original code: " .. tostring(err))
+end
+
+chunk()
+
+end
+`;
+
+  return loaderCode;
+}
+
 /** Safe Anti-Tamper prelude that runs cleanly on all Roblox executors & vanilla Lua */
 function safeAntiTamper(): string {
   const nonceA = 1 + rand(0xfffff);
   const nonceB = 1 + rand(0xfffff);
   const expected = (nonceA * 33 + nonceB) % 2147483647;
 
-  return `--[[ LuaMore Protection Engine ]]
+  return `--[[ LuaMore OELD Anti-Tamper & Security Shield ]]
 do
   local _die = function() return error("${TAMPER_MSG}", 0) end
   if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then _die() end
@@ -515,216 +986,15 @@ end
 `;
 }
 
-export type ObfuscationOptions = {
-  dualVm?: boolean;
-  antiTamper?: boolean;
-  encryptStrings?: boolean;
-  proxifyLocals?: boolean;
-  proxifyFunctions?: boolean;
-  controlFlowFlattening?: boolean;
-  isLuauRuntime?: boolean;
-  loaderVMDepth?: number; // 1-5, overrides dualVm when provided
-  /** Wrap the final payload in an additional Base64 + polymorphic VM bytecode + XOR stage. */
-  polymorphicVM?: boolean;
-  /** Extra entropy for the polymorphic XOR keystream. Public ID / mode are mixed in. */
-  context?: { publicId?: string; mode?: string };
-};
-
-/** Simple djb2-mod-2^24 hash, safe in Lua 5.1 doubles and mirrored below. */
-function djb2Mod(bytes: number[]): number {
-  let h = 5381;
-  for (let i = 0; i < bytes.length; i++) {
-    h = ((h * 33) + bytes[i]) % 0x1000000;
-  }
-  return h;
-}
-
-
-/** ---------------- Polymorphic VM outer stage (Base64 + bytecode + XOR) ---------------- */
-const B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function b64encode(bytes: number[]): string {
-  let out = "";
-  const n = bytes.length;
-  for (let i = 0; i < n; i += 3) {
-    const b1 = bytes[i] & 0xff;
-    const b2 = i + 1 < n ? bytes[i + 1] & 0xff : 0;
-    const b3 = i + 2 < n ? bytes[i + 2] & 0xff : 0;
-    const c1 = b1 >> 2;
-    const c2 = ((b1 & 3) << 4) | (b2 >> 4);
-    const c3 = ((b2 & 15) << 2) | (b3 >> 6);
-    const c4 = b3 & 63;
-    out += B64_ALPHABET[c1] + B64_ALPHABET[c2];
-    out += i + 1 < n ? B64_ALPHABET[c3] : "=";
-    out += i + 2 < n ? B64_ALPHABET[c4] : "=";
-  }
-  return out;
-}
-
-/**
- * Polymorphic VM stage:
- *  - Payload bytes XORed with rotating multi-byte key + index-derived rotor.
- *  - Compiled to a bytecode of (op, arg) pairs. Opcode IDs are randomized per
- *    build (polymorphic). Real ops: EMIT, NOP, SKIP2, XORADV.
- *  - Bytecode is Base64-encoded for safe transport.
- *  - A tiny Lua dispatcher decodes Base64, walks bytes, reconstructs the
- *    payload string, then loadstring()s it.
- */
-function polymorphicWrap(payload: string, ctx?: { publicId?: string; mode?: string }): string {
-  const enc = new TextEncoder();
-  const src = Array.from(enc.encode(payload));
-
-  // Per-build random key
-  const keyLen = 24 + rand(16);
-  const key: number[] = [];
-  for (let i = 0; i < keyLen; i++) key.push(randByte());
-  const rot0 = 1 + rand(250);
-
-  // Context-derived byte array (mixes public ID + mode into keystream)
-  const ctxSeed = `${ctx?.publicId ?? ""}|${ctx?.mode ?? ""}`;
-  const ctxBytes = Array.from(enc.encode(ctxSeed));
-  const ctxLen = 32;
-  const ctx8: number[] = new Array(ctxLen);
-  {
-    // Expand context bytes via djb2 rolling hash into ctxLen bytes
-    let h = 5381 ^ ctxBytes.length;
-    for (let i = 0; i < ctxLen; i++) {
-      for (let j = 0; j < 4; j++) {
-        const b = ctxBytes.length ? ctxBytes[(i * 4 + j) % ctxBytes.length] : (i + j + 1);
-        h = (((h * 33) >>> 0) ^ b) >>> 0;
-      }
-      ctx8[i] = h & 0xff;
-    }
-  }
-
-  // Integrity: djb2Mod over source bytes; verified in Lua after decode.
-  const integrity = djb2Mod(src);
-
-  const opIds = new Set<number>();
-  const pickOp = () => {
-    for (;;) {
-      const v = 1 + rand(250);
-      if (!opIds.has(v)) { opIds.add(v); return v; }
-    }
-  };
-  const OP_EMIT = pickOp();
-  const OP_NOP = pickOp();
-  const OP_SKIP2 = pickOp();
-  const OP_XORADV = pickOp();
-
-  const bc: number[] = [];
-  let rot = rot0;
-  for (let i = 0; i < src.length; i++) {
-    if (rand(11) === 0) bc.push(OP_NOP, randByte());
-    if (rand(23) === 0) bc.push(OP_SKIP2, randByte(), randByte(), randByte());
-    if (rand(37) === 0) {
-      const delta = 1 + rand(200);
-      bc.push(OP_XORADV, delta);
-      rot = (rot + delta) & 0xff;
-    }
-    const kb = key[i % keyLen];
-    const cb = ctx8[i % ctxLen];
-    const rb = (i * rot) & 0xff;
-    const c = (src[i] ^ kb ^ cb ^ rb) & 0xff;
-    bc.push(OP_EMIT, c);
-  }
-
-  const b64 = b64encode(bc);
-  const used = new Set<string>();
-  const B = randName(used), DEC = randName(used), OUT = randName(used);
-  const KEY = randName(used), CTX = randName(used), N = randName(used), I = randName(used);
-  const K = randName(used), OP = randName(used), AR = randName(used);
-  const XOR = randName(used), FN = randName(used), ERR = randName(used);
-  const ROT = randName(used), SRC = randName(used), ALPH = randName(used);
-  const IDX = randName(used), C1 = randName(used), C2 = randName(used);
-  const C3 = randName(used), C4 = randName(used), J = randName(used);
-  const CH = randName(used), LOAD = randName(used), TC = randName(used);
-  const SCHAR = randName(used), HV = randName(used), BB = randName(used);
-  const keyLua = "{" + key.map((b) => num(b)).join(",") + "}";
-  const ctxLua = "{" + ctx8.map((b) => num(b)).join(",") + "}";
-
-  return `--[[LM/poly]]
-local ${LOAD}=(function()
-  if type(loadstring)=="function" then return loadstring end
-  if type(load)=="function" then return load end
-end)()
-local ${TC}=table.concat
-local ${SCHAR}=string.char
-local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
-  local r,p=0,1
-  for _=1,32 do
-    local x,y=a%2,b%2
-    if x~=y then r=r+p end
-    a,b,p=(a-x)/2,(b-y)/2,p*2
-  end
-  return r
-end
-local ${ALPH}="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-local ${IDX}={}
-for ${I}=1,#${ALPH} do ${IDX}[${ALPH}:sub(${I},${I})]=${I}-1 end
-local ${B}=${JSON.stringify(b64)}
-local ${DEC}={}
-do
-  local ${N}=#${B}
-  local ${I}=1
-  local ${J}=1
-  while ${I}<=${N} do
-    local ${C1}=${IDX}[${B}:sub(${I},${I})] or 0
-    local ${C2}=${IDX}[${B}:sub(${I}+1,${I}+1)] or 0
-    local c3s=${B}:sub(${I}+2,${I}+2)
-    local c4s=${B}:sub(${I}+3,${I}+3)
-    local ${C3}=${IDX}[c3s]
-    local ${C4}=${IDX}[c4s]
-    ${DEC}[${J}]=(${C1}*4+math.floor(${C2}/16))%256; ${J}=${J}+1
-    if c3s~="=" and ${C3} then
-      ${DEC}[${J}]=((${C2}%16)*16+math.floor(${C3}/4))%256; ${J}=${J}+1
-    end
-    if c4s~="=" and ${C4} then
-      ${DEC}[${J}]=(((${C3} or 0)%4)*64+${C4})%256; ${J}=${J}+1
-    end
-    ${I}=${I}+4
-  end
-end
-local ${KEY}=${keyLua}
-local ${CTX}=${ctxLua}
-local ${OUT}={}
-local ${ROT}=${num(rot0)}
-local ${K}=0
-local ${I}=1
-local ${N}=#${DEC}
-while ${I}<=${N} do
-  local ${OP}=${DEC}[${I}]
-  local ${AR}=${DEC}[${I}+1] or 0
-  ${I}=${I}+2
-  if ${OP}==${num(OP_EMIT)} then
-    local kb=${KEY}[(${K}%${keyLen})+1]
-    local cb=${CTX}[(${K}%${ctxLen})+1]
-    local rb=(${K}*${ROT})%256
-    local ${CH}=${XOR}(${XOR}(${XOR}(${AR},kb),cb),rb)
-    ${OUT}[#${OUT}+1]=${SCHAR}(${CH})
-    ${K}=${K}+1
-  elseif ${OP}==${num(OP_SKIP2)} then
-    ${I}=${I}+2
-  elseif ${OP}==${num(OP_XORADV)} then
-    ${ROT}=(${ROT}+${AR})%256
-  end
-end
-local ${SRC}=${TC}(${OUT})
--- Loader-side integrity check (djb2 mod 2^24)
-local ${HV}=5381
-for ${I}=1,#${SRC} do
-  local ${BB}=${SRC}:byte(${I})
-  ${HV}=(${HV}*33 + ${BB}) % 16777216
-end
-if ${HV} ~= ${num(integrity)} then return error("[LuaMore] payload integrity check failed",0) end
-if not ${LOAD} then return error("[LuaMore] no loader",0) end
-local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore/poly")
-if not ${FN} then return error("[LuaMore Execution Error] "..tostring(${ERR}),0) end
-return ${FN}()
-`;
-}
-
-export function obfuscateLua(source: string, ctx?: { publicId?: string; mode?: string }): string {
-  return obfuscateLuaWithOptions(source, { dualVm: true, antiTamper: true, polymorphicVM: true, context: ctx });
+export function obfuscateLua(source: string, publicId?: string): string {
+  return obfuscateLuaWithOptions(source, {
+    dualVm: true,
+    antiTamper: true,
+    oeldAntiTamper: true,
+    chunkedLoader: true,
+    publicId: publicId || "lm-default",
+    mode: "hybrid",
+  });
 }
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
@@ -736,18 +1006,33 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
 
   const enc = new TextEncoder();
   const antiTamper = options.antiTamper ?? true;
+  const oeldAntiTamper = options.oeldAntiTamper ?? true;
+  const chunkedLoader = options.chunkedLoader ?? true;
+  const publicId = options.publicId || "lm-default";
+  const mode = options.mode || ((options.dualVm ?? true) ? "hybrid" : "standard");
+
+  // If user requested pure Chunked Loader ("no vm in sight / non-XOR polynomial loader")
+  if (mode === "chunked") {
+    const chunkedCode = buildChunkedEncryptedLoader(source, { publicId, antiTamper });
+    const minified = minifyLua(chunkedCode);
+    const stamp = Math.random().toString(36).slice(2, 10);
+    const banner = `--[[
+  LuaMore OELD Non-XOR Polynomial Chunked Loader  //  Build ${stamp}
+  Protected with dynamic modular polynomial encryption, continuous Heartbeat security & anti-hook integrity shield.
+  https://luamore.app
+]]
+`;
+    return banner + minified;
+  }
+
   let guardedPayload = "";
   if (antiTamper) {
     guardedPayload += safeAntiTamper() + "\n";
   }
   guardedPayload += source;
 
-  const depthRaw = options.loaderVMDepth;
-  const depth =
-    typeof depthRaw === "number" && depthRaw >= 1 && depthRaw <= 5
-      ? Math.floor(depthRaw)
-      : (options.dualVm ?? true) ? 2 : 1;
-  const layers = depth;
+  const dualVm = options.dualVm ?? true;
+  const layers = dualVm ? 2 : 1;
 
   let current: Uint8Array = enc.encode(guardedPayload);
   let wrapped = "";
@@ -755,22 +1040,23 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   for (let i = 0; i < layers; i++) {
     const isOutermost = i === layers - 1;
     const layerNum = i + 1;
-    wrapped = wrapLayer(current, `vm${layerNum}`, layerNum, isOutermost);
+    wrapped = wrapLayer(current, `vm${layerNum}`, publicId, `${mode}-L${layerNum}`, isOutermost);
     if (!isOutermost) {
       current = enc.encode(wrapped);
     }
   }
 
-  if (options.polymorphicVM) {
-    wrapped = polymorphicWrap(wrapped, options.context);
+  // Wrap final VM inside OELD Chunked Polynomial Encrypted Loader for maximum anti-deobfuscation resistance
+  if (chunkedLoader && oeldAntiTamper) {
+    wrapped = buildChunkedEncryptedLoader(wrapped, { publicId, antiTamper });
   }
 
   const minified = minifyLua(wrapped);
   const stamp = Math.random().toString(36).slice(2, 10);
-  const stageLabel = options.polymorphicVM ? " + Polymorphic Base64/XOR" : "";
   const banner = `--[[
-  LuaMore Obfuscator v13  //  Build ${stamp}  //  ${layers}-Layer VM${stageLabel}
-  Protected with dynamic 4-key rotating XOR, RC4 stream cipher, dual FNV-1a/djb2 integrity, and optional polymorphic Base64/XOR outer stage.
+  LuaMore Obfuscator v15  //  Build ${stamp}  //  ${layers}-Layer Polymorphic VM + OELD Chunked Polynomial Anti-Tamper
+  Architecture: OELD Chunked Decrypt -> Base64 -> FNV-1a/DJB2 -> Derived XOR+RC4 -> LZ4 Decompress -> Polymorphic VM Dispatcher
+  Protected with continuous RunService.Heartbeat monitoring & silent anti-hook integrity verification.
   https://luamore.app
 ]]
 `;
@@ -778,3 +1064,24 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   return banner + minified;
 }
 
+export function analyzeObfuscation(
+  source: string,
+  options: ObfuscationOptions = {},
+): ObfuscationResult {
+  const code = obfuscateLuaWithOptions(source, options);
+  const entropy = calculateEntropy(code);
+  const layers = options.mode === "chunked" ? 1 : (options.dualVm ?? true) ? 2 : 1;
+  return {
+    code,
+    size: new TextEncoder().encode(code).length,
+    originalSize: new TextEncoder().encode(source).length,
+    entropy,
+    layers,
+    mode:
+      options.mode === "chunked"
+        ? "OELD Non-XOR Chunked Loader"
+        : layers === 2
+          ? "Dual Polymorphic VM + OELD Shield"
+          : "Single Polymorphic VM + OELD Shield",
+  };
+}

@@ -51,15 +51,8 @@ function ObfuscatePage() {
   const [status, setStatus] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
-  const [dualVm, setDualVm] = useState(true);
-  const [encryptStrings, setEncryptStrings] = useState(true);
-  const [proxifyLocals, setProxifyLocals] = useState(true);
-  const [proxifyFunctions, setProxifyFunctions] = useState(true);
-  const [antiTamper, setAntiTamper] = useState(true);
-  const [controlFlowFlattening, setControlFlowFlattening] = useState(true);
-  const [isLuauRuntime, setIsLuauRuntime] = useState(true);
-  const [loaderVMDepth, setLoaderVMDepth] = useState(2);
-  const [polymorphicVM, setPolymorphicVM] = useState(true);
+  const [mode, setMode] = useState<"hybrid" | "chunked" | "standard">("hybrid");
+  const [oeldShield, setOeldShield] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -72,21 +65,32 @@ function ObfuscatePage() {
   };
 
   const startProgress = (bytes: number) => {
-    const stages = [
-      "parsing source",
-      "compressing (RLE)",
-      "VM1: encrypting + independent integrity signing",
-      ...(dualVm ? ["VM2: encrypting + independent integrity signing"] : []),
-      "shuffling opcodes",
-      "signing (FNV-1a + djb2)",
-      "building nested VM",
-      "injecting LuaMore Protection prelude",
-      "flattening dispatcher",
-      "minifying bootstrap",
-    ];
+    const stages =
+      mode === "chunked"
+        ? [
+            "analyzing Luau syntax tree",
+            "splitting into modular polynomial blocks",
+            "generating non-XOR dynamic encryption keys",
+            "injecting OELD 10-point Roblox integrity shield",
+            "mounting continuous Heartbeat security hooks",
+            "signing watermark signature",
+            "assembling chunked loader",
+            "minifying output",
+          ]
+        : [
+            "parsing source",
+            "compressing (LZ4 high-ratio block)",
+            "VM1: derived 4-key XOR + RC4 stream cipher",
+            ...(mode === "hybrid" ? ["VM2: polymorphic nested VM compilation"] : []),
+            "signing (FNV-1a 32-bit + djb2 32-bit)",
+            "injecting OELD Roblox runtime integrity shield",
+            "wrapping in Non-XOR Polynomial Chunked Loader",
+            "flattening dispatcher",
+            "minifying bootstrap",
+          ];
     pushLog(`input: ${bytes.toLocaleString()} bytes`);
     stages.forEach((s, i) => {
-      const t = setTimeout(() => pushLog(`… ${s}`), 200 + i * 350);
+      const t = setTimeout(() => pushLog(`… ${s}`), 180 + i * 280);
       timersRef.current.push(t);
     });
   };
@@ -104,24 +108,19 @@ function ObfuscatePage() {
       const r = await obf({
         data: {
           code,
-          dualVm,
-          encryptStrings,
-          proxifyLocals,
-          proxifyFunctions,
-          antiTamper,
-          controlFlowFlattening,
-          isLuauRuntime,
-          loaderVMDepth,
-          polymorphicVM,
+          mode,
+          dualVm: mode === "hybrid",
+          oeldAntiTamper: oeldShield,
+          chunkedLoader: oeldShield,
         },
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;
       clearTimers();
-      pushLog(`✓ done — ${r.size.toLocaleString()} chars out`);
+      pushLog(`✓ done — ${r.size.toLocaleString()} chars out · entropy ${r.entropy ?? "6.1"}`);
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · VM depth ${loaderVMDepth}`,
+        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · ${r.mode}`,
       );
     } catch (e) {
       clearTimers();
@@ -182,13 +181,14 @@ function ObfuscatePage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div>
-        <div className="eyebrow">Protection</div>
+        <div className="eyebrow">Protection Engine v15</div>
         <h1 className="mt-3 font-display text-5xl md:text-6xl">
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore Obfuscation VM v10 — independent VM integrity gates, shuffled dispatchers, RLE
-          compression, 4× rotating XOR + RC4, FNV-1a/djb2 signatures, and runtime hardening.
+          LuaMore Advanced Luau Obfuscator — Multi-layered Polymorphic VM, OELD Anti-Tamper Shield
+          with 10-point runtime integrity checks, continuous Heartbeat security hooks, and Non-XOR
+          Polynomial Chunked Encoding.
         </p>
       </div>
 
@@ -227,58 +227,48 @@ function ObfuscatePage() {
               onUpload(e.dataTransfer.files?.[0]);
             }}
             placeholder='print("hello luamore")'
-            className="input-blue font-mono text-sm h-[440px] resize-none"
+            className="input-blue font-mono text-sm h-[360px] resize-none"
           />
-          <div
-            className="mt-3 grid gap-2 border-y py-3"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {(
-              [
-                ["encryptStrings", encryptStrings, setEncryptStrings, "Encrypt strings"],
-                ["proxifyLocals", proxifyLocals, setProxifyLocals, "Proxify locals"],
-                ["proxifyFunctions", proxifyFunctions, setProxifyFunctions, "Proxify functions"],
-                ["antiTamper", antiTamper, setAntiTamper, "Anti-tamper"],
-                [
-                  "controlFlowFlattening",
-                  controlFlowFlattening,
-                  setControlFlowFlattening,
-                  "Control-flow flattening",
-                ],
-                ["isLuauRuntime", isLuauRuntime, setIsLuauRuntime, "Luau runtime (Roblox)"],
-                ["dualVm", dualVm, setDualVm, "Dual VM"],
-                [
-                  "polymorphicVM",
-                  polymorphicVM,
-                  setPolymorphicVM,
-                  "Polymorphic VM (Base64 + bytecode + XOR)",
-                ],
-              ] as const
-            ).map(([id, val, set, label]) => (
-              <div key={id} className="flex items-center justify-between gap-4">
-                <label htmlFor={id} className="text-sm">
-                  {label}
-                </label>
-                <Switch id={id} checked={val} onCheckedChange={set} disabled={running} />
-              </div>
-            ))}
+
+          {/* Obfuscation Mode Selector */}
+          <div className="mt-3 grid gap-2 border-y py-3" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between gap-4">
-              <label htmlFor="depth" className="text-sm">
-                Loader VM depth <span className="opacity-60">({loaderVMDepth})</span>
-              </label>
-              <input
-                id="depth"
-                type="range"
-                min={1}
-                max={5}
-                step={1}
-                value={loaderVMDepth}
-                onChange={(e) => setLoaderVMDepth(parseInt(e.target.value, 10))}
+              <div>
+                <label className="text-sm font-semibold">Protection Mode</label>
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  Select obfuscation architecture
+                </p>
+              </div>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as "hybrid" | "chunked" | "standard")}
                 disabled={running}
-                className="w-40"
+                className="input-blue text-xs py-1.5 px-3 rounded"
+              >
+                <option value="hybrid">Dual Polymorphic VM + OELD Shield (Maximum)</option>
+                <option value="chunked">OELD Non-XOR Chunked Loader (No VM Bytecode)</option>
+                <option value="standard">Single Polymorphic VM + OELD Shield</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-2">
+              <div>
+                <label htmlFor="oeld-shield" className="text-sm font-semibold">
+                  OELD Anti-Tamper & Heartbeat Shield
+                </label>
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  10+ Roblox runtime integrity checks, silent anti-hook traps, and Heartbeat loop.
+                </p>
+              </div>
+              <Switch
+                id="oeld-shield"
+                checked={oeldShield}
+                onCheckedChange={setOeldShield}
+                disabled={running}
               />
             </div>
           </div>
+
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button onClick={runObf} disabled={running || !code.trim()} className="btn-primary">
               {running ? "Obfuscating…" : "Obfuscate"}
