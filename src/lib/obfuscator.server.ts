@@ -712,7 +712,7 @@ local ${SRC}=${TC}(${OUT})
 -- Loader-side integrity check (djb2 mod 2^24)
 local ${HV}=5381
 for ${I}=1,#${SRC} do
-  ${BB}=${SRC}:byte(${I})
+  local ${BB}=${SRC}:byte(${I})
   ${HV}=(${HV}*33 + ${BB}) % 16777216
 end
 if ${HV} ~= ${num(integrity)} then return error("[LuaMore] payload integrity check failed",0) end
