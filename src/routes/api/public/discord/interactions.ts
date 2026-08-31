@@ -500,7 +500,9 @@ async function postPanelForScript(profileId: string, script: any, body: any) {
   const avatarUrl =
     userObj?.id && avatarHash
       ? `https://cdn.discordapp.com/avatars/${userObj.id}/${avatarHash}.png?size=128`
-      : null;
+      : userObj?.id
+        ? `https://cdn.discordapp.com/embed/avatars/${(BigInt(userObj.id) >> 22n) % 6n}.png`
+        : null;
 
   return {
     type: 4,
@@ -596,7 +598,10 @@ async function handleComponent(body: any) {
       .eq("discord_id", discordId)
       .maybeSingle();
 
-    if (!script.ffa && !wl && !lic)
+    const profile = await getProfileByDiscord(discordId);
+    const isOwner = profile?.id && (profile.id === panel.user_id || profile.id === script.user_id);
+
+    if (!script.ffa && !wl && !lic && !isOwner)
       return errorReply("You are not whitelisted for this script — redeem a key first.");
     if (lic?.revoked) return errorReply("Your access has been revoked");
 
@@ -768,7 +773,7 @@ function randomKey() {
 
 async function getProfileByDiscord(discordId?: string) {
   if (!discordId) return null;
-  const { getDiscordSession } = await import("@/lib/discord-auth-store.server");
+  const { getDiscordSession, setDiscordSession } = await import("@/lib/discord-auth-store.server");
   const session = getDiscordSession(discordId);
   if (session?.userId) {
     return {
@@ -786,12 +791,28 @@ async function getProfileByDiscord(discordId?: string) {
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("profiles")
-    .select("*")
-    .eq("discord_id", discordId)
-    .maybeSingle();
-  return data;
+  try {
+    const { data } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("discord_id", discordId)
+      .maybeSingle();
+
+    if (data?.id) {
+      setDiscordSession(discordId, {
+        userId: data.id,
+        discordId,
+        email: data.email ?? undefined,
+        username: data.display_name || data.email || "User",
+        linkedAt: data.created_at || new Date().toISOString(),
+      });
+      return data;
+    }
+  } catch {
+    // database read error fallback
+  }
+
+  return null;
 }
 
 async function linkDiscord(

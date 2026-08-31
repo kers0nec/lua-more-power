@@ -11,7 +11,7 @@ export type PanelEmbedInput = {
   scriptName?: string | null;
 };
 
-export const PANEL_ACCENT = 0x00aaff;
+export const PANEL_ACCENT = 0x5865f2;
 
 export function buildPanelEmbed({
   id,
@@ -22,35 +22,20 @@ export function buildPanelEmbed({
   scriptName,
 }: PanelEmbedInput) {
   void id;
-  const displayName = scriptName || name;
+  const projectName = scriptName || name || "daf";
+  const title = name || `${projectName} Control Panel`;
   const body =
     description?.trim() ||
-    `This control panel is for the project: **${displayName}**\n\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role.`;
+    `This control panel is for the project: **${projectName}**\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role`;
 
   return {
-    title: `${displayName} Control Panel`,
+    title,
     description: body,
     color: PANEL_ACCENT,
-    thumbnail: avatarUrl ? { url: avatarUrl } : undefined,
-    author: sentBy
-      ? {
-          name: sentBy,
-          icon_url: avatarUrl || undefined,
-        }
-      : undefined,
-    fields: [
-      {
-        name: "📜 Script",
-        value: `**${displayName}**`,
-        inline: true,
-      },
-      {
-        name: "🔒 Protection",
-        value: "`Polymorphic VM + LZ4`",
-        inline: true,
-      },
-    ],
-    footer: { text: sentBy ? `Sent by ${sentBy} • LuaMore` : "LuaMore Control Panel" },
+    footer: {
+      text: sentBy ? `Sent by ${sentBy}` : "LuaMore",
+      icon_url: avatarUrl || undefined,
+    },
     timestamp: new Date().toISOString(),
   };
 }
@@ -62,16 +47,16 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 3,
+          style: 3, // Success (Green)
           label: "Redeem Key",
           emoji: { name: "🔑" },
           custom_id: `lm:redeem:${panelId}`,
         },
         {
           type: 2,
-          style: 1,
+          style: 1, // Primary (Blurple)
           label: "Get Script",
-          emoji: { name: "🧵" },
+          emoji: { name: "📜" },
           custom_id: `lm:script:${panelId}`,
         },
       ],
@@ -81,14 +66,14 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 1,
+          style: 1, // Primary (Blurple)
           label: "Get Role",
           emoji: { name: "👤" },
           custom_id: `lm:role:${panelId}`,
         },
         {
           type: 2,
-          style: 2,
+          style: 2, // Secondary (Grey)
           label: "Reset HWID",
           emoji: { name: "⚙️" },
           custom_id: `lm:hwid:${panelId}`,
@@ -100,7 +85,7 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 2,
+          style: 2, // Secondary (Grey)
           label: "Get Stats",
           emoji: { name: "📊" },
           custom_id: `lm:stats:${panelId}`,

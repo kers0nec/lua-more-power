@@ -167,7 +167,14 @@ function ScriptDetail() {
           >
             <ArrowLeft size={14} /> All scripts
           </Link>
-          <div className="eyebrow">Script workspace</div>
+          <div className="flex items-center gap-3">
+            <div className="eyebrow">Script workspace</div>
+            {script.public_id && (
+              <span className="font-mono font-semibold tracking-widest text-blue-300 bg-[#161f38] border border-blue-500/30 px-3 py-0.5 rounded-full text-xs select-all shadow-inner">
+                {script.public_id}
+              </span>
+            )}
+          </div>
           <input
             className="mt-2 w-full max-w-2xl border-0 bg-transparent p-0 font-display text-4xl text-foreground outline-none md:text-5xl"
             value={name}

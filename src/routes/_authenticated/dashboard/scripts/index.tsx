@@ -159,8 +159,10 @@ function Scripts() {
                 <p className="text-sm line-clamp-2" style={{ color: "var(--muted-foreground)" }}>
                   {s.description || "—"}
                 </p>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="badge-blue">{s.public_id}</span>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="font-mono font-semibold tracking-wider text-blue-300 bg-blue-950/70 border border-blue-500/30 px-2.5 py-0.5 rounded-full text-xs select-all">
+                    {s.public_id}
+                  </span>
                   {s.category && <span className="badge-blue">{s.category}</span>}
                   {s.ffa && <span className="badge-blue">FFA</span>}
                   {!s.is_active && <span className="badge-blue">Inactive</span>}

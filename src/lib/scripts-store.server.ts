@@ -57,8 +57,9 @@ function saveScripts(scripts: Record<string, StoredScript>) {
   }
 }
 
-function generatePublicId(): string {
-  return "s_" + crypto.randomBytes(6).toString("base64url").slice(0, 8);
+export function generatePublicId(): string {
+  // Generates 18 uppercase hex characters like 87B653A7B59A722DE8
+  return crypto.randomBytes(9).toString("hex").toUpperCase();
 }
 
 export function getAllScripts(userId?: string): StoredScript[] {
@@ -82,8 +83,11 @@ export function getScriptById(id: string, userId?: string): StoredScript | null 
 
 export function getScriptByPublicId(publicId: string): StoredScript | null {
   const map = loadScripts();
+  const target = String(publicId || "").trim().toLowerCase();
   for (const script of Object.values(map)) {
-    if (script.public_id === publicId) return script;
+    if (script.public_id === publicId || script.public_id?.toLowerCase() === target) {
+      return script;
+    }
   }
   return null;
 }

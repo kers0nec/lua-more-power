@@ -6,6 +6,7 @@ import {
   getScriptById,
   saveScript as saveScriptToStore,
   deleteScriptById,
+  generatePublicId,
   type StoredScript,
 } from "@/lib/scripts-store.server";
 
@@ -106,11 +107,13 @@ export const createScript = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     let row: Record<string, unknown> | null = null;
 
+    const publicId = generatePublicId();
     try {
       const { data: dbRow } = await context.supabase
         .from("scripts")
         .insert({
           name: data.name,
+          public_id: publicId,
           code: data.code ?? "",
           ffa: data.ffa ?? false,
           description: data.description ?? null,
@@ -129,7 +132,7 @@ export const createScript = createServerFn({ method: "POST" })
     const saved = saveScriptToStore({
       id: row?.id as string | undefined,
       user_id: context.userId,
-      public_id: row?.public_id as string | undefined,
+      public_id: (row?.public_id as string | undefined) || publicId,
       name: data.name,
       code: data.code ?? "",
       ffa: data.ffa ?? false,

@@ -283,36 +283,86 @@ function Page() {
                 Delete
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div
-                className="text-center rounded-md py-2 text-white"
-                style={{ background: "#248046" }}
-              >
-                🔑 Redeem Key
+            {/* Discord message & Embed visual representation matching IMG_0870 */}
+            <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
+              {/* Bot author row */}
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="h-8 w-8 rounded-full bg-[#5865f2] flex items-center justify-center text-white text-xs font-mono font-bold shrink-0">
+                  &lt;/&gt;
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="font-semibold text-emerald-400 hover:underline cursor-pointer">
+                    Luasnapper
+                  </span>
+                  <span>🐱</span>
+                  <span className="bg-[#5865F2] text-[10px] text-white font-bold px-1 py-0.5 rounded">
+                    APP
+                  </span>
+                  <span className="text-[11px] text-[#949ba4] ml-1">
+                    {new Date().toLocaleDateString(undefined, {
+                      month: "numeric",
+                      day: "numeric",
+                      year: "2-digit",
+                    })}
+                    ,{" "}
+                    {new Date().toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </div>
-              <div
-                className="text-center rounded-md py-2 text-white"
-                style={{ background: "#5865f2" }}
-              >
-                🧵 Get Script
+
+              {/* Embed body */}
+              <div className="ml-10 rounded-md bg-[#2b2d31] border-l-4 border-[#5865f2] p-3 text-xs space-y-2">
+                <h4 className="text-sm font-semibold text-white">{p.name}</h4>
+                <p className="text-[#dbdee1] leading-relaxed whitespace-pre-line">
+                  {p.description ||
+                    `This control panel is for the project: **${(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || p.name}**\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role`}
+                </p>
+                <div className="flex items-center gap-1.5 pt-1 text-[11px] text-[#949ba4]">
+                  <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
+                  <span>
+                    Sent by{" "}
+                    {(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || "formi"} -{" "}
+                    {new Date().toLocaleDateString(undefined, {
+                      month: "numeric",
+                      day: "numeric",
+                      year: "numeric",
+                    })}{" "}
+                    {new Date().toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </div>
-              <div
-                className="text-center rounded-md py-2 text-white"
-                style={{ background: "#5865f2" }}
-              >
-                👤 Get Role
-              </div>
-              <div
-                className="text-center rounded-md py-2"
-                style={{ background: "var(--muted)", color: "var(--foreground)" }}
-              >
-                ⚙️ Reset HWID
-              </div>
-              <div
-                className="text-center rounded-md py-2 col-span-2"
-                style={{ background: "var(--muted)", color: "var(--foreground)" }}
-              >
-                📊 Get Stats
+
+              {/* Action Rows / Buttons matching IMG_0870 */}
+              <div className="ml-10 mt-3 space-y-2 text-xs font-medium">
+                <div className="flex gap-2">
+                  <div className="flex-1 text-center rounded bg-[#248046] hover:bg-[#1a6334] py-2 text-white cursor-pointer select-none transition-colors">
+                    🔑 Redeem Key
+                  </div>
+                  <div className="flex-1 text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors">
+                    📜 Get Script
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors">
+                    👤 Get Role
+                  </div>
+                  <div className="flex-1 text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors">
+                    ⚙️ Reset HWID
+                  </div>
+                </div>
+                <div className="flex">
+                  <div className="w-1/2 pr-1">
+                    <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors">
+                      📊 Get Stats
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <PanelSettingsConfig
