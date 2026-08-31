@@ -4,7 +4,7 @@
 // Execution VM: Flattened state-machine dispatcher with randomized opcodes
 // Compatible with all Roblox executors (Synapse, Wave, KRNL, Solara, Fluxus, Delta, Codex, Arceus X, Hydrogen, Celery, Swift) and standard Lua 5.1/LuaJIT.
 
-const TAMPER_MSG = "LuaMore integrity check failed";
+const TAMPER_MSG = "<_> yo dumbass js tried to deobfuscate luamore what a dumbass";
 const MAX_SOURCE_BYTES = 5_000_000;
 
 function rand(n: number): number {
