@@ -510,8 +510,13 @@ local _LM_CACHE = {}
 local _LM_DATA = "${octalBytes}"
 local _LM_OFFSETS = {${stringOffsets.map((o) => o + 1).join(",")}}
 local _LM_LENS = {${stringLengths.join(",")}}
-local _LM_CHAR = string.char
 local _LM_BYTE = string.byte
+local _LM_CHAR = function(x)
+  if type(x) == "number" then
+    return string.char(math.floor(x) % 256)
+  end
+  return ""
+end
 local _LM_XOR = (bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
   for _=1,8 do
@@ -527,14 +532,17 @@ local function _LM_STR(idx)
   if _LM_CACHE[id] then return _LM_CACHE[id] end
   local offset = _LM_OFFSETS[id]
   local len = _LM_LENS[id]
-  if not offset or not len then return "" end
+  if not offset or not len or len <= 0 then return "" end
   local res = {}
   for i = 1, len do
     local b = _LM_BYTE(_LM_DATA, offset + i - 1)
-    if not b then return "" end
-    local dec = ((b - ${encKey} - (i - 1)) % 256 + 256) % 256
-    dec = _LM_XOR(dec, ${xorKey})
-    res[i] = _LM_CHAR(dec)
+    if b then
+      local dec = ((b - ${encKey} - (i - 1)) % 256 + 256) % 256
+      dec = _LM_XOR(dec, ${xorKey})
+      res[i] = _LM_CHAR(dec)
+    else
+      res[i] = ""
+    end
   end
   local str = table.concat(res)
   _LM_CACHE[id] = str
@@ -910,7 +918,13 @@ local ${G}=(function()
   return _G or {}
 end)()
 local ${SBYTE}=(string and string.byte) or ${RAWGET}(_G, ${hiddenStr("string.byte")})
-local ${SCHAR}=(string and string.char) or ${RAWGET}(_G, ${hiddenStr("string.char")})
+local _raw_char=(string and string.char) or ${RAWGET}(_G, ${hiddenStr("string.char")})
+local ${SCHAR}=function(x)
+  if type(x)=="number" and type(_raw_char)=="function" then
+    return _raw_char(math.floor(x)%256)
+  end
+  return ""
+end
 local ${TCONCAT}=(table and table.concat) or ${RAWGET}(_G, ${hiddenStr("table.concat")})
 local ${LOAD}=(function()
   if type(loadstring)=="function" then return loadstring end

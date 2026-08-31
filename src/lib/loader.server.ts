@@ -171,12 +171,10 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     void sendExecutionWebhook(usedKey);
   };
 
-  // Serve stored obfuscated_code when protection is enabled and a build exists;
-  // otherwise obfuscate on the fly with derived keystream.
-  const payload =
-    script.is_protected && script.obfuscated_code
-      ? script.obfuscated_code
-      : obfuscateLua(script.code, script.public_id);
+  // Serve fresh hardened obfuscated payload whenever source code is present
+  const payload = script.code
+    ? obfuscateLua(script.code, script.public_id)
+    : (script.obfuscated_code ?? `-- Empty script\nprint("No payload")`);
 
   if (script.ffa) {
     await bumpRuns(null);
