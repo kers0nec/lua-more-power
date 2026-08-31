@@ -87,10 +87,7 @@ function PricingPage() {
               <Zap size={16} /> Get started free
             </Link>
 
-            <p
-              className="mt-4 text-center text-xs"
-              style={{ color: "var(--muted-foreground)" }}
-            >
+            <p className="mt-4 text-center text-xs" style={{ color: "var(--muted-foreground)" }}>
               Start with one script. Upgrade your skills, not your plan.
             </p>
           </div>
@@ -100,21 +97,31 @@ function PricingPage() {
       {/* Comparison */}
       <div className="mx-auto mt-16 max-w-2xl">
         <h2 className="font-display text-2xl text-center">Why free?</h2>
-        <p
-          className="mt-3 text-center text-sm"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          LuaMore believes script creators shouldn&apos;t pay for basic protection tools.
-          We keep it simple — one free tier with everything included.
+        <p className="mt-3 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
+          LuaMore believes script creators shouldn&apos;t pay for basic protection tools. We keep it
+          simple — one free tier with everything included.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {[
-            { label: "No paywalls", desc: "Every feature is available to every account from day one." },
-            { label: "No hidden costs", desc: "No Stripe processing, no ad checkpoints, no premium tiers." },
-            { label: "No limits", desc: "Unlimited scripts, keys, obfuscation runs, and Discord panels." },
+            {
+              label: "No paywalls",
+              desc: "Every feature is available to every account from day one.",
+            },
+            {
+              label: "No hidden costs",
+              desc: "No Stripe processing, no ad checkpoints, no premium tiers.",
+            },
+            {
+              label: "No limits",
+              desc: "Unlimited scripts, keys, obfuscation runs, and Discord panels.",
+            },
             { label: "No catch", desc: "We don't sell your data, inject ads, or gate features." },
           ].map((item) => (
-            <div key={item.label} className="rounded-lg border p-4" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+            <div
+              key={item.label}
+              className="rounded-lg border p-4"
+              style={{ borderColor: "var(--border)", background: "var(--card)" }}
+            >
               <h3 className="font-medium">{item.label}</h3>
               <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
                 {item.desc}

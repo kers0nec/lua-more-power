@@ -15,7 +15,10 @@ export const Route = createFileRoute("/tos")({
 export function TosPage() {
   return (
     <PageShell eyebrow="Legal" title="Terms of Service" subtitle="Last updated: August 30, 2026">
-      <article className="space-y-6 text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+      <article
+        className="space-y-6 text-sm leading-relaxed"
+        style={{ color: "var(--muted-foreground)" }}
+      >
         <p>
           These Terms of Service (&quot;Terms&quot;) govern your access to and use of LuaMore
           (&quot;LuaMore,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) and related
@@ -55,9 +58,9 @@ export function TosPage() {
         </h2>
         <p>
           You retain ownership of scripts, keys, project settings, and other content you upload or
-          configure (&quot;Your Content&quot;). You grant LuaMore a limited license to host, process,
-          transmit, obfuscate (when you request it), and deliver Your Content solely to operate the
-          service for you and your end users.
+          configure (&quot;Your Content&quot;). You grant LuaMore a limited license to host,
+          process, transmit, obfuscate (when you request it), and deliver Your Content solely to
+          operate the service for you and your end users.
         </p>
         <p>
           You represent that you have the rights to upload and distribute Your Content and that Your
@@ -86,13 +89,12 @@ export function TosPage() {
             platform rules
           </li>
           <li>
-            Attack, probe, or overload our infrastructure or bypass rate limits and security controls
+            Attack, probe, or overload our infrastructure or bypass rate limits and security
+            controls
           </li>
           <li>Resell or sublicense the service without our written permission</li>
           <li>Misrepresent LuaMore, impersonate our staff, or abuse referral or reward programs</li>
-          <li>
-            Use obfuscation or protection solely to conceal clearly malicious behavior
-          </li>
+          <li>Use obfuscation or protection solely to conceal clearly malicious behavior</li>
         </ul>
         <p>
           We may investigate abuse reports, security signals, and automated detections (including
@@ -100,9 +102,7 @@ export function TosPage() {
           suspension, key revocation, or permanent termination.
         </p>
 
-        <h2 className="font-display text-2xl text-[color:var(--foreground)]">
-          6. Free service
-        </h2>
+        <h2 className="font-display text-2xl text-[color:var(--foreground)]">6. Free service</h2>
         <p>
           LuaMore is free. There are no paid subscriptions, no billing, no Stripe, and no
           checkpoints. All features — including unlimited scripts, keys, obfuscation, and Discord
@@ -205,7 +205,10 @@ export function TosPage() {
           </a>
         </div>
 
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] pt-4" style={{ color: "var(--muted-foreground)" }}>
+        <p
+          className="font-mono text-[11px] uppercase tracking-[0.18em] pt-4"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           © {new Date().getFullYear()} LuaMore
         </p>
       </article>

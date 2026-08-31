@@ -59,7 +59,16 @@ function Page() {
 
   return (
     <div className="app-page max-w-5xl">
-      <DashboardHeader eyebrow="Developer tools" title="API keys" description="Authenticate Discord commands, REST requests, and loader integrations." action={<span className="badge-blue"><Key size={12} /> {(q.data ?? []).length} active</span>} />
+      <DashboardHeader
+        eyebrow="Developer tools"
+        title="API keys"
+        description="Authenticate Discord commands, REST requests, and loader integrations."
+        action={
+          <span className="badge-blue">
+            <Key size={12} /> {(q.data ?? []).length} active
+          </span>
+        }
+      />
 
       <div className="card-blue p-5 mt-6 flex flex-wrap items-end gap-3 border border-border/40">
         <div className="flex-1 min-w-64">

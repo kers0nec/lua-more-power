@@ -102,7 +102,18 @@ function Page() {
 
   return (
     <div className="app-page max-w-5xl">
-      <header className="app-page-header"><div><div className="eyebrow">Workspace preferences</div><h1 className="mt-2 font-display text-4xl">Account settings</h1><p className="mt-2 text-sm text-muted-foreground">Manage your profile, credentials, Discord identity, and workspace data.</p></div><span className="badge-solid flex items-center gap-1.5"><Sparkles size={12} /> Free forever</span></header>
+      <header className="app-page-header">
+        <div>
+          <div className="eyebrow">Workspace preferences</div>
+          <h1 className="mt-2 font-display text-4xl">Account settings</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage your profile, credentials, Discord identity, and workspace data.
+          </p>
+        </div>
+        <span className="badge-solid flex items-center gap-1.5">
+          <Sparkles size={12} /> Free forever
+        </span>
+      </header>
 
       {/* Tabs */}
       <div

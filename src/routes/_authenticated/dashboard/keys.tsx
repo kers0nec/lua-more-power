@@ -19,7 +19,9 @@ function Keys() {
   const scripts = useServerFn(listScripts);
   const qc = useQueryClient();
   const keys = useQuery({ queryKey: ["keys"], queryFn: () => list() });
-  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() }) as { data?: any[] };
+  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() }) as {
+    data?: any[];
+  };
 
   const [scriptId, setScriptId] = useState<string>("");
   const [hours, setHours] = useState<number>(24);
@@ -45,7 +47,16 @@ function Keys() {
 
   return (
     <div className="app-page">
-      <DashboardHeader eyebrow="Access control" title="License keys" description="Generate, bind, inspect, and revoke access credentials across your scripts." action={<span className="badge-blue"><KeyRound size={12} /> {(keys.data ?? []).length} keys</span>} />
+      <DashboardHeader
+        eyebrow="Access control"
+        title="License keys"
+        description="Generate, bind, inspect, and revoke access credentials across your scripts."
+        action={
+          <span className="badge-blue">
+            <KeyRound size={12} /> {(keys.data ?? []).length} keys
+          </span>
+        }
+      />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-5 items-end">
         <div>
@@ -105,8 +116,13 @@ function Keys() {
       <div className="mt-6 card-blue divide-y">
         {(keys.data ?? []).map((k) => (
           <div key={k.id} className="p-4 flex flex-wrap items-center gap-3">
-            <button className="inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-primary" onClick={() => navigator.clipboard.writeText(k.key)} title="Copy key">
-              <span className="truncate">{k.key}</span><Copy size={13} className="shrink-0" />
+            <button
+              className="inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-primary"
+              onClick={() => navigator.clipboard.writeText(k.key)}
+              title="Copy key"
+            >
+              <span className="truncate">{k.key}</span>
+              <Copy size={13} className="shrink-0" />
             </button>
             {k.revoked && (
               <span
@@ -124,7 +140,14 @@ function Keys() {
               </span>
             )}
             <div className="flex-1" />
-            <button onClick={() => delMut.mutate(k.id)} className="btn-ghost px-2 text-destructive" aria-label="Delete key" title="Delete key"><Trash2 size={15} /></button>
+            <button
+              onClick={() => delMut.mutate(k.id)}
+              className="btn-ghost px-2 text-destructive"
+              aria-label="Delete key"
+              title="Delete key"
+            >
+              <Trash2 size={15} />
+            </button>
           </div>
         ))}
         {keys.data && keys.data.length === 0 && (

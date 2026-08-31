@@ -47,12 +47,38 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 md:flex-row md:items-center md:justify-between">
-        <div><Logo size={28} /><p className="mt-3 max-w-sm text-sm text-muted-foreground">Scripts, keys, Discord panels, and hosted delivery in one free workspace.</p></div>
+        <div>
+          <Logo size={28} />
+          <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+            Scripts, keys, Discord panels, and hosted delivery in one free workspace.
+          </p>
+        </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
-          {COLS.flatMap((col) => col.links).filter((item, index, all) => all.findIndex((x) => x.label === item.label) === index).slice(0, 8).map((l) => l.to ? <Link key={l.label} to={l.to} className="hover:text-foreground">{l.label}</Link> : <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className="hover:text-foreground">{l.label}</a>)}
+          {COLS.flatMap((col) => col.links)
+            .filter((item, index, all) => all.findIndex((x) => x.label === item.label) === index)
+            .slice(0, 8)
+            .map((l) =>
+              l.to ? (
+                <Link key={l.label} to={l.to} className="hover:text-foreground">
+                  {l.label}
+                </Link>
+              ) : (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-foreground"
+                >
+                  {l.label}
+                </a>
+              ),
+            )}
         </nav>
       </div>
-      <div className="border-t border-border px-6 py-4 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">© {new Date().getFullYear()} LuaMore · {SITE_TAGLINE}</div>
+      <div className="border-t border-border px-6 py-4 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        © {new Date().getFullYear()} LuaMore · {SITE_TAGLINE}
+      </div>
     </footer>
   );
 }

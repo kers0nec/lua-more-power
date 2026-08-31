@@ -62,9 +62,13 @@ function Dashboard() {
           <h1 className="mt-3 font-display text-4xl md:text-5xl">
             Welcome back{stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
           </h1>
-          <p className="mt-3 max-w-lg text-sm text-muted-foreground">Scripts, access, Discord panels, and releases at a glance.</p>
+          <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+            Scripts, access, Discord panels, and releases at a glance.
+          </p>
         </div>
-        <Link to="/dashboard/scripts" className="btn-primary">New script <ArrowUpRight size={15} /></Link>
+        <Link to="/dashboard/scripts" className="btn-primary">
+          New script <ArrowUpRight size={15} />
+        </Link>
       </header>
 
       <div

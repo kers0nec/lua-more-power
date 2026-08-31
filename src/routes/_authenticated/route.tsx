@@ -93,8 +93,16 @@ function Layout() {
   const SidebarBody = (
     <>
       <div className="flex h-16 items-center justify-between border-b border-border px-4">
-        <Link to="/"><Logo size={29} /></Link>
-        <button onClick={() => setOpen(false)} aria-label="Close menu" className="btn-ghost px-2 py-1 md:hidden"><X size={18} /></button>
+        <Link to="/">
+          <Logo size={29} />
+        </Link>
+        <button
+          onClick={() => setOpen(false)}
+          aria-label="Close menu"
+          className="btn-ghost px-2 py-1 md:hidden"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
@@ -103,10 +111,20 @@ function Layout() {
             <div className="eyebrow px-3 pb-2">{group.label}</div>
             <div className="space-y-1">
               {group.items.map((item) => {
-                const active = loc.pathname === item.to || (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
+                const active =
+                  loc.pathname === item.to ||
+                  (item.to !== "/dashboard" && loc.pathname.startsWith(item.to));
                 return (
-                  <Link key={item.to} to={item.to} className={`group flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm transition-colors ${active ? "border-border-strong bg-accent text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                    <item.icon size={16} strokeWidth={1.7} className={active ? "text-primary" : ""} />
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`group flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm transition-colors ${active ? "border-border-strong bg-accent text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+                  >
+                    <item.icon
+                      size={16}
+                      strokeWidth={1.7}
+                      className={active ? "text-primary" : ""}
+                    />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 );
@@ -117,8 +135,15 @@ function Layout() {
       </nav>
 
       <div className="border-t border-border p-3">
-        <Link to="/dashboard/settings" className="mb-1 block truncate rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">{labelName}</Link>
-        <button onClick={signOut} className="btn-ghost w-full justify-start text-sm"><LogOut size={16} strokeWidth={1.7} /> Sign out</button>
+        <Link
+          to="/dashboard/settings"
+          className="mb-1 block truncate rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          {labelName}
+        </Link>
+        <button onClick={signOut} className="btn-ghost w-full justify-start text-sm">
+          <LogOut size={16} strokeWidth={1.7} /> Sign out
+        </button>
       </div>
     </>
   );
@@ -130,19 +155,34 @@ function Layout() {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-[color:var(--sidebar)] md:flex">{SidebarBody}</aside>
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-[color:var(--sidebar)] md:flex">
+        {SidebarBody}
+      </aside>
       {open && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="relative flex h-full w-72 max-w-[88%] flex-col border-r border-border bg-[color:var(--sidebar)] shadow-2xl">{SidebarBody}</aside>
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="relative flex h-full w-72 max-w-[88%] flex-col border-r border-border bg-[color:var(--sidebar)] shadow-2xl">
+            {SidebarBody}
+          </aside>
         </div>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-xl md:hidden">
-          <button onClick={() => setOpen(true)} aria-label="Open menu" className="btn-ghost shrink-0 px-2 py-1"><Menu size={20} /></button>
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            className="btn-ghost shrink-0 px-2 py-1"
+          >
+            <Menu size={20} />
+          </button>
           <span className="truncate font-display text-lg">{currentLabel}</span>
         </header>
-        <main className="min-w-0 flex-1"><Outlet /></main>
+        <main className="min-w-0 flex-1">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

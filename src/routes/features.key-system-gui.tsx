@@ -7,7 +7,8 @@ export const Route = createFileRoute("/features/key-system-gui")({
       { title: "Key System GUI — LuaMore" },
       {
         name: "description",
-        content: "Build a responsive LuaMore loading interface for key validation and script delivery.",
+        content:
+          "Build a responsive LuaMore loading interface for key validation and script delivery.",
       },
       { property: "og:title", content: "Key System GUI — LuaMore" },
       {

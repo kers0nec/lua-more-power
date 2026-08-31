@@ -15,7 +15,10 @@ export const Route = createFileRoute("/privacy")({
 function PrivacyPage() {
   return (
     <PageShell eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: August 30, 2026">
-      <article className="space-y-6 text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+      <article
+        className="space-y-6 text-sm leading-relaxed"
+        style={{ color: "var(--muted-foreground)" }}
+      >
         <p>
           This Privacy Policy explains how LuaMore (&quot;we,&quot; &quot;us&quot;) collects, uses,
           stores, and shares information when you use LuaMore, our dashboard, loader runtime,
@@ -32,10 +35,10 @@ function PrivacyPage() {
         <p>
           <strong className="text-[color:var(--foreground)]">Account and profile.</strong> When you
           register, we collect your email address, display name / username, and a hashed password.
-          If you enable two-factor authentication, we store the settings and secrets needed to verify
-          codes (for example, a TOTP secret for an authenticator app, or your phone number if you
-          enable SMS). We record when you accept these Terms and our Privacy Policy. Email is used
-          for account recovery and key delivery notices.
+          If you enable two-factor authentication, we store the settings and secrets needed to
+          verify codes (for example, a TOTP secret for an authenticator app, or your phone number if
+          you enable SMS). We record when you accept these Terms and our Privacy Policy. Email is
+          used for account recovery and key delivery notices.
         </p>
         <p>
           Optional Discord sign-in may store your Discord user ID, username, display name, and
@@ -86,21 +89,44 @@ function PrivacyPage() {
           <li>Detect abuse, fraud, and violations of our Terms</li>
           <li>Comply with legal obligations</li>
         </ul>
-        <p>We do not sell your scripts or use them to train third-party AI models. We do not sell personal information to advertisers.</p>
+        <p>
+          We do not sell your scripts or use them to train third-party AI models. We do not sell
+          personal information to advertisers.
+        </p>
 
         <h2 className="font-display text-2xl text-[color:var(--foreground)]">
           3. How we share information
         </h2>
         <p>We share information only as needed to operate the service:</p>
         <ul className="list-disc space-y-1 pl-5">
-          <li><strong className="text-[color:var(--foreground)]">Infrastructure:</strong> hosting and database providers</li>
-          <li><strong className="text-[color:var(--foreground)]">Email:</strong> transactional email providers for platform mail</li>
-          <li><strong className="text-[color:var(--foreground)]">Obfuscation:</strong> providers when you request protection</li>
-          <li><strong className="text-[color:var(--foreground)]">Discord:</strong> when you use bot or OAuth features</li>
-          <li><strong className="text-[color:var(--foreground)]">Webhooks:</strong> endpoints you configure to receive events from your projects</li>
-          <li><strong className="text-[color:var(--foreground)]">Legal:</strong> when required by law or to protect rights, safety, and security</li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Infrastructure:</strong> hosting and
+            database providers
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Email:</strong> transactional email
+            providers for platform mail
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Obfuscation:</strong> providers when
+            you request protection
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Discord:</strong> when you use bot or
+            OAuth features
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Webhooks:</strong> endpoints you
+            configure to receive events from your projects
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Legal:</strong> when required by law
+            or to protect rights, safety, and security
+          </li>
         </ul>
-        <p>Team members you invite may access project data according to the permissions you grant.</p>
+        <p>
+          Team members you invite may access project data according to the permissions you grant.
+        </p>
 
         <h2 className="font-display text-2xl text-[color:var(--foreground)]">
           4. Cookies and local storage
@@ -110,10 +136,24 @@ function PrivacyPage() {
           always on. We use cookies and similar technologies for:
         </p>
         <ul className="list-disc space-y-1 pl-5">
-          <li><strong className="text-[color:var(--foreground)]">Session cookie:</strong> keeps you signed in to the dashboard (essential)</li>
-          <li><strong className="text-[color:var(--foreground)]">Two-factor and OAuth cookies:</strong> short-lived state during login (essential)</li>
-          <li><strong className="text-[color:var(--foreground)]">Device fingerprint cookie:</strong> signup abuse prevention when enabled (essential security)</li>
-          <li><strong className="text-[color:var(--foreground)]">Theme preferences:</strong> accent and appearance in local storage (preference)</li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Session cookie:</strong> keeps you
+            signed in to the dashboard (essential)
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">
+              Two-factor and OAuth cookies:
+            </strong>{" "}
+            short-lived state during login (essential)
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Device fingerprint cookie:</strong>{" "}
+            signup abuse prevention when enabled (essential security)
+          </li>
+          <li>
+            <strong className="text-[color:var(--foreground)]">Theme preferences:</strong> accent
+            and appearance in local storage (preference)
+          </li>
         </ul>
         <p>
           We do not sell personal information. Project Discord webhooks you configure send only
@@ -124,8 +164,8 @@ function PrivacyPage() {
         <p>
           We retain account and project data while your account is active. You may delete projects,
           scripts, keys from your dashboard. When you delete content or close your account, we
-          remove or anonymize data within a reasonable period, except where retention is required for
-          security, fraud prevention, or legal compliance.
+          remove or anonymize data within a reasonable period, except where retention is required
+          for security, fraud prevention, or legal compliance.
         </p>
         <p>
           Loader sessions, execution logs, and security events may be retained for a limited period
@@ -211,7 +251,10 @@ function PrivacyPage() {
           </a>
         </div>
 
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] pt-4" style={{ color: "var(--muted-foreground)" }}>
+        <p
+          className="font-mono text-[11px] uppercase tracking-[0.18em] pt-4"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           © {new Date().getFullYear()} LuaMore
         </p>
       </article>

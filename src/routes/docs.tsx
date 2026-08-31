@@ -39,11 +39,13 @@ const categories = [
         title: "Obfuscators",
         desc: "LuaMore VM — default Luau obfuscation with anti-hook shield, rotating XOR, RC4, and dual-VM wrapping.",
       },
-      { to: "/features",
+      {
+        to: "/features",
         title: "Cached builds",
         desc: "Protect on save, serve cached output for instant delivery to end users.",
       },
-      { to: "/features",
+      {
+        to: "/features",
         title: "Game routing",
         desc: "Bind to PlaceIds and dispatch at auth. Route scripts to specific Roblox games.",
       },
@@ -52,29 +54,69 @@ const categories = [
   {
     title: "Keys",
     items: [
-      { to: "/keys", title: "Key system", desc: "Duration (lifetime, daily, weekly, custom), HWID binding, execution limits, and Discord mapping." },
-      { to: "/keys", title: "HWID", desc: "Bind to device after first run. Anti-bypass routing with encrypted server-side validation." },
-      { to: "/keys", title: "Limits", desc: "Cap executions, revoke instantly, batch generate keys." },
-      { to: "/keys", title: "Discord map", desc: "Tie keys to guild members. Auto-assign buyer roles on redeem." },
+      {
+        to: "/keys",
+        title: "Key system",
+        desc: "Duration (lifetime, daily, weekly, custom), HWID binding, execution limits, and Discord mapping.",
+      },
+      {
+        to: "/keys",
+        title: "HWID",
+        desc: "Bind to device after first run. Anti-bypass routing with encrypted server-side validation.",
+      },
+      {
+        to: "/keys",
+        title: "Limits",
+        desc: "Cap executions, revoke instantly, batch generate keys.",
+      },
+      {
+        to: "/keys",
+        title: "Discord map",
+        desc: "Tie keys to guild members. Auto-assign buyer roles on redeem.",
+      },
     ],
   },
   {
     title: "Discord",
     items: [
-      { to: "/commands", title: "Setup", desc: "Link guild, select project, post interactive panels." },
+      {
+        to: "/commands",
+        title: "Setup",
+        desc: "Link guild, select project, post interactive panels.",
+      },
       { to: "/commands", title: "Roles", desc: "Buyer role on redeem. Admin controls for staff." },
-      { to: "/commands", title: "Slash commands", desc: "/setup, /whitelist, /resethwid, /login, /help." },
+      {
+        to: "/commands",
+        title: "Slash commands",
+        desc: "/setup, /whitelist, /resethwid, /login, /help.",
+      },
       { to: "/commands", title: "Recovery", desc: "HWID reset from Discord. No dashboard needed." },
     ],
   },
   {
     title: "Platform",
     items: [
-      { to: "/features", title: "Scripts", desc: "Store Luau, choose protection, copy loader. Unlimited scripts per account." },
-      { to: "/loading-screens", title: "Loading screens", desc: "Four presets (Frost, Neon, Clean, Gold). Mobile-ready, customizable title and accent." },
-      { to: "/settings", title: "Settings", desc: "Manage profile, security, appearance, notifications, and data export." },
+      {
+        to: "/features",
+        title: "Scripts",
+        desc: "Store Luau, choose protection, copy loader. Unlimited scripts per account.",
+      },
+      {
+        to: "/loading-screens",
+        title: "Loading screens",
+        desc: "Four presets (Frost, Neon, Clean, Gold). Mobile-ready, customizable title and accent.",
+      },
+      {
+        to: "/settings",
+        title: "Settings",
+        desc: "Manage profile, security, appearance, notifications, and data export.",
+      },
       { to: "/faq", title: "FAQ", desc: "Frequently asked questions about LuaMore." },
-      { to: "/changelog", title: "Changelog", desc: "Latest releases, security upgrades, and new capabilities." },
+      {
+        to: "/changelog",
+        title: "Changelog",
+        desc: "Latest releases, security upgrades, and new capabilities.",
+      },
     ],
   },
 ];
@@ -94,11 +136,7 @@ function DocsPage() {
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {cat.items.map((g) => (
-              <Link
-                key={`${g.to}-${g.title}`}
-                to={g.to}
-                className="card-blue block p-5"
-              >
+              <Link key={`${g.to}-${g.title}`} to={g.to} className="card-blue block p-5">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-display text-lg">{g.title}</h3>
                   {g.badge && <span className="badge-blue shrink-0">{g.badge}</span>}

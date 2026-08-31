@@ -34,7 +34,16 @@ function Page() {
 
   return (
     <div className="app-page max-w-5xl">
-      <DashboardHeader eyebrow="Device control" title="HWID bans" description="Block abusive device fingerprints and restore access when needed." action={<span className="badge-blue"><Ban size={12} /> {(q.data ?? []).length} blocked</span>} />
+      <DashboardHeader
+        eyebrow="Device control"
+        title="HWID bans"
+        description="Block abusive device fingerprints and restore access when needed."
+        action={
+          <span className="badge-blue">
+            <Ban size={12} /> {(q.data ?? []).length} blocked
+          </span>
+        }
+      />
 
       <div className="card-blue p-5 mt-6 grid gap-3 md:grid-cols-3 items-end">
         <div>

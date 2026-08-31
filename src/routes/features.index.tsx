@@ -1,14 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Bot, Boxes, FileCode2, KeyRound, MonitorSmartphone, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  Boxes,
+  FileCode2,
+  KeyRound,
+  MonitorSmartphone,
+  ShieldCheck,
+} from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
 export const Route = createFileRoute("/features/")({
   head: () => ({
     meta: [
       { title: "Features — LuaMore" },
-      { name: "description", content: "Explore LuaMore script hosting, keys, Discord panels, loaders, and access controls." },
+      {
+        name: "description",
+        content:
+          "Explore LuaMore script hosting, keys, Discord panels, loaders, and access controls.",
+      },
       { property: "og:title", content: "Features — LuaMore" },
-      { property: "og:description", content: "Script hosting, keys, Discord panels, loaders, and access controls in one free workspace." },
+      {
+        property: "og:description",
+        content:
+          "Script hosting, keys, Discord panels, loaders, and access controls in one free workspace.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -17,12 +33,67 @@ export const Route = createFileRoute("/features/")({
 });
 
 const groups = [
-  { icon: FileCode2, title: "Scripts", desc: "Create, upload, update, and publish Lua source while keeping a stable loader URL.", bullets: ["Permanent source storage", "Release history", "FFA and key-required modes", "Copy-ready loadstrings"] },
-  { icon: KeyRound, title: "Keys", desc: "Control how long access lasts and which device can use each license.", bullets: ["Custom expirations", "First-run HWID binding", "Instant revoke and reset", "Bulk key generation"] },
-  { icon: Bot, title: "Discord", desc: "Run routine access operations from Discord without handing out dashboard access.", bullets: ["Interactive panels", "Slash-command workflows", "Administrator checks", "User and key management"] },
-  { icon: Boxes, title: "Delivery", desc: "Serve the current script through a predictable hosted loader for every release.", bullets: ["Short hosted URLs", "Raw and hosted routes", "Keyless delivery", "Update without relinking"] },
-  { icon: MonitorSmartphone, title: "Loading UI", desc: "Add a polished loading state while authentication and delivery complete.", bullets: ["Four visual presets", "Desktop and mobile preview", "Custom labels and position", "Copyable Luau templates"] },
-  { icon: ShieldCheck, title: "Workspace controls", desc: "Keep scripts, keys, bans, panels, API access, and profile settings organized.", bullets: ["HWID ban management", "API key controls", "Panel history", "Account settings"] },
+  {
+    icon: FileCode2,
+    title: "Scripts",
+    desc: "Create, upload, update, and publish Lua source while keeping a stable loader URL.",
+    bullets: [
+      "Permanent source storage",
+      "Release history",
+      "FFA and key-required modes",
+      "Copy-ready loadstrings",
+    ],
+  },
+  {
+    icon: KeyRound,
+    title: "Keys",
+    desc: "Control how long access lasts and which device can use each license.",
+    bullets: [
+      "Custom expirations",
+      "First-run HWID binding",
+      "Instant revoke and reset",
+      "Bulk key generation",
+    ],
+  },
+  {
+    icon: Bot,
+    title: "Discord",
+    desc: "Run routine access operations from Discord without handing out dashboard access.",
+    bullets: [
+      "Interactive panels",
+      "Slash-command workflows",
+      "Administrator checks",
+      "User and key management",
+    ],
+  },
+  {
+    icon: Boxes,
+    title: "Delivery",
+    desc: "Serve the current script through a predictable hosted loader for every release.",
+    bullets: [
+      "Short hosted URLs",
+      "Raw and hosted routes",
+      "Keyless delivery",
+      "Update without relinking",
+    ],
+  },
+  {
+    icon: MonitorSmartphone,
+    title: "Loading UI",
+    desc: "Add a polished loading state while authentication and delivery complete.",
+    bullets: [
+      "Four visual presets",
+      "Desktop and mobile preview",
+      "Custom labels and position",
+      "Copyable Luau templates",
+    ],
+  },
+  {
+    icon: ShieldCheck,
+    title: "Workspace controls",
+    desc: "Keep scripts, keys, bans, panels, API access, and profile settings organized.",
+    bullets: ["HWID ban management", "API key controls", "Panel history", "Account settings"],
+  },
 ];
 
 function FeaturesPage() {
@@ -41,7 +112,9 @@ function FeaturesPage() {
             <h2 className="mt-7 font-display text-2xl">{group.title}</h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{group.desc}</p>
             <ul className="mt-7 space-y-3 border-t border-border pt-5 text-sm text-muted-foreground">
-              {group.bullets.map((bullet) => <li key={bullet}>— {bullet}</li>)}
+              {group.bullets.map((bullet) => (
+                <li key={bullet}>— {bullet}</li>
+              ))}
             </ul>
           </article>
         ))}

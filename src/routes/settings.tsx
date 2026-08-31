@@ -56,9 +56,7 @@ function SettingsPage() {
         setSignedIn(Boolean(data.session));
         if (data.session?.user) {
           setEmail(data.session.user.email ?? "");
-          setDisplayName(
-            (data.session.user.user_metadata?.display_name as string) ?? "",
-          );
+          setDisplayName((data.session.user.user_metadata?.display_name as string) ?? "");
         }
         setLoading(false);
       })
@@ -432,17 +430,26 @@ function SettingsPage() {
               <label className="eyebrow">Base Theme</label>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {[
-                  { id: "midnight", label: "Midnight", desc: "Deep navy and black", color: "#01040a" },
+                  {
+                    id: "midnight",
+                    label: "Midnight",
+                    desc: "Deep navy and black",
+                    color: "#01040a",
+                  },
                   { id: "ocean", label: "Ocean", desc: "Dark blue tones", color: "#040e20" },
-                  { id: "void", label: "Void", desc: "Pure black with blue accents", color: "#000000" },
+                  {
+                    id: "void",
+                    label: "Void",
+                    desc: "Pure black with blue accents",
+                    color: "#000000",
+                  },
                 ].map((t) => (
                   <button
                     key={t.id}
                     onClick={() => saveAccent(t.id)}
                     className="rounded-xl border p-4 text-left transition-colors"
                     style={{
-                      borderColor:
-                        accentColor === t.id ? "var(--primary)" : "var(--border)",
+                      borderColor: accentColor === t.id ? "var(--primary)" : "var(--border)",
                       background: "var(--card)",
                     }}
                   >
@@ -474,15 +481,11 @@ function SettingsPage() {
                     onClick={() => saveAccent(a.id)}
                     className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors"
                     style={{
-                      borderColor:
-                        accentColor === a.id ? "var(--primary)" : "var(--border)",
+                      borderColor: accentColor === a.id ? "var(--primary)" : "var(--border)",
                       background: accentColor === a.id ? "var(--accent)" : "transparent",
                     }}
                   >
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ background: a.color }}
-                    />
+                    <span className="h-3 w-3 rounded-full" style={{ background: a.color }} />
                     {a.label}
                   </button>
                 ))}
@@ -496,10 +499,7 @@ function SettingsPage() {
                 style={{ background: "var(--card)", borderColor: "var(--border)" }}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="h-10 w-10 rounded-lg"
-                    style={{ background: "var(--primary)" }}
-                  />
+                  <div className="h-10 w-10 rounded-lg" style={{ background: "var(--primary)" }} />
                   <div>
                     <div className="font-display text-lg">LuaMore</div>
                     <div className="text-xs" style={{ color: "var(--muted-foreground)" }}>
@@ -533,11 +533,31 @@ function SettingsPage() {
 
             <div className="space-y-4">
               {[
-                { label: "Security alerts", desc: "Login attempts, password changes, HWID resets", defaultOn: true },
-                { label: "Key delivery notices", desc: "When keys are issued or expire", defaultOn: true },
-                { label: "Script execution reports", desc: "Daily summary of script loads and errors", defaultOn: false },
-                { label: "Product updates", desc: "New features, changelog, and platform news", defaultOn: true },
-                { label: "Discord panel events", desc: "When users redeem keys or interact with panels", defaultOn: false },
+                {
+                  label: "Security alerts",
+                  desc: "Login attempts, password changes, HWID resets",
+                  defaultOn: true,
+                },
+                {
+                  label: "Key delivery notices",
+                  desc: "When keys are issued or expire",
+                  defaultOn: true,
+                },
+                {
+                  label: "Script execution reports",
+                  desc: "Daily summary of script loads and errors",
+                  defaultOn: false,
+                },
+                {
+                  label: "Product updates",
+                  desc: "New features, changelog, and platform news",
+                  defaultOn: true,
+                },
+                {
+                  label: "Discord panel events",
+                  desc: "When users redeem keys or interact with panels",
+                  defaultOn: false,
+                },
               ].map((n) => (
                 <div
                   key={n.label}
@@ -584,27 +604,21 @@ function SettingsPage() {
             >
               <div>
                 <span className="eyebrow">Scripts</span>
-                <div className="mt-1 font-display text-2xl font-bold">
-                  {signedIn ? "—" : "—"}
-                </div>
+                <div className="mt-1 font-display text-2xl font-bold">{signedIn ? "—" : "—"}</div>
                 <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
                   All stored permanently
                 </p>
               </div>
               <div>
                 <span className="eyebrow">License Keys</span>
-                <div className="mt-1 font-display text-2xl font-bold">
-                  {signedIn ? "—" : "—"}
-                </div>
+                <div className="mt-1 font-display text-2xl font-bold">{signedIn ? "—" : "—"}</div>
                 <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
                   Unlimited free
                 </p>
               </div>
               <div>
                 <span className="eyebrow">Discord Panels</span>
-                <div className="mt-1 font-display text-2xl font-bold">
-                  {signedIn ? "—" : "—"}
-                </div>
+                <div className="mt-1 font-display text-2xl font-bold">{signedIn ? "—" : "—"}</div>
                 <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
                   Auto-synced
                 </p>
@@ -643,7 +657,10 @@ function SettingsPage() {
           {signedIn && (
             <div
               className="rounded-xl border p-6 md:p-8 space-y-4"
-              style={{ borderColor: "rgba(244, 63, 94, 0.3)", background: "rgba(244, 63, 94, 0.04)" }}
+              style={{
+                borderColor: "rgba(244, 63, 94, 0.3)",
+                background: "rgba(244, 63, 94, 0.04)",
+              }}
             >
               <div className="flex items-center gap-3">
                 <Trash2 size={20} style={{ color: "var(--destructive)" }} />

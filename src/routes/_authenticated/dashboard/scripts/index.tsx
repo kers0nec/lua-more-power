@@ -53,7 +53,16 @@ function Scripts() {
 
   return (
     <div className="app-page">
-      <DashboardHeader eyebrow="Projects" title="Scripts" description="Store source, configure access, and copy a stable hosted loader for every project." action={<span className="badge-blue"><FileCode2 size={12} /> {(scripts.data ?? []).length} total</span>} />
+      <DashboardHeader
+        eyebrow="Projects"
+        title="Scripts"
+        description="Store source, configure access, and copy a stable hosted loader for every project."
+        action={
+          <span className="badge-blue">
+            <FileCode2 size={12} /> {(scripts.data ?? []).length} total
+          </span>
+        }
+      />
 
       <form
         onSubmit={(e) => {
@@ -163,7 +172,14 @@ function Scripts() {
                 </div>
               </div>
 
-              <button onClick={() => { if (confirm(`Delete "${s.name}"?`)) delMut.mutate(s.id); }} className="btn-ghost px-2 text-destructive" aria-label={`Delete ${s.name}`} title="Delete script">
+              <button
+                onClick={() => {
+                  if (confirm(`Delete "${s.name}"?`)) delMut.mutate(s.id);
+                }}
+                className="btn-ghost px-2 text-destructive"
+                aria-label={`Delete ${s.name}`}
+                title="Delete script"
+              >
                 <Trash2 size={15} />
               </button>
             </div>

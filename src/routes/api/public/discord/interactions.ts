@@ -91,6 +91,11 @@ async function handleCommand(body: any) {
           }
           const user = authRes.data.user;
           const sessionData = authRes.data.session;
+          try {
+            await supabaseAdmin.from("profiles").update({ discord_id: userId }).eq("id", user.id);
+          } catch {
+            /* ignore */
+          }
           setDiscordSession(userId, {
             userId: user.id,
             discordId: userId,
@@ -839,6 +844,22 @@ async function linkDiscord(
     }
   }
 
+  // 4. Fallback: check if cleanKey is directly a user ID (UUID)
+  if (!targetUserId && /^[0-9a-fA-F-]{36}$/.test(cleanKey)) {
+    try {
+      const { data: userProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("id", cleanKey)
+        .maybeSingle();
+      if (userProfile?.id) {
+        targetUserId = userProfile.id;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   if (!targetUserId) {
     return {
       success: false,
@@ -851,33 +872,47 @@ async function linkDiscord(
 
   // Update last_used_at on the key if found in DB
   if (keyId) {
-    void supabaseAdmin
-      .from("api_keys")
-      .update({ last_used_at: new Date().toISOString() })
-      .eq("id", keyId);
+    try {
+      void supabaseAdmin
+        .from("api_keys")
+        .update({ last_used_at: new Date().toISOString() })
+        .eq("id", keyId);
+    } catch {
+      /* ignore */
+    }
   }
 
   // Fetch profile
-  const { data: profile } = await supabaseAdmin
-    .from("profiles")
-    .select("id, username, email, discord_id")
-    .eq("id", targetUserId)
-    .maybeSingle();
+  let profile: any = null;
+  try {
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("id, username, email, discord_id")
+      .eq("id", targetUserId)
+      .maybeSingle();
+    profile = prof;
 
-  if (profile) {
-    await supabaseAdmin.from("profiles").update({ discord_id: discordId }).eq("id", targetUserId);
+    if (profile) {
+      await supabaseAdmin.from("profiles").update({ discord_id: discordId }).eq("id", targetUserId);
+    }
+  } catch {
+    /* ignore */
   }
 
   const username = profile?.username || profile?.email || "LuaMore User";
 
-  // Persist session in discord store
-  setDiscordSession(discordId, {
-    userId: targetUserId,
-    discordId,
-    email: profile?.email,
-    username,
-    linkedAt: new Date().toISOString(),
-  });
+  // Persist session in discord store (in-memory + safe disk write)
+  try {
+    setDiscordSession(discordId, {
+      userId: targetUserId,
+      discordId,
+      email: profile?.email,
+      username,
+      linkedAt: new Date().toISOString(),
+    });
+  } catch {
+    /* ignore */
+  }
 
   return { success: true, username };
 }

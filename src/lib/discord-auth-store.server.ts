@@ -26,31 +26,41 @@ function getSecretKey(): string {
   );
 }
 
+// In-memory sessions cache fallback (works in read-only / serverless / container environments)
+const memorySessions: Record<string, DiscordSession> = {};
+
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem or restricted permissions — silently ignore
   }
 }
 
 function loadSessions(): Record<string, DiscordSession> {
-  ensureDataDir();
   try {
+    ensureDataDir();
     if (fs.existsSync(SESSIONS_FILE)) {
       const raw = fs.readFileSync(SESSIONS_FILE, "utf-8");
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return { ...memorySessions, ...parsed };
     }
-  } catch (err) {
-    console.error("Failed to read discord sessions:", err);
+  } catch {
+    // Disk read failed or unavailable
   }
-  return {};
+  return { ...memorySessions };
 }
 
 function saveSessions(sessions: Record<string, DiscordSession>) {
-  ensureDataDir();
+  // Always update in-memory cache first
+  Object.assign(memorySessions, sessions);
   try {
+    ensureDataDir();
     fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Failed to write discord sessions:", err);
+  } catch {
+    // Disk write failed or unavailable — in-memory cache persists for this worker instance
   }
 }
 

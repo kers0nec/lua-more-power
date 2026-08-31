@@ -9,9 +9,15 @@ export const Route = createFileRoute("/_authenticated/dashboard/logs")({
   head: () => ({
     meta: [
       { title: "Execution Logs — LuaMore" },
-      { name: "description", content: "Every script execution with key, HWID, and Roblox player identity." },
+      {
+        name: "description",
+        content: "Every script execution with key, HWID, and Roblox player identity.",
+      },
       { property: "og:title", content: "Execution Logs — LuaMore" },
-      { property: "og:description", content: "Every script execution with key, HWID, and Roblox player identity." },
+      {
+        property: "og:description",
+        content: "Every script execution with key, HWID, and Roblox player identity.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -21,7 +27,11 @@ export const Route = createFileRoute("/_authenticated/dashboard/logs")({
 
 function LogsPage() {
   const fn = useServerFn(listExecutionLogs);
-  const q = useQuery({ queryKey: ["execution-logs"], queryFn: () => fn(), refetchInterval: 15_000 });
+  const q = useQuery({
+    queryKey: ["execution-logs"],
+    queryFn: () => fn(),
+    refetchInterval: 15_000,
+  });
   const rows = q.data ?? [];
 
   return (
@@ -33,11 +43,15 @@ function LogsPage() {
       />
 
       <div className="mt-8 overflow-hidden rounded-lg border border-border bg-card">
-        {q.isLoading && <div className="py-14 text-center text-sm text-muted-foreground">Loading logs…</div>}
+        {q.isLoading && (
+          <div className="py-14 text-center text-sm text-muted-foreground">Loading logs…</div>
+        )}
         {!q.isLoading && rows.length === 0 && (
           <div className="py-14 text-center">
             <Activity className="mx-auto text-muted-foreground" size={24} />
-            <p className="mt-3 text-sm text-muted-foreground">No executions yet. Once a loader runs it'll appear here in real time.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              No executions yet. Once a loader runs it'll appear here in real time.
+            </p>
           </div>
         )}
         {rows.length > 0 && (
@@ -57,14 +71,25 @@ function LogsPage() {
               <tbody className="divide-y divide-border">
                 {rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="px-4 py-3 text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {new Date(r.created_at).toLocaleString()}
+                    </td>
                     <td className="px-4 py-3">{r.script_name ?? "—"}</td>
                     <td className="px-4 py-3">
                       {r.roblox_username ? (
-                        <span>{r.roblox_username}{r.roblox_user_id ? <span className="text-muted-foreground"> ({r.roblox_user_id})</span> : null}</span>
-                      ) : "—"}
+                        <span>
+                          {r.roblox_username}
+                          {r.roblox_user_id ? (
+                            <span className="text-muted-foreground"> ({r.roblox_user_id})</span>
+                          ) : null}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs">{r.key ? mask(r.key) : (r.script_name ? "FFA" : "—")}</td>
+                    <td className="px-4 py-3 font-mono text-xs">
+                      {r.key ? mask(r.key) : r.script_name ? "FFA" : "—"}
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">{r.hwid ?? "—"}</td>
                     <td className="px-4 py-3 font-mono text-xs">{r.place_id ?? "—"}</td>
                     <td className="px-4 py-3 font-mono text-xs">{r.ip ?? "—"}</td>

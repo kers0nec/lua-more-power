@@ -34,8 +34,7 @@ export function SiteNav() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
-            const active =
-              loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
+            const active = loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
             return (
               <Link
                 key={l.to}

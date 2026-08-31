@@ -6,7 +6,9 @@ export const listExecutionLogs = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("execution_logs")
-      .select("id, script_id, key, hwid, roblox_username, roblox_user_id, place_id, ip, created_at, scripts(name)")
+      .select(
+        "id, script_id, key, hwid, roblox_username, roblox_user_id, place_id, ip, created_at, scripts(name)",
+      )
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(200);

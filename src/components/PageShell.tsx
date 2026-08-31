@@ -22,7 +22,9 @@ export function PageShell({
           <div className="relative mx-auto w-full max-w-6xl px-6 py-18 md:py-24">
             {eyebrow ? <div className="eyebrow text-primary">{eyebrow}</div> : null}
             <h1 className="mt-4 max-w-4xl font-display text-4xl md:text-6xl">{title}</h1>
-            {subtitle ? <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">{subtitle}</p> : null}
+            {subtitle ? (
+              <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">{subtitle}</p>
+            ) : null}
           </div>
         </section>
         <div className="mx-auto w-full max-w-6xl px-6 py-14 md:py-18">{children}</div>

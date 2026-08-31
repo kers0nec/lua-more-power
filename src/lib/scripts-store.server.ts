@@ -57,7 +57,6 @@ function saveScripts(scripts: Record<string, StoredScript>) {
   }
 }
 
-
 function generatePublicId(): string {
   return "s_" + crypto.randomBytes(6).toString("base64url").slice(0, 8);
 }
