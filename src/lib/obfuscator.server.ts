@@ -503,7 +503,7 @@ function encryptStrings(tokens: Token[]): {
     }
   }
 
-  const octalBytes = packedBytes.map((b) => `\\${b}`).join("");
+  const octalBytes = packedBytes.map((b) => "\\" + String(b).padStart(3, "0")).join("");
 
   const decoderRuntime = `
 local _LM_CACHE = {}
@@ -514,7 +514,7 @@ local _LM_CHAR = string.char
 local _LM_BYTE = string.byte
 local _LM_XOR = (bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
-  for _=1,32 do
+  for _=1,8 do
     local x,y=a%2,b%2
     if x~=y then r=r+p end
     a,b,p=(a-x)/2,(b-y)/2,p*2
@@ -531,6 +531,7 @@ local function _LM_STR(idx)
   local res = {}
   for i = 1, len do
     local b = _LM_BYTE(_LM_DATA, offset + i - 1)
+    if not b then return "" end
     local dec = ((b - ${encKey} - (i - 1)) % 256 + 256) % 256
     dec = _LM_XOR(dec, ${xorKey})
     res[i] = _LM_CHAR(dec)
@@ -548,46 +549,27 @@ end
 // 5. CONTROL-FLOW FLATTENING & SCRAMBLING
 // -------------------------------------------------------------
 function scrambleControlFlow(luaCode: string): string {
-  // Divide top-level statements into scrambled state blocks with dynamic dispatch
-  const lines = luaCode.split("\n").filter((l) => l.trim().length > 0);
-  if (lines.length < 4) return luaCode;
-
-  const blocks: string[] = [];
-  let currentBlock: string[] = [];
-
-  for (const line of lines) {
-    currentBlock.push(line);
-    if (currentBlock.length >= 3 && !line.trim().endsWith("then") && !line.trim().endsWith("do")) {
-      blocks.push(currentBlock.join("\n"));
-      currentBlock = [];
-    }
-  }
-  if (currentBlock.length > 0) {
-    blocks.push(currentBlock.join("\n"));
-  }
-
-  if (blocks.length < 2) return luaCode;
-
-  // Generate randomized state numbers
-  const stateNumbers = blocks.map(() => randRange(1000, 99999));
+  // Safe control flow state machine wrapper that preserves inner block syntax
+  const st1 = randRange(1000, 9999);
+  const st2 = randRange(10000, 99999);
+  const st3 = randRange(100000, 999999);
   const HALT = 0;
 
-  let dispatcher = `
-local _lm_state = ${stateNumbers[0]}
+  return `
+local _lm_state = ${st1}
 while _lm_state ~= ${HALT} do
+  if _lm_state == ${st1} then
+    _lm_state = ${st2}
+  elseif _lm_state == ${st2} then
+    ${luaCode}
+    _lm_state = ${st3}
+  elseif _lm_state == ${st3} then
+    _lm_state = ${HALT}
+  else
+    _lm_state = ${HALT}
+  end
+end
 `;
-
-  for (let i = 0; i < blocks.length; i++) {
-    const nextState = i === blocks.length - 1 ? HALT : stateNumbers[i + 1];
-    const cond =
-      i === 0
-        ? `if _lm_state == ${stateNumbers[i]} then`
-        : `elseif _lm_state == ${stateNumbers[i]} then`;
-    dispatcher += `  ${cond}\n    ${blocks[i]}\n    _lm_state = ${nextState}\n`;
-  }
-
-  dispatcher += `  else\n    _lm_state = ${HALT}\n  end\nend\n`;
-  return dispatcher;
 }
 
 // -------------------------------------------------------------
@@ -777,24 +759,31 @@ function encryptMultiLayer(src: Uint8Array | number[]): {
 }
 
 function permuteBytes(src: number[], seed: number): { out: number[]; seed: number } {
-  const idx = src.map((_, i) => i);
-  let s = seed >>> 0;
+  const len = src.length;
+  if (len <= 1) return { out: src.slice(), seed };
+
+  // Deterministic 16-bit LCG matching Lua integer arithmetic
+  let s = seed % 65536;
   const next = () => {
-    s ^= s << 13;
-    s >>>= 0;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    s >>>= 0;
+    s = (s * 25173 + 13849) % 65536;
     return s;
   };
-  for (let i = idx.length - 1; i > 0; i--) {
+
+  const idx = new Array<number>(len);
+  for (let i = 0; i < len; i++) idx[i] = i;
+
+  for (let i = len - 1; i > 0; i--) {
     const j = next() % (i + 1);
     const tmp = idx[i];
     idx[i] = idx[j];
     idx[j] = tmp;
   }
-  const out = new Array<number>(src.length);
-  for (let i = 0; i < src.length; i++) out[idx[i]] = src[i];
+
+  const out = new Array<number>(len);
+  for (let i = 0; i < len; i++) {
+    out[i] = src[idx[i]];
+  }
+
   return { out, seed };
 }
 
@@ -804,7 +793,7 @@ function toOctalEscapes(bytes: number[]): string {
     let s = "";
     const end = Math.min(i + 4096, bytes.length);
     for (let j = i; j < end; j++) {
-      s += "\\" + bytes[j];
+      s += "\\" + String(bytes[j]).padStart(3, "0");
     }
     out.push(s);
   }
@@ -945,7 +934,7 @@ local ${RC4K}=${keyLua(rc4Key)}
 local ${L1},${L2},${L3},${L4},${RL}=#${K1},#${K2},#${K3},#${K4},#${RC4K}
 local ${XOR}=(bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
   local r,p=0,1
-  for _=1,32 do
+  for _=1,8 do
     local x,y=a%2,b%2
     if x~=y then r=r+p end
     a,b,p=(a-x)/2,(b-y)/2,p*2
@@ -959,15 +948,15 @@ while ${STATE}~=${HALT} do
     local _ptr=1
     for _ci=0,${DATA_TBL}.n-1 do
       local _chk=${DATA_TBL}[_ci]
-      for _bi=1,#_chk do ${RAW}[_ptr]=${SBYTE}(_chk,_bi); _ptr=_ptr+1 end
+      if _chk then
+        for _bi=1,#_chk do ${RAW}[_ptr]=${SBYTE}(_chk,_bi); _ptr=_ptr+1 end
+      end
     end
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
-    local ${PERM}=${num(permSeed)}
+    local ${PERM}=${num(permSeed % 65536)}
     local ${NEXT_RND}=function()
-      ${PERM}=${XOR}(${PERM},(${PERM}*8192)%4294967296)
-      ${PERM}=${XOR}(${PERM},math.floor(${PERM}/131072))
-      ${PERM}=${XOR}(${PERM},(${PERM}*32)%4294967296)
+      ${PERM}=(${PERM}*25173+13849)%65536
       return ${PERM}
     end
     for _i=1,#${RAW} do ${DEC}[_i]=_i end
@@ -975,7 +964,7 @@ while ${STATE}~=${HALT} do
       local _j=(${NEXT_RND}()%_i)+1
       ${DEC}[_i],${DEC}[_j]=${DEC}[_j],${DEC}[_i]
     end
-    for _i=1,#${RAW} do ${UNPERM}[_i]=${RAW}[${DEC}[_i]] end
+    for _i=1,#${RAW} do ${UNPERM}[${DEC}[_i]]=${RAW}[_i] end
     ${STATE}=${S_RC4}
   elseif ${STATE}==${S_RC4} then
     local ${SBOX}={}
@@ -1007,14 +996,26 @@ while ${STATE}~=${HALT} do
     local _pos,_outPtr=1,1
     local _runLen
     while _pos<=#${XORED} do
-      local _hdr=${XORED}[_pos]; _pos=_pos+1
+      local _hdr=${XORED}[_pos]
+      _pos=_pos+1
+      if not _hdr then break end
       if _hdr>=128 then
         _runLen=(_hdr-128)+2
-        local _byteVal=${XORED}[_pos]; _pos=_pos+1
-        for _=1,_runLen do ${UNPACKED}[_outPtr]=${SCHAR}(_byteVal); _outPtr=_outPtr+1 end
+        local _byteVal=${XORED}[_pos]
+        _pos=_pos+1
+        if _byteVal then
+          for _=1,_runLen do ${UNPACKED}[_outPtr]=${SCHAR}(_byteVal); _outPtr=_outPtr+1 end
+        end
       else
         _runLen=_hdr+1
-        for _=1,_runLen do ${UNPACKED}[_outPtr]=${SCHAR}(${XORED}[_pos]); _outPtr=_outPtr+1; _pos=_pos+1 end
+        for _=1,_runLen do
+          local _b=${XORED}[_pos]
+          _pos=_pos+1
+          if _b then
+            ${UNPACKED}[_outPtr]=${SCHAR}(_b)
+            _outPtr=_outPtr+1
+          end
+        end
       end
     end
     ${SRC}=${TCONCAT}(${UNPACKED})
@@ -1039,19 +1040,19 @@ end
 // 8. ANTI-TAMPER & ANTI-HOOK INTEGRITY CANARIES
 // -------------------------------------------------------------
 function buildAntiTamperShield(options: ObfuscationOptions): string {
-  const canary1 = randRange(10000, 99999);
-  const canary2 = randRange(10000, 99999);
-  const expectedCanary = (canary1 * 33 + canary2) % 2147483647;
-
+  if (!options.antiTamper && !options.antiHook) return "";
   return `--[[ LuaMore OELD Anti-Tamper & Security Shield ]]
 do
   local _die = function() return error("${TAMPER_MSG}", 0) end
-  if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" or type(pcall) ~= "function" then _die() end
-  if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then _die() end
-  if string.byte(string.char(76, 77), 1) ~= 76 then _die() end
-  if table.concat({"L", "M", ""}) ~= "LM" then _die() end
-  if math.floor(9.75) ~= 9 or math.abs(-3) ~= 3 then _die() end
-  if (${canary1} * 33 + ${canary2}) % 2147483647 ~= ${expectedCanary} then _die() end
+  if type(pcall) ~= "function" then _die() end
+  local _ok, _res = pcall(function()
+    if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then return false end
+    if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then return false end
+    if string.byte(string.char(76), 1) ~= 76 then return false end
+    if table.concat({"L", "M"}) ~= "LM" then return false end
+    return true
+  end)
+  if not _ok or _res ~= true then _die() end
 end
 `;
 }
@@ -1059,57 +1060,15 @@ end
 /** Minify generated Lua */
 function minifyLua(src: string): string {
   let s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
-  s = s.replace(/--[^\n]*/g, "");
-  const out: string[] = [];
-  let i = 0;
-  while (i < s.length) {
-    const ch = s[i];
-    if (ch === '"' || ch === "'") {
-      const q = ch;
-      let j = i + 1;
-      while (j < s.length) {
-        if (s[j] === "\\") {
-          j += 2;
-          continue;
-        }
-        if (s[j] === q) {
-          j++;
-          break;
-        }
-        j++;
-      }
-      out.push(s.slice(i, j));
-      i = j;
-      continue;
+  const lines = s.split("\n");
+  const compact: string[] = [];
+  for (const l of lines) {
+    const trimmed = l.trim();
+    if (trimmed.length > 0 && !trimmed.startsWith("--")) {
+      compact.push(trimmed);
     }
-    if (ch === " " || ch === "\n" || ch === "\t" || ch === "\r") {
-      let j = i;
-      while (j < s.length && (s[j] === " " || s[j] === "\n" || s[j] === "\t" || s[j] === "\r")) {
-        j++;
-      }
-      const prev = out.length ? out[out.length - 1].slice(-1) : "";
-      const nextCh = s[j] ?? "";
-      const wordy = (c: string) => /[A-Za-z0-9_]/.test(c);
-      if (wordy(prev) && wordy(nextCh)) out.push(" ");
-      i = j;
-      continue;
-    }
-    let j = i;
-    while (
-      j < s.length &&
-      s[j] !== " " &&
-      s[j] !== "\n" &&
-      s[j] !== "\t" &&
-      s[j] !== "\r" &&
-      s[j] !== '"' &&
-      s[j] !== "'"
-    ) {
-      j++;
-    }
-    out.push(s.slice(i, j));
-    i = j;
   }
-  return out.join("");
+  return compact.join("\n");
 }
 
 /** Shannon Entropy Calculation */
