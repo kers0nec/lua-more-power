@@ -526,7 +526,19 @@ export type ObfuscationOptions = {
   loaderVMDepth?: number; // 1-5, overrides dualVm when provided
   /** Wrap the final payload in an additional Base64 + polymorphic VM bytecode + XOR stage. */
   polymorphicVM?: boolean;
+  /** Extra entropy for the polymorphic XOR keystream. Public ID / mode are mixed in. */
+  context?: { publicId?: string; mode?: string };
 };
+
+/** Simple djb2-mod-2^24 hash, safe in Lua 5.1 doubles and mirrored below. */
+function djb2Mod(bytes: number[]): number {
+  let h = 5381;
+  for (let i = 0; i < bytes.length; i++) {
+    h = ((h * 33) + bytes[i]) % 0x1000000;
+  }
+  return h;
+}
+
 
 /** ---------------- Polymorphic VM outer stage (Base64 + bytecode + XOR) ---------------- */
 const B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -557,23 +569,41 @@ function b64encode(bytes: number[]): string {
  *  - A tiny Lua dispatcher decodes Base64, walks bytes, reconstructs the
  *    payload string, then loadstring()s it.
  */
-function polymorphicWrap(payload: string): string {
+function polymorphicWrap(payload: string, ctx?: { publicId?: string; mode?: string }): string {
   const enc = new TextEncoder();
   const src = Array.from(enc.encode(payload));
 
+  // Per-build random key
   const keyLen = 24 + rand(16);
   const key: number[] = [];
   for (let i = 0; i < keyLen; i++) key.push(randByte());
   const rot0 = 1 + rand(250);
 
+  // Context-derived byte array (mixes public ID + mode into keystream)
+  const ctxSeed = `${ctx?.publicId ?? ""}|${ctx?.mode ?? ""}`;
+  const ctxBytes = Array.from(enc.encode(ctxSeed));
+  const ctxLen = 32;
+  const ctx8: number[] = new Array(ctxLen);
+  {
+    // Expand context bytes via djb2 rolling hash into ctxLen bytes
+    let h = 5381 ^ ctxBytes.length;
+    for (let i = 0; i < ctxLen; i++) {
+      for (let j = 0; j < 4; j++) {
+        const b = ctxBytes.length ? ctxBytes[(i * 4 + j) % ctxBytes.length] : (i + j + 1);
+        h = (((h * 33) >>> 0) ^ b) >>> 0;
+      }
+      ctx8[i] = h & 0xff;
+    }
+  }
+
+  // Integrity: djb2Mod over source bytes; verified in Lua after decode.
+  const integrity = djb2Mod(src);
+
   const opIds = new Set<number>();
   const pickOp = () => {
     for (;;) {
       const v = 1 + rand(250);
-      if (!opIds.has(v)) {
-        opIds.add(v);
-        return v;
-      }
+      if (!opIds.has(v)) { opIds.add(v); return v; }
     }
   };
   const OP_EMIT = pickOp();
@@ -592,23 +622,25 @@ function polymorphicWrap(payload: string): string {
       rot = (rot + delta) & 0xff;
     }
     const kb = key[i % keyLen];
+    const cb = ctx8[i % ctxLen];
     const rb = (i * rot) & 0xff;
-    const c = (src[i] ^ kb ^ rb) & 0xff;
+    const c = (src[i] ^ kb ^ cb ^ rb) & 0xff;
     bc.push(OP_EMIT, c);
   }
 
   const b64 = b64encode(bc);
   const used = new Set<string>();
   const B = randName(used), DEC = randName(used), OUT = randName(used);
-  const KEY = randName(used), N = randName(used), I = randName(used);
+  const KEY = randName(used), CTX = randName(used), N = randName(used), I = randName(used);
   const K = randName(used), OP = randName(used), AR = randName(used);
   const XOR = randName(used), FN = randName(used), ERR = randName(used);
   const ROT = randName(used), SRC = randName(used), ALPH = randName(used);
   const IDX = randName(used), C1 = randName(used), C2 = randName(used);
   const C3 = randName(used), C4 = randName(used), J = randName(used);
   const CH = randName(used), LOAD = randName(used), TC = randName(used);
-  const SCHAR = randName(used);
+  const SCHAR = randName(used), HV = randName(used), BB = randName(used);
   const keyLua = "{" + key.map((b) => num(b)).join(",") + "}";
+  const ctxLua = "{" + ctx8.map((b) => num(b)).join(",") + "}";
 
   return `--[[LM/poly]]
 local ${LOAD}=(function()
@@ -653,6 +685,7 @@ do
   end
 end
 local ${KEY}=${keyLua}
+local ${CTX}=${ctxLua}
 local ${OUT}={}
 local ${ROT}=${num(rot0)}
 local ${K}=0
@@ -664,8 +697,9 @@ while ${I}<=${N} do
   ${I}=${I}+2
   if ${OP}==${num(OP_EMIT)} then
     local kb=${KEY}[(${K}%${keyLen})+1]
+    local cb=${CTX}[(${K}%${ctxLen})+1]
     local rb=(${K}*${ROT})%256
-    local ${CH}=${XOR}(${XOR}(${AR},kb),rb)
+    local ${CH}=${XOR}(${XOR}(${XOR}(${AR},kb),cb),rb)
     ${OUT}[#${OUT}+1]=${SCHAR}(${CH})
     ${K}=${K}+1
   elseif ${OP}==${num(OP_SKIP2)} then
@@ -675,6 +709,13 @@ while ${I}<=${N} do
   end
 end
 local ${SRC}=${TC}(${OUT})
+-- Loader-side integrity check (djb2 mod 2^24)
+local ${HV}=5381
+for ${I}=1,#${SRC} do
+  local ${BB}=${SRC}:byte(${I})
+  ${HV}=(${HV}*33 + ${BB}) % 16777216
+end
+if ${HV} ~= ${num(integrity)} then return error("[LuaMore] payload integrity check failed",0) end
 if not ${LOAD} then return error("[LuaMore] no loader",0) end
 local ${FN},${ERR}=${LOAD}(${SRC},"=LuaMore/poly")
 if not ${FN} then return error("[LuaMore Execution Error] "..tostring(${ERR}),0) end
@@ -682,8 +723,8 @@ return ${FN}()
 `;
 }
 
-export function obfuscateLua(source: string): string {
-  return obfuscateLuaWithOptions(source, { dualVm: true, antiTamper: true, polymorphicVM: true });
+export function obfuscateLua(source: string, ctx?: { publicId?: string; mode?: string }): string {
+  return obfuscateLuaWithOptions(source, { dualVm: true, antiTamper: true, polymorphicVM: true, context: ctx });
 }
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
@@ -721,7 +762,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   }
 
   if (options.polymorphicVM) {
-    wrapped = polymorphicWrap(wrapped);
+    wrapped = polymorphicWrap(wrapped, options.context);
   }
 
   const minified = minifyLua(wrapped);
