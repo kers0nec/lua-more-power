@@ -164,8 +164,20 @@ function Scripts() {
                     {s.public_id}
                   </span>
                   {s.category && <span className="badge-blue">{s.category}</span>}
-                  {s.ffa && <span className="badge-blue">FFA</span>}
-                  {!s.is_active && <span className="badge-blue">Inactive</span>}
+                  {s.ffa ? (
+                    <span className="badge-blue bg-blue-500/20 text-blue-300 border-blue-500/40">
+                      🌐 FFA (Public)
+                    </span>
+                  ) : (
+                    <span className="badge-blue bg-amber-500/20 text-amber-300 border-amber-500/40">
+                      🔑 Key System
+                    </span>
+                  )}
+                  {!s.is_active && (
+                    <span className="badge-blue text-destructive border-destructive/40">
+                      Inactive
+                    </span>
+                  )}
                   {(s.tags ?? []).map((t: string) => (
                     <span key={t} className="badge-blue">
                       #{t}
@@ -189,9 +201,12 @@ function Scripts() {
               <Link
                 to="/dashboard/scripts/$id"
                 params={{ id: s.id }}
-                className="btn-outline text-sm"
+                className="btn-primary text-xs"
               >
-                Open
+                Open Workspace
+              </Link>
+              <Link to="/dashboard/keys" className="btn-outline text-xs">
+                Manage Keys
               </Link>
             </div>
           </div>

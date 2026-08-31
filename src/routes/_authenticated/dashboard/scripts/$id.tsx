@@ -8,8 +8,12 @@ import {
   Clipboard,
   Code2,
   Download,
+  ExternalLink,
+  Key,
+  Lock,
   Save,
   ShieldCheck,
+  Unlock,
   Upload,
 } from "lucide-react";
 import { getScript, obfuscateScriptNow, updateScript } from "@/lib/scripts.functions";
@@ -51,6 +55,11 @@ function ScriptDetail() {
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState(false);
   const [hydratedId, setHydratedId] = useState<string | null>(null);
+  const [loaderTab, setLoaderTab] = useState<"keysystem" | "ffa">("keysystem");
+  const [domainPreset, setDomainPreset] = useState<"luasnapper" | "polsec" | "current">(
+    "luasnapper",
+  );
+  const [sampleKey, setSampleKey] = useState("eggbm6ywzw7k3l1iht1lmeb5");
   const script = query.data?.script;
 
   useEffect(() => {
@@ -61,17 +70,37 @@ function ScriptDetail() {
     setCategory(script.category ?? "");
     setTags((script.tags ?? []).join(", "));
     setFfa(script.ffa ?? false);
+    setLoaderTab(script.ffa ? "ffa" : "keysystem");
     setAutoProtect(script.is_protected ?? false);
     setHydratedId(script.id);
   }, [script, hydratedId]);
 
+  const originUrl =
+    typeof window !== "undefined" ? window.location.origin : "https://luasnapper.xyz";
+
+  const getBaseDomain = () => {
+    if (domainPreset === "luasnapper") return "https://luasnapper.xyz";
+    if (domainPreset === "polsec") return "https://api.getpolsec.com";
+    return originUrl;
+  };
+
   const loader = useMemo(() => {
     if (!script) return "";
-    const url = `https://luamore.app/scripts/hosted/${script.public_id}.lua`;
-    return script.ffa
-      ? `loadstring(game:HttpGet("${url}"))()`
-      : `script_key = "YOUR_KEY_HERE"\nloadstring(game:HttpGet("${url}"))()`;
-  }, [script]);
+    const publicId =
+      script.public_id || "3bf2e0e5a59a0d6fdd39efe3f52a10f1ef614c2082029f71c3a399485e802ece";
+    const domain = getBaseDomain();
+
+    if (loaderTab === "ffa") {
+      // FFA loader format: loadstring(game:HttpGet("https://luasnapper.xyz/files/loaders/<public_id>.lua"))()
+      return `loadstring(game:HttpGet("${domain}/files/loaders/${publicId}.lua"))()`;
+    }
+
+    // Key system format:
+    // script_key = "eggbm6ywzw7k3l1iht1lmeb5";
+    // loadstring(game:HttpGet("https://luasnapper.xyz/files/loaders/<public_id>.lua"))()
+    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("${domain}/files/loaders/${publicId}.lua"))()`;
+  }, [script, loaderTab, domainPreset, sampleKey, originUrl]);
+
   const canSave = Boolean(script && hydratedId === script.id && name.trim() && !query.isFetching);
 
   const saveMutation = useMutation({
@@ -136,6 +165,17 @@ function ScriptDetail() {
     URL.revokeObjectURL(url);
   }
 
+  const toggleKeySystemMode = () => {
+    const nextFfa = !ffa;
+    setFfa(nextFfa);
+    setLoaderTab(nextFfa ? "ffa" : "keysystem");
+    setStatus(
+      nextFfa
+        ? "Switched to Public (FFA) mode. Remember to save!"
+        : "Enabled Key System protection. Remember to save!",
+    );
+  };
+
   if (query.isLoading)
     return (
       <div className="app-page">
@@ -182,7 +222,27 @@ function ScriptDetail() {
             aria-label="Script name"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleKeySystemMode}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-md transition-all shadow-sm ${
+              !ffa
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
+                : "bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30"
+            }`}
+            title={!ffa ? "Key System is currently ACTIVE" : "Public FFA Mode active"}
+          >
+            {!ffa ? <Lock size={14} /> : <Unlock size={14} />}
+            {!ffa ? "Key System: Enabled" : "Key System: Disabled (FFA)"}
+          </button>
+          <Link
+            to="/dashboard/keys"
+            className="btn-outline flex items-center gap-1.5 text-sm"
+            title="Manage License Keys"
+          >
+            <Key size={14} /> Keys
+          </Link>
           <button className="btn-outline" onClick={downloadSource}>
             <Download size={15} /> Export
           </button>
@@ -199,7 +259,7 @@ function ScriptDetail() {
       <div className="mt-7 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
         <Metric label="Source" value={`${code.length.toLocaleString()} chars`} />
         <Metric label="Runs" value={String(script.run_count ?? 0)} />
-        <Metric label="Access" value={ffa ? "Public" : "Keyed"} />
+        <Metric label="Access" value={ffa ? "Public (FFA)" : "Key System (Protected)"} />
         <Metric label="Protection" value={script.is_protected ? "Active" : "Source"} />
       </div>
 
@@ -246,20 +306,113 @@ function ScriptDetail() {
         </section>
 
         <aside className="space-y-5">
-          <section className="border border-border bg-card p-5">
-            <div className="flex items-center gap-2">
-              <Code2 size={16} className="text-primary" />
-              <h2 className="font-display text-lg">Hosted loader</h2>
+          {/* Hosted Loader Box with Key System & FFA switchers */}
+          <section className="border border-border bg-card p-5 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Code2 size={16} className="text-primary" />
+                <h2 className="font-display text-lg">Hosted Loader</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
+                Luarmor Style
+              </span>
             </div>
-            <pre className="mt-4 max-h-40 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-muted-foreground">
+
+            {/* Loader Type Selector Buttons */}
+            <div className="mt-4 grid grid-cols-2 gap-1.5 bg-input p-1 rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setLoaderTab("keysystem")}
+                className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded transition-colors ${
+                  loaderTab === "keysystem"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+                }`}
+              >
+                <Key size={13} /> Key System
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoaderTab("ffa")}
+                className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded transition-colors ${
+                  loaderTab === "ffa"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+                }`}
+              >
+                <Unlock size={13} /> FFA Loader
+              </button>
+            </div>
+
+            {/* Domain preset chips */}
+            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>Endpoint:</span>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setDomainPreset("polsec")}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                    domainPreset === "polsec"
+                      ? "bg-blue-600 text-white font-bold"
+                      : "bg-muted hover:bg-muted/80 text-foreground"
+                  }`}
+                >
+                  getpolsec.com
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDomainPreset("luasnapper")}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                    domainPreset === "luasnapper"
+                      ? "bg-blue-600 text-white font-bold"
+                      : "bg-muted hover:bg-muted/80 text-foreground"
+                  }`}
+                >
+                  luasnapper.xyz
+                </button>
+              </div>
+            </div>
+
+            {loaderTab === "keysystem" && (
+              <div className="mt-3">
+                <label className="text-[11px] text-muted-foreground block mb-1">
+                  Sample License Key:
+                </label>
+                <input
+                  type="text"
+                  value={sampleKey}
+                  onChange={(e) => setSampleKey(e.target.value)}
+                  className="input-blue text-xs font-mono py-1 px-2 h-7"
+                  placeholder="eggbm6ywzw7k3l1iht1lmeb5"
+                />
+              </div>
+            )}
+
+            <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-emerald-400 select-all rounded">
               {loader}
             </pre>
-            <button className="btn-outline mt-3 w-full" onClick={() => void copyLoader()}>
-              {copied ? <Check size={15} /> : <Clipboard size={15} />}{" "}
-              {copied ? "Copied" : "Copy loadstring"}
-            </button>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button className="btn-outline text-xs col-span-2" onClick={() => void copyLoader()}>
+                {copied ? <Check size={14} /> : <Clipboard size={14} />}
+                {copied ? "Copied to Clipboard!" : "Copy Loadstring"}
+              </button>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
+              <Link
+                to="/features/key-system-gui"
+                className="text-primary hover:underline inline-flex items-center gap-1"
+              >
+                <ExternalLink size={12} /> Key System GUI Docs
+              </Link>
+              <Link to="/dashboard/keys" className="text-muted-foreground hover:text-foreground">
+                Manage Keys →
+              </Link>
+            </div>
           </section>
-          <section className="border border-border bg-card p-5">
+
+          <section className="border border-border bg-card p-5 rounded-lg">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-primary" />
               <h2 className="font-display text-lg">Protection</h2>
@@ -292,7 +445,8 @@ function ScriptDetail() {
               )}
             </button>
           </section>
-          <section className="space-y-4 border border-border bg-card p-5">
+
+          <section className="space-y-4 border border-border bg-card p-5 rounded-lg">
             <Field label="Description">
               <textarea
                 className="input-blue min-h-20 resize-y"
@@ -316,11 +470,20 @@ function ScriptDetail() {
               />
             </Field>
             <label className="flex items-center justify-between border-t border-border pt-4 text-sm">
-              <span>Free-for-all access</span>
+              <div>
+                <span className="font-medium block">Free-for-all (FFA) access</span>
+                <span className="text-xs text-muted-foreground">
+                  Allow execution without license keys
+                </span>
+              </div>
               <input
                 type="checkbox"
                 checked={ffa}
-                onChange={(event) => setFfa(event.target.checked)}
+                onChange={(event) => {
+                  const val = event.target.checked;
+                  setFfa(val);
+                  setLoaderTab(val ? "ffa" : "keysystem");
+                }}
               />
             </label>
           </section>
@@ -329,7 +492,7 @@ function ScriptDetail() {
 
       {status && (
         <div
-          className={`mt-5 border px-4 py-3 text-sm ${status.startsWith("✓") ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}`}
+          className={`mt-5 border px-4 py-3 text-sm rounded ${status.startsWith("✓") ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}`}
         >
           {status}
         </div>

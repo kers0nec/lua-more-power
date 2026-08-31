@@ -183,16 +183,17 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     return lua(payload);
   }
 
-  if (!key) return luaError("License key required");
-
-  // First hit without a HWID: hand back a stub that re-requests with the HWID and LocalPlayer info.
+  // First hit without a HWID: hand back a stub that re-requests with the HWID, LocalPlayer info, and script_key.
   if (!hwid) {
     const again = new URL(request.url);
     again.searchParams.set("hwid", "__HWID__");
     again.searchParams.set("rbx_user", "__RBX_USER__");
     again.searchParams.set("rbx_id", "__RBX_ID__");
+    if (!key) {
+      again.searchParams.set("key", "__SCRIPT_KEY__");
+    }
 
-    const target = again
+    let target = again
       .toString()
       .replace(
         "__HWID__",
@@ -207,8 +208,19 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
         "\"..(game:GetService('Players').LocalPlayer and tostring(game:GetService('Players').LocalPlayer.UserId) or '0')..\"",
       );
 
+    if (!key) {
+      target = target.replace("__SCRIPT_KEY__", '"..(_k).."');
+      return lua(`local _k = (typeof(script_key) == "string" and script_key) or (getgenv and typeof(getgenv().script_key) == "string" and getgenv().script_key) or (typeof(_G.script_key) == "string" and _G.script_key) or ""
+if _k == "" then
+    return error("[LuaMore] License key required! Please define script_key = \\"your_key\\" before executing.")
+end
+return loadstring(game:HttpGet("${target}"))()`);
+    }
+
     return lua(`return loadstring(game:HttpGet("${target}"))()`);
   }
+
+  if (!key) return luaError("License key required");
 
   const { data: lic } = await supabaseAdmin
     .from("license_keys")

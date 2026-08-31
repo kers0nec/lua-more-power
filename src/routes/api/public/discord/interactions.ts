@@ -605,13 +605,15 @@ async function handleComponent(body: any) {
       return errorReply("You are not whitelisted for this script — redeem a key first.");
     if (lic?.revoked) return errorReply("Your access has been revoked");
 
-    const url = `${originFromEnv()}/api/public/r/${script.public_id}`;
+    const loaderUrl = `https://luasnapper.xyz/files/loaders/${script.public_id}.lua`;
+    const loaderCode =
+      !script.ffa && lic?.key
+        ? `script_key = "${lic.key}";\nloadstring(game:HttpGet("${loaderUrl}"))()`
+        : `loadstring(game:HttpGet("${loaderUrl}"))()`;
 
     return embedReply({
       title: `📜 ${script.name}`,
-      description: buildLoaderMessage(
-        `loadstring(game:HttpGet("${lic?.key ? `${originFromEnv()}/api/public/r/${lic.key}` : url}"))()`,
-      ),
+      description: buildLoaderMessage(loaderCode),
       color: COLOR_INFO,
       footer: { text: "LuaMore · keep this loader private" },
     });

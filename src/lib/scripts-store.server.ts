@@ -83,7 +83,9 @@ export function getScriptById(id: string, userId?: string): StoredScript | null 
 
 export function getScriptByPublicId(publicId: string): StoredScript | null {
   const map = loadScripts();
-  const target = String(publicId || "").trim().toLowerCase();
+  const target = String(publicId || "")
+    .trim()
+    .toLowerCase();
   for (const script of Object.values(map)) {
     if (script.public_id === publicId || script.public_id?.toLowerCase() === target) {
       return script;
