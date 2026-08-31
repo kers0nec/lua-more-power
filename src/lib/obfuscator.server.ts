@@ -526,7 +526,19 @@ export type ObfuscationOptions = {
   loaderVMDepth?: number; // 1-5, overrides dualVm when provided
   /** Wrap the final payload in an additional Base64 + polymorphic VM bytecode + XOR stage. */
   polymorphicVM?: boolean;
+  /** Extra entropy for the polymorphic XOR keystream. Public ID / mode are mixed in. */
+  context?: { publicId?: string; mode?: string };
 };
+
+/** Simple djb2-mod-2^24 hash, safe in Lua 5.1 doubles and mirrored below. */
+function djb2Mod(bytes: number[]): number {
+  let h = 5381;
+  for (let i = 0; i < bytes.length; i++) {
+    h = ((h * 33) + bytes[i]) % 0x1000000;
+  }
+  return h;
+}
+
 
 /** ---------------- Polymorphic VM outer stage (Base64 + bytecode + XOR) ---------------- */
 const B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
