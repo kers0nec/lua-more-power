@@ -72,9 +72,13 @@ function Scripts() {
   });
 
   const copyLoader = (s: any) => {
+    const origin =
+      typeof window !== "undefined" && window.location.origin
+        ? window.location.origin
+        : "https://luamore.app";
     const loaderCode = s.ffa
-      ? `loadstring(game:HttpGet("https://luamore.app/files/loaders/${s.public_id}.lua"))()`
-      : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("https://luamore.app/files/loaders/${s.public_id}.lua"))()`;
+      ? `loadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`
+      : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`;
 
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(loaderCode);

@@ -74,15 +74,19 @@ function ScriptDetail() {
 
   const loader = useMemo(() => {
     if (!script) return "";
-    const publicId = script.public_id || "1349b82b8502467a97b9c7c516d84697";
+    const publicId = script.public_id || "87b653a7b59a722de8";
+    const origin =
+      typeof window !== "undefined" && window.location.origin
+        ? window.location.origin
+        : "https://luamore.app";
 
     if (loaderTab === "ffa") {
       // FFA loader format
-      return `loadstring(game:HttpGet("https://luamore.app/files/loaders/${publicId}.lua"))()`;
+      return `loadstring(game:HttpGet("${origin}/files/loaders/${publicId}.lua"))()`;
     }
 
     // Key system format
-    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("https://luamore.app/files/loaders/${publicId}.lua"))()`;
+    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("${origin}/files/loaders/${publicId}.lua"))()`;
   }, [script, loaderTab, sampleKey]);
 
   const canSave = Boolean(script && hydratedId === script.id && name.trim() && !query.isFetching);

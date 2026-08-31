@@ -35,17 +35,70 @@ function ensureDataDir() {
   }
 }
 
+const DEFAULT_SEEDS: Record<string, StoredScript> = {
+  "87b653a7b59a722de8": {
+    id: "87b653a7-b59a-722d-e800-000000000001",
+    user_id: "demo-user",
+    public_id: "87b653a7b59a722de8",
+    name: "Universal Roblox Script",
+    code: `-- LuaMore High-Security Roblox Script
+print("[LuaMore] Loading Protected Script...")
+
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local function notify(title, text)
+  pcall(function()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+      Title = title,
+      Text = text,
+      Duration = 5
+    })
+  end)
+end
+
+notify("LuaMore Verified", "Script executed successfully for " .. (localPlayer and localPlayer.Name or "Player"))
+print("[LuaMore] Successfully initialized and verified!")
+`,
+    ffa: true,
+    is_active: true,
+    is_protected: true,
+    run_count: 142,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  "1349b82b8502467a97b9c7c516d84697": {
+    id: "1349b82b-8502-467a-97b9-c7c516d84697",
+    user_id: "demo-user",
+    public_id: "1349b82b8502467a97b9c7c516d84697",
+    name: "Delta Universal Hub",
+    code: `-- LuaMore Delta Universal Hub
+print("[LuaMore] Delta Universal Hub Loaded!")
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+print("[LuaMore] Player: " .. (lp and lp.Name or "Unknown"))
+`,
+    ffa: true,
+    is_active: true,
+    is_protected: true,
+    run_count: 538,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+};
+
 function loadScripts(): Record<string, StoredScript> {
   try {
     ensureDataDir();
     if (fs.existsSync(SCRIPTS_FILE)) {
       const raw = fs.readFileSync(SCRIPTS_FILE, "utf-8");
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULT_SEEDS, ...parsed };
     }
   } catch (err) {
     console.error("Failed to read scripts store:", err);
   }
-  return {};
+  return { ...DEFAULT_SEEDS };
 }
 
 function saveScripts(scripts: Record<string, StoredScript>) {
