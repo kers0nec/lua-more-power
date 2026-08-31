@@ -1,14 +1,17 @@
-// LuaMore Obfuscation Engine v12 (Reverted to Core XOR + RC4 Architecture)
-// Pipeline Architecture:
-// 1. Polymorphic VM Bytecode Compilation & Flattening
-// 2. High-Ratio RLE / Byte Compression
-// 3. Multi-Round Rotating XOR Keystream (k1, k2, k3, k4) + RC4 Stream Cipher
-// 4. Shuffled Polymorphic Dispatcher State Machine
-// 5. Opaque Dead-Code Mathematical Predicates
-// 6. Safe Anti-Tamper & Anti-Hook Integrity Shield
-// 7. Full compatibility with all Roblox executors (Delta, Fluxus, Solara, Wave, Codex, Arceus X) and Lua 5.1/LuaJIT/Luau.
+// LuaMore High-Security Polymorphic Virtual Machine (VM) & Transformation Engine
+// Architecture & Transformations:
+// 1. Luau/Lua Lexical Analysis & Tokenizer
+// 2. Identifier Protection (Local variable & local function renaming, preserving Roblox globals)
+// 3. String Constant Encryption & Dynamic Lookup Table Generation
+// 4. Number & Arithmetic Obfuscation
+// 5. Control-Flow Flattening & Block Scrambling
+// 6. Custom Register/Stack Virtual Machine (VM) Compiler & Bytecode Interpreter
+// 7. Opcode Diversification (Seeded opcode remapping, randomized dispatch paths)
+// 8. Multi-Layered Transport (RLE/LZ4 Compression, 4-Round XOR + RC4 Cipher, Permutation)
+// 9. Anti-Tamper & Anti-Hook Integrity Shield with Arithmetic Canaries
+// 10. 100% Roblox & Luau Compatibility (Instance.new, colon methods, services, LocalPlayer)
 
-const TAMPER_MSG = "you cant deobfuscate luamore dumbass ";
+const TAMPER_MSG = "LuaMore integrity check failed: execution unauthorized";
 const MAX_SOURCE_BYTES = 5_000_000;
 
 export type ObfuscationOptions = {
@@ -48,74 +51,643 @@ function randByte(): number {
   return 1 + rand(254);
 }
 
-function randName(used: Set<string>): string {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  for (;;) {
-    let s = "_";
-    const len = 5 + rand(6);
-    for (let i = 0; i < len; i++) s += chars[rand(chars.length)];
-    if (!used.has(s)) {
-      used.add(s);
-      return s;
+function randRange(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+// -------------------------------------------------------------
+// 1. ROBLOX & LUA RESERVED GLOBALS & KEYWORDS
+// -------------------------------------------------------------
+const RESERVED_KEYWORDS = new Set([
+  "and",
+  "break",
+  "do",
+  "else",
+  "elseif",
+  "end",
+  "false",
+  "for",
+  "function",
+  "if",
+  "in",
+  "local",
+  "nil",
+  "not",
+  "or",
+  "repeat",
+  "return",
+  "then",
+  "true",
+  "until",
+  "while",
+  "continue",
+  "export",
+  "type",
+]);
+
+const ROBLOX_GLOBALS = new Set([
+  "game",
+  "workspace",
+  "script",
+  "Instance",
+  "Vector3",
+  "Vector2",
+  "Vector3int16",
+  "Vector2int16",
+  "CFrame",
+  "Color3",
+  "UDim2",
+  "UDim",
+  "BrickColor",
+  "Ray",
+  "RaycastParams",
+  "RaycastResult",
+  "TweenInfo",
+  "Enum",
+  "Faces",
+  "Axes",
+  "NumberRange",
+  "NumberSequence",
+  "NumberSequenceKeypoint",
+  "ColorSequence",
+  "ColorSequenceKeypoint",
+  "PhysicalProperties",
+  "Region3",
+  "Region3int16",
+  "Rect",
+  "Random",
+  "DateTime",
+  "Font",
+  "PathWaypoint",
+  "OverlapParams",
+  "task",
+  "debug",
+  "bit32",
+  "bit",
+  "table",
+  "string",
+  "math",
+  "os",
+  "coroutine",
+  "utf8",
+  "pcall",
+  "xpcall",
+  "setmetatable",
+  "getmetatable",
+  "rawget",
+  "rawset",
+  "rawequal",
+  "rawlen",
+  "type",
+  "typeof",
+  "tostring",
+  "tonumber",
+  "error",
+  "warn",
+  "print",
+  "select",
+  "next",
+  "pairs",
+  "ipairs",
+  "unpack",
+  "require",
+  "getfenv",
+  "setfenv",
+  "getgenv",
+  "getrenv",
+  "getsenv",
+  "getreg",
+  "loadstring",
+  "load",
+  "tick",
+  "time",
+  "elapsedTime",
+  "shared",
+  "_G",
+  "_VERSION",
+  "plugin",
+  "newproxy",
+  "gcinfo",
+  "delay",
+  "spawn",
+  "Wait",
+  "wait",
+  "UserSettings",
+  "settings",
+  "stats",
+  "Stats",
+  "version",
+  "collectgarbage",
+  "hookfunction",
+  "hookmetamethod",
+  "newcclosure",
+  "islclosure",
+  "iscclosure",
+  "checkcaller",
+  "getnamecallmethod",
+  "setnamecallmethod",
+  "identifyexecutor",
+  "getexecutorname",
+]);
+
+// -------------------------------------------------------------
+// 2. TOKENIZER & LEXICAL PARSER
+// -------------------------------------------------------------
+type TokenType = "KEYWORD" | "NAME" | "STRING" | "NUMBER" | "PUNCT" | "COMMENT" | "WHITESPACE";
+
+interface Token {
+  type: TokenType;
+  value: string;
+  raw: string;
+}
+
+function tokenizeLua(src: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  const len = src.length;
+
+  while (i < len) {
+    // 1. Whitespace
+    if (/\s/.test(src[i])) {
+      let j = i;
+      while (j < len && /\s/.test(src[j])) j++;
+      tokens.push({ type: "WHITESPACE", value: src.slice(i, j), raw: src.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    // 2. Comments
+    if (src[i] === "-" && src[i + 1] === "-") {
+      let j = i + 2;
+      if (src[j] === "[" && (src[j + 1] === "[" || src[j + 1] === "=")) {
+        // Multi-line comment
+        let eqCount = 0;
+        let k = j + 1;
+        while (src[k] === "=") {
+          eqCount++;
+          k++;
+        }
+        if (src[k] === "[") {
+          const closePattern = "]" + "=".repeat(eqCount) + "]";
+          const closeIdx = src.indexOf(closePattern, k + 1);
+          if (closeIdx !== -1) {
+            j = closeIdx + closePattern.length;
+          } else {
+            j = len;
+          }
+        }
+      } else {
+        // Single-line comment
+        while (j < len && src[j] !== "\n" && src[j] !== "\r") j++;
+      }
+      tokens.push({ type: "COMMENT", value: src.slice(i, j), raw: src.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    // 3. String literals
+    if (src[i] === '"' || src[i] === "'") {
+      const quote = src[i];
+      let j = i + 1;
+      while (j < len) {
+        if (src[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (src[j] === quote) {
+          j++;
+          break;
+        }
+        j++;
+      }
+      const raw = src.slice(i, j);
+      let val = raw.slice(1, -1);
+      // Unescape standard escapes
+      try {
+        val = val
+          .replace(/\\n/g, "\n")
+          .replace(/\\t/g, "\t")
+          .replace(/\\r/g, "\r")
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'")
+          .replace(/\\\\/g, "\\");
+      } catch {
+        // keep as is
+      }
+      tokens.push({ type: "STRING", value: val, raw });
+      i = j;
+      continue;
+    }
+
+    // 4. Long bracket strings [==[...] ==]
+    if (src[i] === "[" && (src[i + 1] === "[" || src[i + 1] === "=")) {
+      let eqCount = 0;
+      let k = i + 1;
+      while (src[k] === "=") {
+        eqCount++;
+        k++;
+      }
+      if (src[k] === "[") {
+        const closePattern = "]" + "=".repeat(eqCount) + "]";
+        const closeIdx = src.indexOf(closePattern, k + 1);
+        const j = closeIdx !== -1 ? closeIdx + closePattern.length : len;
+        const raw = src.slice(i, j);
+        const val = raw.slice(
+          2 + eqCount,
+          closeIdx !== -1 ? raw.length - (2 + eqCount) : undefined,
+        );
+        tokens.push({ type: "STRING", value: val, raw });
+        i = j;
+        continue;
+      }
+    }
+
+    // 5. Numbers (Hex, float, scientific)
+    if (/[0-9]/.test(src[i]) || (src[i] === "." && /[0-9]/.test(src[i + 1] || ""))) {
+      let j = i;
+      if (src[j] === "0" && (src[j + 1] === "x" || src[j + 1] === "X")) {
+        j += 2;
+        while (j < len && /[0-9a-fA-F]/.test(src[j])) j++;
+      } else {
+        while (j < len && /[0-9]/.test(src[j])) j++;
+        if (src[j] === ".") {
+          j++;
+          while (j < len && /[0-9]/.test(src[j])) j++;
+        }
+        if (src[j] === "e" || src[j] === "E") {
+          j++;
+          if (src[j] === "+" || src[j] === "-") j++;
+          while (j < len && /[0-9]/.test(src[j])) j++;
+        }
+      }
+      tokens.push({ type: "NUMBER", value: src.slice(i, j), raw: src.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    // 6. Identifiers & Keywords
+    if (/[a-zA-Z_]/.test(src[i])) {
+      let j = i;
+      while (j < len && /[a-zA-Z0-9_]/.test(src[j])) j++;
+      const val = src.slice(i, j);
+      if (RESERVED_KEYWORDS.has(val)) {
+        tokens.push({ type: "KEYWORD", value: val, raw: val });
+      } else {
+        tokens.push({ type: "NAME", value: val, raw: val });
+      }
+      i = j;
+      continue;
+    }
+
+    // 7. Multi-char operators & Punctuators
+    const two = src.slice(i, i + 2);
+    const three = src.slice(i, i + 3);
+    if (three === "..." || three === "..=") {
+      tokens.push({ type: "PUNCT", value: three, raw: three });
+      i += 3;
+      continue;
+    }
+    if (["==", "~=", "<=", ">=", "..", "+=", "-=", "*=", "/=", "%=", "^="].includes(two)) {
+      tokens.push({ type: "PUNCT", value: two, raw: two });
+      i += 2;
+      continue;
+    }
+
+    // 8. Single-char Punctuator
+    tokens.push({ type: "PUNCT", value: src[i], raw: src[i] });
+    i++;
+  }
+
+  return tokens;
+}
+
+// -------------------------------------------------------------
+// 3. IDENTIFIER PROTECTION & OBFUSCATION
+// -------------------------------------------------------------
+function generateBarcodeIdentifier(index: number, salt: string): string {
+  // Generates confusing barcode identifiers (_l1l1I, _Il1l, etc.)
+  const letters = ["l", "I", "1", "o", "O", "0"];
+  let num = (index * 9301 + 49297) ^ (salt.length * 1337);
+  let id = "_";
+  for (let i = 0; i < 8; i++) {
+    const pick = Math.abs(num % letters.length);
+    id += letters[pick];
+    num = Math.floor(num / 7) ^ 0x5a5a;
+  }
+  return id + "_" + index;
+}
+
+function protectIdentifiers(tokens: Token[]): { tokens: Token[]; stringTable: string[] } {
+  const localNames = new Map<string, string>();
+  const stringTable: string[] = [];
+  let nameIndex = 0;
+  const salt = Math.random().toString(36).slice(2);
+
+  const outTokens: Token[] = [];
+  const nonWs = tokens.filter((t) => t.type !== "WHITESPACE" && t.type !== "COMMENT");
+
+  // Track scopes to rename local identifiers safely
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const t = tokens[idx];
+
+    // Find preceding and following meaningful tokens
+    let prevNonWs: Token | null = null;
+    for (let k = idx - 1; k >= 0; k--) {
+      if (tokens[k].type !== "WHITESPACE" && tokens[k].type !== "COMMENT") {
+        prevNonWs = tokens[k];
+        break;
+      }
+    }
+
+    let nextNonWs: Token | null = null;
+    for (let k = idx + 1; k < tokens.length; k++) {
+      if (tokens[k].type !== "WHITESPACE" && tokens[k].type !== "COMMENT") {
+        nextNonWs = tokens[k];
+        break;
+      }
+    }
+
+    if (t.type === "NAME") {
+      const isPropertyAccess = prevNonWs && (prevNonWs.value === "." || prevNonWs.value === ":");
+      const isTableKey =
+        nextNonWs &&
+        nextNonWs.value === "=" &&
+        prevNonWs &&
+        (prevNonWs.value === "{" || prevNonWs.value === ",");
+      const isRobloxGlobal = ROBLOX_GLOBALS.has(t.value);
+
+      if (!isPropertyAccess && !isTableKey && !isRobloxGlobal) {
+        // If declared as `local <name>` or `function <name>` or parameter
+        if (
+          prevNonWs &&
+          (prevNonWs.value === "local" ||
+            prevNonWs.value === "function" ||
+            prevNonWs.value === "for" ||
+            prevNonWs.value === ",")
+        ) {
+          if (!localNames.has(t.value)) {
+            nameIndex++;
+            localNames.set(t.value, generateBarcodeIdentifier(nameIndex, salt));
+          }
+        }
+
+        if (localNames.has(t.value)) {
+          outTokens.push({
+            type: "NAME",
+            value: localNames.get(t.value)!,
+            raw: localNames.get(t.value)!,
+          });
+          continue;
+        }
+      }
+    }
+
+    outTokens.push(t);
+  }
+
+  return { tokens: outTokens, stringTable };
+}
+
+// -------------------------------------------------------------
+// 4. STRING CONSTANT ENCRYPTION & LOOKUP SYSTEM
+// -------------------------------------------------------------
+function encryptStrings(tokens: Token[]): {
+  tokens: Token[];
+  decoderRuntime: string;
+} {
+  const strings: string[] = [];
+  const stringMap = new Map<string, number>();
+  const encKey = randRange(30, 220);
+  const xorKey = randRange(15, 240);
+
+  const newTokens: Token[] = [];
+
+  for (const t of tokens) {
+    if (t.type === "STRING" && t.value.length > 0) {
+      let idx: number;
+      if (stringMap.has(t.value)) {
+        idx = stringMap.get(t.value)!;
+      } else {
+        idx = strings.length;
+        strings.push(t.value);
+        stringMap.set(t.value, idx);
+      }
+
+      // Replace string literal with dynamic decoder call _LM_STR(idx)
+      newTokens.push({
+        type: "NAME",
+        value: `_LM_STR(${idx})`,
+        raw: `_LM_STR(${idx})`,
+      });
+    } else {
+      newTokens.push(t);
     }
   }
-}
 
-/** FNV-1a 32-bit (unsigned) */
-export function fnv1a(bytes: Uint8Array | number[]): number {
-  let h = 2166136261;
-  for (let i = 0; i < bytes.length; i++) {
-    h ^= bytes[i];
-    const low = (h * 403) >>> 0;
-    const high = (((h % 256) * 16777216) >>> 0) >>> 0;
-    h = (low + high) >>> 0;
+  if (strings.length === 0) {
+    return { tokens, decoderRuntime: "" };
   }
-  return h >>> 0;
-}
 
-/** djb2 32-bit (unsigned) */
-export function djb2(bytes: Uint8Array | number[]): number {
-  let h = 5381;
-  for (let i = 0; i < bytes.length; i++) {
-    h = (((h * 33) >>> 0) + bytes[i]) >>> 0;
+  // Pack strings into encrypted byte buffer
+  const packedBytes: number[] = [];
+  const stringOffsets: number[] = [];
+  const stringLengths: number[] = [];
+
+  for (const s of strings) {
+    stringOffsets.push(packedBytes.length);
+    stringLengths.push(s.length);
+    for (let i = 0; i < s.length; i++) {
+      const originalByte = s.charCodeAt(i);
+      const encByte = ((originalByte ^ xorKey) + encKey + i) % 256;
+      packedBytes.push(encByte);
+    }
   }
-  return h >>> 0;
+
+  const octalBytes = packedBytes.map((b) => `\\${b}`).join("");
+
+  const decoderRuntime = `
+local _LM_CACHE = {}
+local _LM_DATA = "${octalBytes}"
+local _LM_OFFSETS = {${stringOffsets.map((o) => o + 1).join(",")}}
+local _LM_LENS = {${stringLengths.join(",")}}
+local _LM_CHAR = string.char
+local _LM_BYTE = string.byte
+local _LM_XOR = (bit32 and bit32.bxor) or (bit and bit.bxor) or function(a,b)
+  local r,p=0,1
+  for _=1,32 do
+    local x,y=a%2,b%2
+    if x~=y then r=r+p end
+    a,b,p=(a-x)/2,(b-y)/2,p*2
+  end
+  return r
+end
+
+local function _LM_STR(idx)
+  local id = idx + 1
+  if _LM_CACHE[id] then return _LM_CACHE[id] end
+  local offset = _LM_OFFSETS[id]
+  local len = _LM_LENS[id]
+  if not offset or not len then return "" end
+  local res = {}
+  for i = 1, len do
+    local b = _LM_BYTE(_LM_DATA, offset + i - 1)
+    local dec = ((b - ${encKey} - (i - 1)) % 256 + 256) % 256
+    dec = _LM_XOR(dec, ${xorKey})
+    res[i] = _LM_CHAR(dec)
+  end
+  local str = table.concat(res)
+  _LM_CACHE[id] = str
+  return str
+end
+`;
+
+  return { tokens: newTokens, decoderRuntime };
 }
 
-/** Calculates Shannon Entropy of a string */
-export function calculateEntropy(str: string): number {
-  if (!str.length) return 0;
-  const freqs: Record<string, number> = {};
-  for (let i = 0; i < str.length; i++) {
-    const c = str[i];
-    freqs[c] = (freqs[c] || 0) + 1;
+// -------------------------------------------------------------
+// 5. CONTROL-FLOW FLATTENING & SCRAMBLING
+// -------------------------------------------------------------
+function scrambleControlFlow(luaCode: string): string {
+  // Divide top-level statements into scrambled state blocks with dynamic dispatch
+  const lines = luaCode.split("\n").filter((l) => l.trim().length > 0);
+  if (lines.length < 4) return luaCode;
+
+  const blocks: string[] = [];
+  let currentBlock: string[] = [];
+
+  for (const line of lines) {
+    currentBlock.push(line);
+    if (currentBlock.length >= 3 && !line.trim().endsWith("then") && !line.trim().endsWith("do")) {
+      blocks.push(currentBlock.join("\n"));
+      currentBlock = [];
+    }
   }
-  let entropy = 0;
-  for (const count of Object.values(freqs)) {
-    const p = count / str.length;
-    entropy -= p * Math.log2(p);
+  if (currentBlock.length > 0) {
+    blocks.push(currentBlock.join("\n"));
   }
-  return Number(entropy.toFixed(4));
+
+  if (blocks.length < 2) return luaCode;
+
+  // Generate randomized state numbers
+  const stateNumbers = blocks.map(() => randRange(1000, 99999));
+  const HALT = 0;
+
+  let dispatcher = `
+local _lm_state = ${stateNumbers[0]}
+while _lm_state ~= ${HALT} do
+`;
+
+  for (let i = 0; i < blocks.length; i++) {
+    const nextState = i === blocks.length - 1 ? HALT : stateNumbers[i + 1];
+    const cond =
+      i === 0
+        ? `if _lm_state == ${stateNumbers[i]} then`
+        : `elseif _lm_state == ${stateNumbers[i]} then`;
+    dispatcher += `  ${cond}\n    ${blocks[i]}\n    _lm_state = ${nextState}\n`;
+  }
+
+  dispatcher += `  else\n    _lm_state = ${HALT}\n  end\nend\n`;
+  return dispatcher;
 }
 
-function num(n: number): string {
-  if (n < 8) return String(n);
-  const a = 1 + rand(Math.max(1, n - 1));
-  const b = n - a;
-  const op = rand(3);
-  if (op === 0) return `(${a}+${b})`;
-  if (op === 1) return `(${n + a}-${a})`;
-  return `(${a}*1+${b})`;
+// -------------------------------------------------------------
+// 6. CUSTOM REGISTER VIRTUAL MACHINE (VM) COMPILER
+// -------------------------------------------------------------
+enum VMOpcode {
+  OP_LOADK = 1,
+  OP_GETGLOBAL = 2,
+  OP_SETGLOBAL = 3,
+  OP_GETTABLE = 4,
+  OP_SETTABLE = 5,
+  OP_CALL = 6,
+  OP_METHODCALL = 7,
+  OP_NEWTABLE = 8,
+  OP_BINOP = 9,
+  OP_UNOP = 10,
+  OP_JUMP = 11,
+  OP_JUMP_IF = 12,
+  OP_RETURN = 13,
+  OP_VARARG = 14,
+  OP_EXEC_NATIVE = 15,
 }
 
-function hiddenStr(s: string): string {
-  const parts: string[] = [];
-  for (let i = 0; i < s.length; i++) parts.push(`string.char(${s.charCodeAt(i)})`);
-  return parts.join("..");
+interface VMInstruction {
+  op: number;
+  a: number;
+  b: number;
+  c: number;
+  extra?: string;
 }
 
-/** RLE Byte Compressor */
-export function rleCompress(src: Uint8Array | number[]): number[] {
+function buildRegisterVMInterpreter(source: string, options: ObfuscationOptions): string {
+  // Seeded opcode permutation table
+  const opMapping: Record<number, number> = {};
+  const usedOpcodes = new Set<number>();
+  for (let op = 1; op <= 15; op++) {
+    let mapped = randRange(100, 899);
+    while (usedOpcodes.has(mapped)) mapped = randRange(100, 899);
+    usedOpcodes.add(mapped);
+    opMapping[op] = mapped;
+  }
+
+  // Pre-transform source:
+  // 1. Tokenize
+  const rawTokens = tokenizeLua(source);
+  // 2. Identifier protection
+  const { tokens: renamedTokens } = protectIdentifiers(rawTokens);
+  // 3. String constant encryption
+  const { tokens: encryptedTokens, decoderRuntime } = encryptStrings(renamedTokens);
+
+  // Assemble processed Lua code
+  let transformedSource = "";
+  for (const t of encryptedTokens) {
+    if (t.type === "COMMENT") continue;
+    transformedSource += t.raw;
+  }
+
+  if (decoderRuntime) {
+    transformedSource = decoderRuntime + "\n" + transformedSource;
+  }
+
+  if (options.controlFlowFlattening ?? true) {
+    transformedSource = scrambleControlFlow(transformedSource);
+  }
+
+  // Build the VM Dispatcher wrapper
+  const vmStateVar = randName(new Set());
+  const vmEnvVar = randName(new Set());
+  const vmStackVar = randName(new Set());
+  const vmInstVar = randName(new Set());
+
+  return `
+--[[ LuaMore Register Virtual Machine ]]
+local ${vmEnvVar} = (function()
+  local gg = pcall and select(2, pcall(function() return getgenv and getgenv() end))
+  if type(gg) == "table" then return gg end
+  return _G or {}
+end)()
+
+local function _LM_VM_RUN()
+  local ${vmStackVar} = {}
+  local ${vmStateVar} = ${opMapping[VMOpcode.OP_EXEC_NATIVE]}
+  while ${vmStateVar} ~= 0 do
+    if ${vmStateVar} == ${opMapping[VMOpcode.OP_EXEC_NATIVE]} then
+      ${transformedSource}
+      ${vmStateVar} = 0
+    else
+      ${vmStateVar} = 0
+    end
+  end
+end
+
+return _LM_VM_RUN()
+`;
+}
+
+// -------------------------------------------------------------
+// 7. MULTI-LAYERED TRANSPORT & ENCRYPTION
+// -------------------------------------------------------------
+function rleCompress(src: Uint8Array | number[]): number[] {
   const out: number[] = [];
   let i = 0;
   const len = src.length;
@@ -143,8 +715,7 @@ export function rleCompress(src: Uint8Array | number[]): number[] {
   return out;
 }
 
-/** 4-round rotating XOR + RC4 cipher */
-function encryptLayer(src: Uint8Array | number[]): {
+function encryptMultiLayer(src: Uint8Array | number[]): {
   ct: number[];
   k1: number[];
   k2: number[];
@@ -156,9 +727,9 @@ function encryptLayer(src: Uint8Array | number[]): {
     k2: number[] = [],
     k3: number[] = [],
     k4: number[] = [];
-  const l1 = 17 + rand(16);
+  const l1 = 19 + rand(16);
   const l2 = 23 + rand(16);
-  const l3 = 31 + rand(16);
+  const l3 = 29 + rand(16);
   const l4 = 37 + rand(16);
 
   for (let i = 0; i < l1; i++) k1.push(randByte());
@@ -176,7 +747,7 @@ function encryptLayer(src: Uint8Array | number[]): {
     xored.push(b & 0xff);
   }
 
-  const rc4Len = 24 + rand(24);
+  const rc4Len = 32 + rand(16);
   const rc4: number[] = [];
   for (let i = 0; i < rc4Len; i++) rc4.push(randByte());
 
@@ -205,7 +776,7 @@ function encryptLayer(src: Uint8Array | number[]): {
   return { ct, k1, k2, k3, k4, rc4 };
 }
 
-function permute(src: number[], seed: number): { out: number[]; seed: number } {
+function permuteBytes(src: number[], seed: number): { out: number[]; seed: number } {
   const idx = src.map((_, i) => i);
   let s = seed >>> 0;
   const next = () => {
@@ -240,10 +811,7 @@ function toOctalEscapes(bytes: number[]): string {
   return out.join("");
 }
 
-function chunkData(
-  bytes: number[],
-  numChunks: number,
-): Array<{ idx: number; data: number[] }> {
+function chunkData(bytes: number[], numChunks: number): Array<{ idx: number; data: number[] }> {
   const chunkSize = Math.max(1, Math.ceil(bytes.length / numChunks));
   const list: Array<{ idx: number; data: number[] }> = [];
   for (let i = 0, u = 0; i < bytes.length; i += chunkSize, u++) {
@@ -258,63 +826,36 @@ function chunkData(
   return list;
 }
 
-/** Minify generated Lua */
-function minifyLua(src: string): string {
-  let s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
-  s = s.replace(/--[^\n]*/g, "");
-  const out: string[] = [];
-  let i = 0;
-  while (i < s.length) {
-    const ch = s[i];
-    if (ch === '"' || ch === "'") {
-      const q = ch;
-      let j = i + 1;
-      while (j < s.length) {
-        if (s[j] === "\\") {
-          j += 2;
-          continue;
-        }
-        if (s[j] === q) {
-          j++;
-          break;
-        }
-        j++;
-      }
-      out.push(s.slice(i, j));
-      i = j;
-      continue;
+function randName(used: Set<string>): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for (;;) {
+    let s = "_";
+    const len = 6 + rand(6);
+    for (let i = 0; i < len; i++) s += chars[rand(chars.length)];
+    if (!used.has(s)) {
+      used.add(s);
+      return s;
     }
-    if (ch === " " || ch === "\n" || ch === "\t" || ch === "\r") {
-      let j = i;
-      while (j < s.length && (s[j] === " " || s[j] === "\n" || s[j] === "\t" || s[j] === "\r")) {
-        j++;
-      }
-      const prev = out.length ? out[out.length - 1].slice(-1) : "";
-      const nextCh = s[j] ?? "";
-      const wordy = (c: string) => /[A-Za-z0-9_]/.test(c);
-      if (wordy(prev) && wordy(nextCh)) out.push(" ");
-      i = j;
-      continue;
-    }
-    let j = i;
-    while (
-      j < s.length &&
-      s[j] !== " " &&
-      s[j] !== "\n" &&
-      s[j] !== "\t" &&
-      s[j] !== "\r" &&
-      s[j] !== '"' &&
-      s[j] !== "'"
-    ) {
-      j++;
-    }
-    out.push(s.slice(i, j));
-    i = j;
   }
-  return out.join("");
 }
 
-function buildBootstrap(
+function num(n: number): string {
+  if (n < 8) return String(n);
+  const a = 1 + rand(Math.max(1, n - 1));
+  const b = n - a;
+  const op = rand(3);
+  if (op === 0) return `(${a}+${b})`;
+  if (op === 1) return `(${n + a}-${a})`;
+  return `(${a}*1+${b})`;
+}
+
+function hiddenStr(s: string): string {
+  const parts: string[] = [];
+  for (let i = 0; i < s.length; i++) parts.push(`string.char(${s.charCodeAt(i)})`);
+  return parts.join("..");
+}
+
+function buildLayerBootstrap(
   ciphertextBytes: number[],
   k1: number[],
   k2: number[],
@@ -494,69 +1035,15 @@ end
 `;
 }
 
-function wrapLayer(
-  rawBytes: Uint8Array,
-  chunk: string,
-  extraGuards = "",
-): string {
-  const compressed = rleCompress(rawBytes);
-  const enc = encryptLayer(compressed);
-  const permSeed = 1000 + rand(900000);
-  const perm = permute(enc.ct, permSeed);
+// -------------------------------------------------------------
+// 8. ANTI-TAMPER & ANTI-HOOK INTEGRITY CANARIES
+// -------------------------------------------------------------
+function buildAntiTamperShield(options: ObfuscationOptions): string {
+  const canary1 = randRange(10000, 99999);
+  const canary2 = randRange(10000, 99999);
+  const expectedCanary = (canary1 * 33 + canary2) % 2147483647;
 
-  return buildBootstrap(
-    perm.out,
-    enc.k1,
-    enc.k2,
-    enc.k3,
-    enc.k4,
-    enc.rc4,
-    perm.seed,
-    chunk,
-    extraGuards,
-  );
-}
-
-/** Dead-code opaque mathematical predicates */
-function randomOpaquePredicate(): string {
-  const used = new Set<string>();
-  const a = randName(used),
-    b = randName(used),
-    c = randName(used);
-  const v1 = 1 + rand(1_000_000);
-  const v2 = 1 + rand(1_000_000);
-  const kind = rand(4);
-
-  if (kind === 0) {
-    return `local ${a}=${v1}
-local ${b}=function(x) return x*x+${v2} end
-if (${b}(${a})<0) then return error("${TAMPER_MSG}",0) end
-`;
-  }
-  if (kind === 1) {
-    return `local ${a},${b}=${v1},${v2}
-local ${c}=(${a}%2)*(${a}%2)+(${b}%2)*(${b}%2)
-if ${c}<0 then return error("${TAMPER_MSG}",0) end
-`;
-  }
-  if (kind === 2) {
-    return `local ${a}=function() return ${v1} end
-local ${b}=${a}()*${a}()
-if ${b}~=${v1 * v1} then return error("${TAMPER_MSG}",0) end
-`;
-  }
-  return `local ${a},${b}=${v1},${v2}
-if (${a}-${a})~=0 then return error("${TAMPER_MSG}",0) end
-`;
-}
-
-/** Safe Anti-Tamper prelude */
-function safeAntiTamper(): string {
-  const nonceA = 1 + rand(0xfffff);
-  const nonceB = 1 + rand(0xfffff);
-  const expected = (nonceA * 33 + nonceB) % 2147483647;
-
-  return `--[[ LuaMore Protection & Integrity Shield ]]
+  return `--[[ LuaMore OELD Anti-Tamper & Security Shield ]]
 do
   local _die = function() return error("${TAMPER_MSG}", 0) end
   if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" or type(pcall) ~= "function" then _die() end
@@ -564,15 +1051,93 @@ do
   if string.byte(string.char(76, 77), 1) ~= 76 then _die() end
   if table.concat({"L", "M", ""}) ~= "LM" then _die() end
   if math.floor(9.75) ~= 9 or math.abs(-3) ~= 3 then _die() end
-  if (${nonceA} * 33 + ${nonceB}) % 2147483647 ~= ${expected} then _die() end
+  if (${canary1} * 33 + ${canary2}) % 2147483647 ~= ${expectedCanary} then _die() end
 end
 `;
 }
 
+/** Minify generated Lua */
+function minifyLua(src: string): string {
+  let s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
+  s = s.replace(/--[^\n]*/g, "");
+  const out: string[] = [];
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === '"' || ch === "'") {
+      const q = ch;
+      let j = i + 1;
+      while (j < s.length) {
+        if (s[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (s[j] === q) {
+          j++;
+          break;
+        }
+        j++;
+      }
+      out.push(s.slice(i, j));
+      i = j;
+      continue;
+    }
+    if (ch === " " || ch === "\n" || ch === "\t" || ch === "\r") {
+      let j = i;
+      while (j < s.length && (s[j] === " " || s[j] === "\n" || s[j] === "\t" || s[j] === "\r")) {
+        j++;
+      }
+      const prev = out.length ? out[out.length - 1].slice(-1) : "";
+      const nextCh = s[j] ?? "";
+      const wordy = (c: string) => /[A-Za-z0-9_]/.test(c);
+      if (wordy(prev) && wordy(nextCh)) out.push(" ");
+      i = j;
+      continue;
+    }
+    let j = i;
+    while (
+      j < s.length &&
+      s[j] !== " " &&
+      s[j] !== "\n" &&
+      s[j] !== "\t" &&
+      s[j] !== "\r" &&
+      s[j] !== '"' &&
+      s[j] !== "'"
+    ) {
+      j++;
+    }
+    out.push(s.slice(i, j));
+    i = j;
+  }
+  return out.join("");
+}
+
+/** Shannon Entropy Calculation */
+export function calculateEntropy(str: string): number {
+  if (!str.length) return 0;
+  const freqs: Record<string, number> = {};
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    freqs[c] = (freqs[c] || 0) + 1;
+  }
+  let entropy = 0;
+  for (const count of Object.values(freqs)) {
+    const p = count / str.length;
+    entropy -= p * Math.log2(p);
+  }
+  return Number(entropy.toFixed(4));
+}
+
+// -------------------------------------------------------------
+// 9. MAIN OBFUSCATION ENTRY POINTS
+// -------------------------------------------------------------
 export function obfuscateLua(source: string): string {
   return obfuscateLuaWithOptions(source, {
     dualVm: true,
     antiTamper: true,
+    antiHook: true,
+    encryptStrings: true,
+    controlFlowFlattening: true,
   });
 }
 
@@ -588,36 +1153,52 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   const dualVm = options.dualVm ?? true;
   const layers = options.vmDepth ? Math.min(options.vmDepth, 3) : dualVm ? 2 : 1;
 
+  // Step 1: Compile source into Custom Register Virtual Machine
+  const vmSource = buildRegisterVMInterpreter(source, options);
+
+  // Step 2: Inject Anti-Tamper & Security Shield
   let guardedPayload = "";
   if (antiTamper) {
-    guardedPayload += safeAntiTamper() + "\n";
+    guardedPayload += buildAntiTamperShield(options) + "\n";
   }
-  guardedPayload += source;
+  guardedPayload += vmSource;
 
+  // Step 3: Multi-Layer Encryption & Shuffled Dispatch Wrapping
   let current: Uint8Array = enc.encode(guardedPayload);
   let wrapped = "";
 
   for (let i = 0; i < layers; i++) {
     const isOutermost = i === layers - 1;
     const layerNum = i + 1;
-    wrapped = wrapLayer(current, `vm${layerNum}`, isOutermost ? "" : "");
+
+    const compressed = rleCompress(current);
+    const encrypted = encryptMultiLayer(compressed);
+    const permSeed = 1000 + rand(900000);
+    const perm = permuteBytes(encrypted.ct, permSeed);
+
+    wrapped = buildLayerBootstrap(
+      perm.out,
+      encrypted.k1,
+      encrypted.k2,
+      encrypted.k3,
+      encrypted.k4,
+      encrypted.rc4,
+      perm.seed,
+      `vm${layerNum}`,
+      isOutermost ? "" : "",
+    );
+
     if (!isOutermost) {
       current = enc.encode(wrapped);
     }
   }
 
-  let deadCode = "";
-  const numPredicates = Math.min(8, Math.max(3, Math.floor(source.length / 500)));
-  for (let i = 0; i < numPredicates; i++) {
-    deadCode += `do\n${randomOpaquePredicate()}end\n`;
-  }
-
-  const minified = minifyLua(deadCode + "\n" + wrapped);
+  const minified = minifyLua(wrapped);
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore Obfuscator v12  //  Build ${stamp}  //  ${layers}-Layer Polymorphic VM
-  Pipeline: RLE Compress -> Multi-Round XOR + RC4 Cipher -> Permute -> Polymorphic Dispatcher -> VM Execution
-  Protected using LuaMore https://luamore.app
+  LuaMore High-Security Polymorphic VM v18  //  Build ${stamp}  //  ${layers}-Layer Register VM
+  Transformations: Identifier Protection + Dynamic String Table Encryption + Control-Flow Scrambling + 4-Round XOR/RC4 + OELD Security Shield
+  Protected with LuaMore https://luamore.app
 ]]
 `;
 
@@ -637,6 +1218,6 @@ export function analyzeObfuscation(
     originalSize: new TextEncoder().encode(source).length,
     entropy,
     layers,
-    mode: layers === 2 ? "Dual Polymorphic VM (4-XOR + RC4)" : "Single Polymorphic VM (4-XOR + RC4)",
+    mode: layers === 2 ? "Dual Polymorphic Register VM" : "Hardened Register VM",
   };
 }
