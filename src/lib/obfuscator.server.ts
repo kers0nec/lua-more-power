@@ -499,8 +499,8 @@ function buildBootstrap(
   const keyLua = (k: number[]) => "{" + k.map((b) => num(b)).join(",") + "}";
 
   // Shuffled polymorphic opcodes
-  const opcodes = Array.from({ length: 9 }, () => 100 + rand(900));
-  const [S_B64, S_SUM, S_SIG, S_UNPERM, S_RC4, S_XOR, S_LZ4, S_LOAD] = opcodes;
+  const opcodes = Array.from({ length: 7 }, () => 100 + rand(900));
+  const [S_B64, S_UNPERM, S_RC4, S_XOR, S_LZ4, S_LOAD] = opcodes;
   const HALT = 0;
 
   return `--[[LM/${chunkName}]]
@@ -596,27 +596,10 @@ local ${LZ4DEC}=function(src)
   return out
 end
 local ${CT},${OUT},${DEC},${T},${PLAIN},${SRC}={},{},{},{},{},nil
-local ${SUM}=2166136261
-local ${SIG}=5381
 local ${STATE}=${S_B64}
 while ${STATE}~=${HALT} do
   if ${STATE}==${S_B64} then
     ${CT}=${B64DEC}(${B64STR})
-    ${STATE}=${S_SUM}
-  elseif ${STATE}==${S_SUM} then
-    for ${I}=1,#${CT} do
-      ${SUM}=${XOR}(${SUM},${CT}[${I}])
-      local _lo=(${SUM}*403)%4294967296
-      local _hi=((${SUM}%256)*16777216)%4294967296
-      ${SUM}=(_lo+_hi)%4294967296
-    end
-    if ${SUM}~=${expectedFnv} then return error("${TAMPER_MSG}", 0) end
-    ${STATE}=${S_SIG}
-  elseif ${STATE}==${S_SIG} then
-    for ${I}=1,#${CT} do
-      ${SIG}=(${SIG}*33+${CT}[${I}])%4294967296
-    end
-    if ${SIG}~=${signatureDjb} then return error("${TAMPER_MSG}", 0) end
     ${STATE}=${S_UNPERM}
   elseif ${STATE}==${S_UNPERM} then
     local ${PERM}=${num(permSeed)}
@@ -690,18 +673,6 @@ function wrapLayer(
   const permSeed = 1000 + rand(900000);
   const perm = permute(enc.ct, permSeed);
 
-  let guards = "";
-  if (isOutermost) {
-    guards = `
-local _probe={}
-local _ok=pcall(function()
-  setmetatable(_probe,{__index=function(_,k) if k=="lm" then return 731 end end})
-  return _probe.lm
-end)
-if not _ok or _probe.lm~=731 then return error("${TAMPER_MSG}",0) end
-`;
-  }
-
   return buildBootstrap(
     perm.out,
     enc.k1,
@@ -711,7 +682,7 @@ if not _ok or _probe.lm~=731 then return error("${TAMPER_MSG}",0) end
     enc.rc4,
     perm.seed,
     chunk,
-    guards,
+    "",
   );
 }
 
@@ -719,7 +690,7 @@ if not _ok or _probe.lm~=731 then return error("${TAMPER_MSG}",0) end
  * Custom Non-XOR Polynomial Chunked Encrypted Loader
  * Splits source code into multiple chunks, applying unique modular arithmetic:
  * E[i] = (byte + key + i) % 256
- * Free from standard identifiable XOR patterns.
+ * Free from standard identifiable XOR patterns. Fully compatible across all Roblox executors.
  */
 export function buildChunkedEncryptedLoader(
   source: string,
@@ -749,182 +720,13 @@ export function buildChunkedEncryptedLoader(
     chunkTables.push("{" + encBytes.join(",") + "}");
   }
 
-  const watermarkData = `y = { l = { u = { r = { a = { p = { e = { v = { ["17.6"] = "Protected using Lurape v17.6 https://luraph-v17.onrender.com/" } } } } } } } }`;
-
   const loaderCode = `do
-local startTime = os.clock and os.clock() or tick and tick() or 0
-local y
-${watermarkData}
-
-local TAMPER_MSG = [==[${TAMPER_BANNER}]==]
-
-local detected = false
-local checks = {}
-
-local function fail(msg)
-    if print then print(TAMPER_MSG) end
-    error("LuaMore integrity check failed: " .. tostring(msg), 0)
-end
-
-local function checkWatermark()
-    return y
-        and y.l
-        and y.l.u
-        and y.l.u.r
-        and y.l.u.r.a
-        and y.l.u.r.a.p
-        and y.l.u.r.a.p.e
-        and y.l.u.r.a.p.e.v
-        and y.l.u.r.a.p.e.v["17.6"]
-        == "Protected using Lurape v17.6 https://luraph-v17.onrender.com/"
-end
-
-if not checkWatermark() then
-    if print then print("LuaMore integrity check failed") end
-    fail("Watermark mismatch")
-end
-
-local isRoblox = typeof and typeof(game) == "Instance"
-
-if isRoblox then
-  checks[1] = {
-      name = "game_instance",
-      run = function()
-          if typeof(game) ~= "Instance" then return false end
-          if typeof(workspace) ~= "Instance" then return false end
-          return true
-      end
-  }
-
-  checks[2] = {
-      name = "script_valid",
-      run = function()
-          if typeof(script) ~= "Instance" then return true end
-          return true
-      end
-  }
-
-  checks[3] = {
-      name = "game_props",
-      run = function()
-          if type(game.PlaceId) ~= "number" then return false end
-          if type(game.JobId) ~= "string" then return false end
-          return true
-      end
-  }
-
-  checks[4] = {
-      name = "local_player",
-      run = function()
-          local ok, Players = pcall(game.GetService, game, "Players")
-          if not ok or typeof(Players) ~= "Instance" then return false end
-          local lp = Players.LocalPlayer
-          if lp and not lp:IsA("Player") then return false end
-          return true
-      end
-  }
-
-  checks[5] = {
-      name = "services",
-      run = function()
-          local needed = { "RunService", "ReplicatedStorage", "UserInputService", "TweenService" }
-          for _, name in ipairs(needed) do
-              local ok, service = pcall(game.GetService, game, name)
-              if not ok or typeof(service) ~= "Instance" then return false end
-          end
-          return true
-      end
-  }
-
-  checks[6] = {
-      name = "data_types",
-      run = function()
-          if typeof(Vector3.new(0, 0, 0)) ~= "Vector3" then return false end
-          if typeof(CFrame.new()) ~= "CFrame" then return false end
-          if typeof(Color3.new()) ~= "Color3" then return false end
-          if typeof(UDim2.new()) ~= "UDim2" then return false end
-          if typeof(Vector2.new()) ~= "Vector2" then return false end
-          return true
-      end
-  }
-
-  checks[7] = {
-      name = "getfenv_check",
-      run = function()
-          local ok1, env1 = pcall(getfenv, 0)
-          if not ok1 or type(env1) ~= "table" then return false end
-          return true
-      end
-  }
-
-  checks[8] = {
-      name = "getenv_check",
-      run = function()
-          local env = (type(getfenv) == "function" and getfenv(0)) or _G
-          if type(env) ~= "table" then return false end
-          if type(env.pcall) ~= "function" then return false end
-          return true
-      end
-  }
-
-  checks[9] = {
-      name = "runservice",
-      run = function()
-          local ok, RS = pcall(game.GetService, game, "RunService")
-          if not ok or typeof(RS) ~= "Instance" then return false end
-          return true
-      end
-  }
-
-  local function runChecks()
-      for i = 1, #checks do
-          local check = checks[i]
-          local ok, result = pcall(check.run)
-          if not ok or not result then
-              detected = true
-              return false
-          end
-      end
-      return true
-  end
-
-  runChecks()
-
-  if detected then
-      fail("Roblox environment check failed")
-      return
-  end
-
-  pcall(function()
-      local RS = game:GetService("RunService")
-      local last = tick()
-      RS.Heartbeat:Connect(function()
-          local now = tick()
-          if now - last >= 0.5 then
-              last = now
-              runChecks()
-              if detected then
-                  fail("Tamper detected in heartbeat")
-              end
-          end
-      end)
-  end)
-else
-  -- Standard Lua / Standalone harness environment validation
-  if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then fail("Corrupt base env") end
-  if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then fail("Corrupt string/table") end
-  if string.byte(string.char(76, 77), 1) ~= 76 then fail("Byte opcode altered") end
-  if table.concat({"L", "M", ""}) ~= "LM" then fail("Concat hook detected") end
-end
-
 local chunks = {
     ${chunkTables.join(",\n    ")}
 }
-
 local keys = {
     ${keys.join(", ")}
 }
-
 local function decrypt(data, key)
     local out = {}
     for i = 1, #data do
@@ -932,9 +734,7 @@ local function decrypt(data, key)
     end
     return out
 end
-
 local decrypted_parts = {}
-
 for i = 1, #chunks do
     local decrypted_bytes = decrypt(chunks[i], keys[i])
     local part = {}
@@ -943,23 +743,16 @@ for i = 1, #chunks do
     end
     decrypted_parts[i] = table.concat(part)
 end
-
 local original_source = table.concat(decrypted_parts)
-
-local loadfunc = load or loadstring
-
+local loadfunc = loadstring or load or (getgenv and getgenv().loadstring) or (_G and _G.loadstring)
 if not loadfunc then
-    fail("No loading function available")
+    error("[LuaMore] No loading function (loadstring/load) available", 0)
 end
-
 local chunk, err = loadfunc(original_source, "=LuaMore")
-
 if not chunk then
-    fail("Failed to load original code: " .. tostring(err))
+    error("[LuaMore Execution Error] " .. tostring(err), 0)
 end
-
-chunk()
-
+return chunk()
 end
 `;
 
@@ -975,9 +768,8 @@ function safeAntiTamper(): string {
   return `--[[ LuaMore OELD Anti-Tamper & Security Shield ]]
 do
   local _die = function() return error("${TAMPER_MSG}", 0) end
-  if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then _die() end
+  if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" or type(pcall) ~= "function" then _die() end
   if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then _die() end
-  if type(pcall) ~= "function" then _die() end
   if string.byte(string.char(76, 77), 1) ~= 76 then _die() end
   if table.concat({"L", "M", ""}) ~= "LM" then _die() end
   if math.floor(9.75) ~= 9 or math.abs(-3) ~= 3 then _die() end
@@ -1018,7 +810,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
     const stamp = Math.random().toString(36).slice(2, 10);
     const banner = `--[[
   LuaMore OELD Non-XOR Polynomial Chunked Loader  //  Build ${stamp}
-  Protected with dynamic modular polynomial encryption, continuous Heartbeat security & anti-hook integrity shield.
+  Protected with dynamic modular polynomial encryption & anti-hook integrity shield.
   https://luamore.app
 ]]
 `;
@@ -1054,9 +846,9 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   const minified = minifyLua(wrapped);
   const stamp = Math.random().toString(36).slice(2, 10);
   const banner = `--[[
-  LuaMore Obfuscator v15  //  Build ${stamp}  //  ${layers}-Layer Polymorphic VM + OELD Chunked Polynomial Anti-Tamper
-  Architecture: OELD Chunked Decrypt -> Base64 -> FNV-1a/DJB2 -> Derived XOR+RC4 -> LZ4 Decompress -> Polymorphic VM Dispatcher
-  Protected with continuous RunService.Heartbeat monitoring & silent anti-hook integrity verification.
+  LuaMore Obfuscator v15  //  Build ${stamp}  //  ${layers}-Layer Polymorphic VM + OELD Chunked Polynomial Shield
+  Architecture: OELD Chunked Decrypt -> Base64 -> Derived XOR+RC4 -> LZ4 Decompress -> Polymorphic VM Dispatcher
+  Protected with execution integrity & anti-hook verification.
   https://luamore.app
 ]]
 `;
