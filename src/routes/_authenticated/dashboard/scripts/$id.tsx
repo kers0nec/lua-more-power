@@ -56,9 +56,6 @@ function ScriptDetail() {
   const [copied, setCopied] = useState(false);
   const [hydratedId, setHydratedId] = useState<string | null>(null);
   const [loaderTab, setLoaderTab] = useState<"keysystem" | "ffa">("keysystem");
-  const [domainPreset, setDomainPreset] = useState<"luasnapper" | "polsec" | "current">(
-    "luasnapper",
-  );
   const [sampleKey, setSampleKey] = useState("eggbm6ywzw7k3l1iht1lmeb5");
   const script = query.data?.script;
 
@@ -75,31 +72,18 @@ function ScriptDetail() {
     setHydratedId(script.id);
   }, [script, hydratedId]);
 
-  const originUrl =
-    typeof window !== "undefined" ? window.location.origin : "https://luasnapper.xyz";
-
-  const getBaseDomain = () => {
-    if (domainPreset === "luasnapper") return "https://luasnapper.xyz";
-    if (domainPreset === "polsec") return "https://api.getpolsec.com";
-    return originUrl;
-  };
-
   const loader = useMemo(() => {
     if (!script) return "";
-    const publicId =
-      script.public_id || "3bf2e0e5a59a0d6fdd39efe3f52a10f1ef614c2082029f71c3a399485e802ece";
-    const domain = getBaseDomain();
+    const publicId = script.public_id || "1349b82b8502467a97b9c7c516d84697";
 
     if (loaderTab === "ffa") {
-      // FFA loader format: loadstring(game:HttpGet("https://luasnapper.xyz/files/loaders/<public_id>.lua"))()
-      return `loadstring(game:HttpGet("${domain}/files/loaders/${publicId}.lua"))()`;
+      // FFA loader format
+      return `loadstring(game:HttpGet("https://luamore.app/files/loaders/${publicId}.lua"))()`;
     }
 
-    // Key system format:
-    // script_key = "eggbm6ywzw7k3l1iht1lmeb5";
-    // loadstring(game:HttpGet("https://luasnapper.xyz/files/loaders/<public_id>.lua"))()
-    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("${domain}/files/loaders/${publicId}.lua"))()`;
-  }, [script, loaderTab, domainPreset, sampleKey, originUrl]);
+    // Key system format
+    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("https://luamore.app/files/loaders/${publicId}.lua"))()`;
+  }, [script, loaderTab, sampleKey]);
 
   const canSave = Boolean(script && hydratedId === script.id && name.trim() && !query.isFetching);
 
@@ -342,35 +326,6 @@ function ScriptDetail() {
               >
                 <Unlock size={13} /> FFA Loader
               </button>
-            </div>
-
-            {/* Domain preset chips */}
-            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Endpoint:</span>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDomainPreset("polsec")}
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                    domainPreset === "polsec"
-                      ? "bg-blue-600 text-white font-bold"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
-                >
-                  getpolsec.com
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDomainPreset("luasnapper")}
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                    domainPreset === "luasnapper"
-                      ? "bg-blue-600 text-white font-bold"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
-                >
-                  luasnapper.xyz
-                </button>
-              </div>
             </div>
 
             {loaderTab === "keysystem" && (

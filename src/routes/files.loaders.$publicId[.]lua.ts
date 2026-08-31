@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // FFA / Direct Hosted loader route:
-// loadstring(game:HttpGet("https://luasnapper.xyz/files/loaders/<public_id>.lua"))()
+// loadstring(game:HttpGet("https://luamore.app/files/loaders/<public_id>.lua"))()
 
 export const Route = createFileRoute("/files/loaders/$publicId.lua")({
   server: {

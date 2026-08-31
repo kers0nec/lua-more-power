@@ -1,7 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FileCode2, KeyRound, PanelsTopLeft, Package, ArrowUpRight, Ban } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  FileCode2,
+  KeyRound,
+  PanelsTopLeft,
+  Package,
+  ArrowUpRight,
+  Ban,
+  Shield,
+  Copy,
+  Check,
+  Globe,
+  Sparkles,
+  Zap,
+  Activity,
+  Terminal,
+  Server,
+  Lock,
+} from "lucide-react";
 import { getDashboardStats } from "@/lib/dashboard.functions";
+import { listScripts } from "@/lib/scripts.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   head: () => ({
@@ -18,108 +38,375 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 
 function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => getDashboardStats() });
+  const listScriptsFn = useServerFn(listScripts);
+  const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => listScriptsFn() }) as {
+    data?: any[];
+  };
+
   const stats = q.data;
+  const [copiedSample, setCopiedSample] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const sampleLoader =
+    'loadstring(game:HttpGet("https://luamore.app/files/loaders/1349b82b8502467a97b9c7c516d84697.lua"))()';
+
+  const copyText = (text: string, isSample = false, scriptId?: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      if (isSample) {
+        setCopiedSample(true);
+        setTimeout(() => setCopiedSample(false), 2000);
+      }
+      if (scriptId) {
+        setCopiedId(scriptId);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    }
+  };
 
   const cards = [
-    { label: "Scripts", value: stats?.scripts ?? 0, to: "/dashboard/scripts", icon: FileCode2 },
-    { label: "License keys", value: stats?.keys ?? 0, to: "/dashboard/keys", icon: KeyRound },
-    { label: "Panels", value: stats?.panels ?? 0, to: "/dashboard/panels", icon: PanelsTopLeft },
-    { label: "Releases", value: stats?.releases ?? 0, to: "/dashboard/scripts", icon: Package },
+    {
+      label: "Hosted Scripts",
+      value: stats?.scripts ?? 0,
+      to: "/dashboard/scripts",
+      icon: FileCode2,
+      sub: "100% Protected",
+      color: "from-blue-500/20 to-blue-600/5",
+    },
+    {
+      label: "License Keys",
+      value: stats?.keys ?? 0,
+      to: "/dashboard/keys",
+      icon: KeyRound,
+      sub: "HWID Bound",
+      color: "from-amber-500/20 to-amber-600/5",
+    },
+    {
+      label: "Discord Panels",
+      value: stats?.panels ?? 0,
+      to: "/dashboard/panels",
+      icon: PanelsTopLeft,
+      sub: "Realtime Bot",
+      color: "from-indigo-500/20 to-indigo-600/5",
+    },
+    {
+      label: "HWID Ban Filters",
+      value: stats?.releases ?? 0,
+      to: "/dashboard/hwid",
+      icon: Ban,
+      sub: "Active Enforcer",
+      color: "from-rose-500/20 to-rose-600/5",
+    },
   ];
 
   const actions = [
     {
       to: "/dashboard/scripts",
       icon: FileCode2,
-      title: "Create a script",
-      desc: "Upload Luau code and host it behind a secure loader.",
+      title: "Host Lua Script",
+      badge: "LOADER",
+      desc: "Upload Luau code and deploy it behind a protected Luarmor-style loader.",
     },
     {
       to: "/dashboard/keys",
       icon: KeyRound,
-      title: "Generate keys",
-      desc: "Issue single or bulk license keys with expiry.",
+      title: "Generate License Keys",
+      badge: "AUTH",
+      desc: "Issue single or bulk license keys with hardware locking and custom expiry.",
+    },
+    {
+      to: "/dashboard/obfuscate",
+      icon: Shield,
+      title: "Obfuscation Studio",
+      badge: "SECURITY",
+      desc: "Protect raw Luau code with multi-pass AST control-flow virtualization.",
     },
     {
       to: "/dashboard/panels",
       icon: PanelsTopLeft,
-      title: "Build a panel",
-      desc: "Ship redeem and HWID buttons straight to Discord.",
-    },
-    {
-      to: "/dashboard/hwid",
-      icon: Ban,
-      title: "Manage HWIDs",
-      desc: "Ban abusers or reset locked devices.",
+      title: "Discord Bot Panel",
+      badge: "INTEGRATION",
+      desc: "Ship interactive key redeem, loader fetch, and HWID reset buttons directly to Discord.",
     },
   ];
 
+  const recentScripts = (scriptsQ.data ?? []).slice(0, 5);
+
   return (
     <div className="app-page">
-      <header className="app-page-header">
+      {/* Hero Welcome Header */}
+      <header className="flex flex-col gap-4 pb-6 border-b border-border sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="eyebrow">Workspace overview</div>
-          <h1 className="mt-3 font-display text-4xl md:text-5xl">
+          <div className="flex items-center gap-2">
+            <span className="badge-blue text-[10px] tracking-wider font-semibold">
+              <Sparkles size={11} className="text-amber-400" /> SYSTEM ACTIVE
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">Luarmor v2.4 Engine</span>
+          </div>
+          <h1 className="mt-2.5 font-display text-3xl sm:text-4xl text-foreground font-bold tracking-tight">
             Welcome back{stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
           </h1>
-          <p className="mt-3 max-w-lg text-sm text-muted-foreground">
-            Scripts, access, Discord panels, and releases at a glance.
+          <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-xl">
+            Manage your Lua script loaders, hardware bindings, Discord integrations, and license
+            keys.
           </p>
         </div>
-        <Link to="/dashboard/scripts" className="btn-primary">
-          New script <ArrowUpRight size={15} />
-        </Link>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Link to="/dashboard/scripts" className="btn-primary text-xs sm:text-sm">
+            <FileCode2 size={15} /> Create Script
+          </Link>
+        </div>
       </header>
 
-      <div
-        className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-xl border lg:grid-cols-4"
-        style={{ borderColor: "var(--border)", background: "var(--border)" }}
-      >
+      {/* Active Domain & Universal Loader Hub */}
+      <div className="mt-6 rounded-xl border border-primary/30 bg-gradient-to-r from-card via-blue-950/20 to-card p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
+                Production Loader Host Active
+              </span>
+            </div>
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Globe size={16} className="text-primary" /> Active Loader Host:
+              <span className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 text-xs sm:text-sm">
+                https://luamore.app
+              </span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              All scripts route through{" "}
+              <code className="text-foreground/90 font-mono">
+                https://luamore.app/files/loaders/&lt;public_id&gt;.lua
+              </code>{" "}
+              with instant key & HWID checks.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <button
+              onClick={() => copyText(sampleLoader, true)}
+              className="btn-outline text-xs flex items-center justify-center gap-2 py-2 px-3 bg-input/80 border-border hover:border-primary/50"
+            >
+              {copiedSample ? (
+                <>
+                  <Check size={13} className="text-emerald-400" /> Copied Test Loader!
+                </>
+              ) : (
+                <>
+                  <Copy size={13} /> Copy Master Template
+                </>
+              )}
+            </button>
+            <Link
+              to="/dashboard/scripts"
+              className="btn-primary text-xs flex items-center justify-center gap-1.5 py-2 px-3"
+            >
+              View Scripts <ArrowUpRight size={13} />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI Stats Grid */}
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map((c) => (
           <Link
             key={c.label}
             to={c.to}
-            className="group block p-6 transition-colors hover:bg-[color:var(--muted)]"
-            style={{ background: "var(--card)" }}
+            className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
           >
-            <div className="flex items-center justify-between">
-              <c.icon size={16} strokeWidth={1.6} style={{ color: "var(--muted-foreground)" }} />
-              <ArrowUpRight
-                size={14}
-                className="opacity-0 transition-opacity group-hover:opacity-100"
-                style={{ color: "var(--muted-foreground)" }}
-              />
-            </div>
-            <div className="mt-6 font-display text-5xl">{c.value}</div>
-            <div className="eyebrow mt-3">{c.label}</div>
-          </Link>
-        ))}
-      </div>
-
-      <div className="mt-16 flex items-center gap-4">
-        <h2 className="eyebrow shrink-0">Quick actions</h2>
-        <div className="hairline" />
-      </div>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {actions.map((a) => (
-          <Link key={a.title} to={a.to} className="card-blue group block p-6">
-            <div className="flex items-start gap-4">
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: "var(--accent-light)", color: "var(--primary)" }}
-              >
-                <a.icon size={20} strokeWidth={1.5} />
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${c.color} opacity-40 group-hover:opacity-100 transition-opacity`}
+            />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-input border border-border text-primary group-hover:scale-105 transition-transform">
+                  <c.icon size={17} strokeWidth={1.8} />
+                </div>
+                <span className="text-[10px] font-mono font-medium text-muted-foreground bg-input/80 px-2 py-0.5 rounded border border-border">
+                  {c.sub}
+                </span>
               </div>
-              <div className="min-w-0">
-                <h3 className="font-display text-xl">{a.title}</h3>
-                <p className="mt-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                  {a.desc}
-                </p>
+              <div className="mt-4 font-display text-3xl font-bold tracking-tight text-foreground">
+                {c.value}
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">{c.label}</span>
+                <ArrowUpRight
+                  size={14}
+                  className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-primary"
+                />
               </div>
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap size={16} className="text-primary" />
+            <h2 className="font-display text-base sm:text-lg font-semibold text-foreground">
+              Quick Operations
+            </h2>
+          </div>
+          <span className="text-xs text-muted-foreground">High-performance tools</span>
+        </div>
+
+        <div className="mt-3.5 grid gap-3.5 sm:grid-cols-2">
+          {actions.map((a) => (
+            <Link
+              key={a.title}
+              to={a.to}
+              className="group relative flex flex-col justify-between p-5 rounded-xl border border-border bg-card hover:border-primary/50 hover:bg-muted/40 transition-all hover:shadow-sm"
+            >
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                  <a.icon size={19} strokeWidth={1.7} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {a.title}
+                    </h3>
+                    <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded bg-input border border-border text-muted-foreground">
+                      {a.badge}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{a.desc}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Live Hosted Scripts Quick Access Table */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2">
+            <Activity size={16} className="text-emerald-400" />
+            <h2 className="font-display text-base sm:text-lg font-semibold text-foreground">
+              Recent Hosted Scripts
+            </h2>
+          </div>
+          <Link
+            to="/dashboard/scripts"
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            View All ({scriptsQ.data?.length ?? 0}) <ArrowUpRight size={12} />
+          </Link>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {recentScripts.length > 0 ? (
+            <div className="divide-y divide-border">
+              {recentScripts.map((s: any) => {
+                const loaderCode = s.ffa
+                  ? `loadstring(game:HttpGet("https://luamore.app/files/loaders/${s.public_id}.lua"))()`
+                  : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("https://luamore.app/files/loaders/${s.public_id}.lua"))()`;
+                const isCopied = copiedId === s.id;
+
+                return (
+                  <div
+                    key={s.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-start sm:items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-input border border-border text-primary">
+                        <FileCode2 size={16} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-foreground truncate">
+                            {s.name}
+                          </span>
+                          {s.ffa ? (
+                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-blue-950/80 text-blue-300 border border-blue-800">
+                              Public FFA
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-amber-950/80 text-amber-300 border border-amber-800">
+                              Key Protected
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                          <span className="truncate text-[11px] select-all bg-input/80 px-1.5 py-0.5 rounded border border-border">
+                            {s.public_id}
+                          </span>
+                          <span>·</span>
+                          <span className="text-[11px]">
+                            {s.code ? `${s.code.length.toLocaleString()} chars` : "Empty source"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                      <button
+                        onClick={() => copyText(loaderCode, false, s.id)}
+                        className="btn-outline text-xs py-1 px-2.5 h-8 flex items-center gap-1.5"
+                        title="Copy Loadstring"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check size={12} className="text-emerald-400" /> Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} /> Copy Loader
+                          </>
+                        )}
+                      </button>
+                      <Link
+                        to="/dashboard/scripts/$id"
+                        params={{ id: s.id }}
+                        className="btn-primary text-xs py-1 px-3 h-8 flex items-center gap-1"
+                      >
+                        Workspace <ArrowUpRight size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-xs text-muted-foreground">
+              No scripts created yet. Click "Create Script" to host your first Luau project.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* System Security & Integrity Banner */}
+      <div className="mt-10 rounded-xl border border-border bg-card/60 p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-400">
+            <Lock size={18} />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">
+              PolSec Anti-Tamper & HWID Lock Active
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              All loaders enforce runtime byte-tamper integrity, player Roblox ID telemetry, and
+              device-bound HWIDs.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/dashboard/hwid" className="btn-outline text-xs py-1.5 px-3">
+            Manage HWID Bans
+          </Link>
+          <Link to="/dashboard/logs" className="btn-outline text-xs py-1.5 px-3">
+            Telemetry Logs
+          </Link>
+        </div>
       </div>
     </div>
   );
