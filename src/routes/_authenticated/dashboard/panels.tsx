@@ -134,15 +134,24 @@ function Page() {
             straight to a Discord channel.
           </p>
         </div>
-        {isOwner && (
-          <button
-            onClick={() => syncMut.mutate()}
-            disabled={syncMut.isPending}
-            className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
+        <div className="flex items-center gap-2">
+          <a
+            href="/downloads/luamore-discord-bot.zip"
+            download="luamore-discord-bot.zip"
+            className="btn-solid text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-medium"
           >
-            <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
-          </button>
-        )}
+            <span>📥 Download Bot Code (.zip)</span>
+          </a>
+          {isOwner && (
+            <button
+              onClick={() => syncMut.mutate()}
+              disabled={syncMut.isPending}
+              className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
+            >
+              <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Auto-registration info badge (Owner Only) */}

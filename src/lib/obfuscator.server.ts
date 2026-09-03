@@ -1035,12 +1035,22 @@ while ${STATE}~=${HALT} do
     ${SRC}=${TCONCAT}(${UNPACKED})
     ${STATE}=${S_EXEC}
   elseif ${STATE}==${S_EXEC} then
-    local _fn,_err=${LOAD}(${SRC},"=LuaMore")
-    if not _fn then return error("[LuaMore Execution Error] "..tostring(_err), 0) end
+    local _fn = nil
+    local _err = nil
+    if type(loadstring) == "function" then
+      pcall(function() _fn, _err = loadstring(${SRC}) end)
+    end
+    if not _fn and type(load) == "function" then
+      pcall(function() _fn, _err = load(${SRC}) end)
+    end
+    if not _fn and type(${LOAD}) == "function" then
+      pcall(function() _fn, _err = ${LOAD}(${SRC}) end)
+    end
+    if not _fn then return error("[LuaMore Execution Error] "..tostring(_err or "loadstring unavailable"), 0) end
     if type(setfenv)=="function" then
       pcall(setfenv, _fn, ${E})
     end
-    local _res=_fn()
+    local _res = _fn()
     ${STATE}=${HALT}
     return _res
   else

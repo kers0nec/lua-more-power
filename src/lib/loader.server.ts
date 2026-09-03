@@ -25,66 +25,77 @@ interface ScriptRecord {
 }
 
 export async function handleLoaderRequest(params: { publicId: string }, request: Request) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const url = new URL(request.url);
-  const token = params.publicId;
-  const hwid =
-    url.searchParams.get("hwid")?.trim() || request.headers.get("x-hwid")?.trim() || null;
-  const rbxUser =
-    url.searchParams.get("rbx_user")?.trim() ||
-    request.headers.get("x-roblox-user")?.trim() ||
-    "Unknown Player";
-  const rbxId =
-    url.searchParams.get("rbx_id")?.trim() || request.headers.get("x-roblox-id")?.trim() || "0";
-
-  // Resolve the token: script public_id first, then license key.
-  let key = url.searchParams.get("key")?.trim() || null;
-  let script: ScriptRecord | null = null;
-
   try {
-    const { data: dbScript } = await supabaseAdmin
-      .from("scripts")
-      .select(
-        "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
-      )
-      .eq("public_id", token)
-      .maybeSingle();
-    if (dbScript) script = dbScript;
-  } catch {
-    // ignore
-  }
-
-  if (!script) {
-    const local = getScriptByPublicId(token);
-    if (local) script = local;
-  }
-
-  if (!script) {
+    let supabaseAdmin: any = null;
     try {
-      const { data: byKey } = await supabaseAdmin
-        .from("license_keys")
-        .select("key, script_id")
-        .eq("key", token)
-        .maybeSingle();
-      if (byKey?.script_id) {
-        key = byKey.key;
-        const { data: s2 } = await supabaseAdmin
+      const mod = await import("@/integrations/supabase/client.server");
+      supabaseAdmin = mod.supabaseAdmin;
+    } catch {
+      // Supabase client unavailable
+    }
+
+    const url = new URL(request.url);
+    const rawToken = params.publicId || "";
+    const token = rawToken.replace(/\.lua$/i, "").trim();
+    const hwid =
+      url.searchParams.get("hwid")?.trim() || request.headers.get("x-hwid")?.trim() || null;
+    const rbxUser =
+      url.searchParams.get("rbx_user")?.trim() ||
+      request.headers.get("x-roblox-user")?.trim() ||
+      "Unknown Player";
+    const rbxId =
+      url.searchParams.get("rbx_id")?.trim() || request.headers.get("x-roblox-id")?.trim() || "0";
+
+    // Resolve the token: script public_id first, then license key.
+    let key = url.searchParams.get("key")?.trim() || null;
+    let script: ScriptRecord | null = null;
+
+    if (supabaseAdmin) {
+      try {
+        const { data: dbScript } = await supabaseAdmin
           .from("scripts")
           .select(
             "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
           )
-          .eq("id", byKey.script_id)
+          .eq("public_id", token)
           .maybeSingle();
-        script = s2 ?? null;
+        if (dbScript) script = dbScript;
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
-  }
 
-  if (!script) return luaError("Script not found");
-  if (!script.is_active) return luaError("Script is disabled");
-  if (!script.code) return luaError("Script has no code yet");
+    if (!script) {
+      const local = getScriptByPublicId(token);
+      if (local) script = local;
+    }
+
+    if (!script && supabaseAdmin) {
+      try {
+        const { data: byKey } = await supabaseAdmin
+          .from("license_keys")
+          .select("key, script_id")
+          .eq("key", token)
+          .maybeSingle();
+        if (byKey?.script_id) {
+          key = byKey.key;
+          const { data: s2 } = await supabaseAdmin
+            .from("scripts")
+            .select(
+              "id, user_id, name, code, obfuscated_code, is_protected, ffa, public_id, is_active, run_count",
+            )
+            .eq("id", byKey.script_id)
+            .maybeSingle();
+          script = s2 ?? null;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!script) return luaError("Script not found (" + token + ")");
+    if (script.is_active === false) return luaError("Script is disabled");
+    if (!script.code) return luaError("Script has no code yet");
 
   const sendExecutionWebhook = async (licenseKeyStr: string | null) => {
     try {
@@ -309,6 +320,10 @@ return _compiled()`);
 
   await bumpRuns(lic.key);
   return lua(payload);
+  } catch (err: any) {
+    console.error("[LuaMore Loader Error]", err);
+    return luaError("Loader server error: " + (err?.message || "unknown error"));
+  }
 }
 
 function lua(body: string) {
