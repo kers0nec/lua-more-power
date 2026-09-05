@@ -13,10 +13,13 @@ export const listExecutionLogs = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((r: any) => ({
+    return (data ?? []).map((r: Record<string, unknown>) => ({
       id: r.id as string,
       script_id: r.script_id as string | null,
-      script_name: (r.scripts?.name as string | undefined) ?? null,
+      script_name:
+        (r.scripts && typeof r.scripts === "object" && "name" in r.scripts
+          ? (r.scripts as { name?: string }).name
+          : undefined) ?? null,
       key: r.key as string | null,
       hwid: r.hwid as string | null,
       roblox_username: r.roblox_username as string | null,

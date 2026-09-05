@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
+import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
+import { obfuscatePublicCode } from "@/lib/scripts.functions";
 
 type LocalObfuscator = {
   obfuscateLua: (source: string) => string;
@@ -68,6 +71,7 @@ function loadLocalEngine(): Promise<LocalObfuscator> {
 }
 
 function ObfuscatorsPage() {
+  const publicObf = useServerFn(obfuscatePublicCode);
   const [source, setSource] = useState("");
   const [output, setOutput] = useState("");
   const [apiOutput, setApiOutput] = useState("");
@@ -115,13 +119,27 @@ function ObfuscatorsPage() {
     setRunning(true);
     setStatus("Building LuaMore v13 VM…");
     try {
-      const engine = await loadLocalEngine();
-      const result = engine.obfuscateLuaWithOptions(source, {
-        vmDepth: Number(depth),
-        antiTamper,
-        antiHook,
-        dualVm,
-      });
+      let result = "";
+      try {
+        const engine = await loadLocalEngine();
+        result = engine.obfuscateLuaWithOptions(source, {
+          vmDepth: Number(depth),
+          antiTamper,
+          antiHook,
+          dualVm,
+        });
+      } catch {
+        // Fallback to high-speed server VM
+        const res = await publicObf({
+          data: {
+            code: source,
+            dualVm,
+            oeldAntiTamper: antiTamper,
+            mode: dualVm ? "hybrid" : "standard",
+          },
+        });
+        result = res.obfuscated;
+      }
       setOutput(result);
       setStatus(`Done · ${result.length.toLocaleString()} output characters (Anti-Hook active)`);
     } catch (error) {
@@ -417,6 +435,14 @@ function ObfuscatorsPage() {
         <strong style={{ color: "var(--foreground)" }}>Input limits:</strong> the LuaMore VM accepts
         up to 2 MB and automatically reduces nesting for large scripts. API builds use the same
         limit. If an engine errors, the real error is shown — nothing is faked.
+      </div>
+
+      <div className="mt-6">
+        <LuaTerminalSandbox
+          code={output || apiOutput || source}
+          title="In-Browser Live Execution Sandbox"
+          subtitle="Test running your original source or obfuscated output inside a live Luau VM right here"
+        />
       </div>
     </PageShell>
   );

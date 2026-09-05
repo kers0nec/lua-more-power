@@ -5,7 +5,19 @@ import { handleIncomingAuth } from "@/lib/auth-client";
 import { Logo } from "@/components/Logo";
 import { HumanCheck } from "@/components/HumanCheck";
 import { USERNAME_HINT, USERNAME_RE } from "@/lib/site";
-import { Mail, KeyRound, Sparkles, Loader2 } from "lucide-react";
+import {
+  Mail,
+  KeyRound,
+  Sparkles,
+  Loader2,
+  Eye,
+  EyeOff,
+  Shield,
+  Check,
+  Lock,
+  User,
+  Zap,
+} from "lucide-react";
 
 export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) {
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
@@ -20,6 +32,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   const [err, setErr] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [canResendEmail, setCanResendEmail] = useState(false);
   const nav = useNavigate();
 
@@ -190,30 +203,54 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
   }
 
   return (
-    <div className="relative flex min-h-screen">
-      <div
-        className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r p-12 lg:flex"
-        style={{ background: "var(--gradient-hero)", borderColor: "var(--border)" }}
-      >
-        <div className="grid-bg mask-fade pointer-events-none absolute inset-0" aria-hidden />
+    <div className="relative flex min-h-screen bg-background">
+      {/* Left branding and security feature panel */}
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-border p-12 lg:flex bg-secondary/20">
+        <div
+          className="grid-bg mask-fade pointer-events-none absolute inset-0 opacity-30"
+          aria-hidden
+        />
         <Link to="/" className="relative inline-block">
           <Logo size={36} />
         </Link>
-        <div className="relative">
-          <h2 className="font-display text-5xl leading-[1.02]">
-            Scripts, keys,
-            <br />
-            and access.
+        <div className="relative max-w-md">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-mono text-primary mb-6">
+            <Shield size={12} />
+            <span>LuaMore v19 Security Console</span>
+          </div>
+          <h2 className="font-display text-5xl leading-[1.04] tracking-tight">
+            Script security &amp; instant delivery.
           </h2>
-          <p className="mt-5 max-w-sm text-base" style={{ color: "var(--muted-foreground)" }}>
-            Manage scripts, keys, Discord, and loaders in one place. Free forever.
+          <p className="mt-4 text-base text-muted-foreground leading-relaxed">
+            Protect your scripts with polymorphic VM encryption, Luraph &amp; Aqua anti-tamper
+            shields, and hardware-bound license keys.
           </p>
+
+          <div className="mt-8 space-y-3 font-mono text-xs">
+            <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
+              <Check size={14} className="text-emerald-400" />
+              <span>Anti-Tamper &amp; Anti-Dumper Traps Active</span>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
+              <Zap size={14} className="text-primary" />
+              <span>Zstd Base85 Buffer Transport</span>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
+              <KeyRound size={14} className="text-indigo-400" />
+              <span>Hardware ID Lock &amp; Discord Bot Ready</span>
+            </div>
+          </div>
         </div>
-        <div className="relative font-mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-          © {new Date().getFullYear()} LuaMore
+        <div className="relative flex items-center justify-between font-mono text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} LuaMore</span>
+          <span className="flex items-center gap-1.5 text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            Systems Operational
+          </span>
         </div>
       </div>
 
+      {/* Right form panel */}
       <div className="relative flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
         <div className="rise w-full max-w-sm">
           <div className="mb-10 lg:hidden">
@@ -222,17 +259,52 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
             </Link>
           </div>
 
-          <Link to="/" className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-            ← Back
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              to="/"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Back to site
+            </Link>
+            <div className="flex items-center gap-1 rounded-full border border-border bg-secondary/50 p-0.5 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setErr(null);
+                }}
+                className={`rounded-full px-3 py-1 transition-all ${
+                  mode === "signin"
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signup");
+                  setErr(null);
+                }}
+                className={`rounded-full px-3 py-1 transition-all ${
+                  mode === "signup"
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign up
+              </button>
+            </div>
+          </div>
 
-          <h1 className="mt-4 font-display text-4xl">
-            {mode === "signin" ? "Sign in" : "Create your LuaMore account"}
+          <h1 className="mt-6 font-display text-4xl">
+            {mode === "signin" ? "Welcome back" : "Create account"}
           </h1>
-          <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+          <p className="mt-2 text-sm text-muted-foreground">
             {mode === "signin"
-              ? "Manage scripts, keys, Discord, and access in one place."
-              : "Free to start. Protect your first script whenever you're ready."}
+              ? "Access your protected scripts, license keys, and Discord bots."
+              : "Start protecting your Luau/Lua scripts with LuaMore v19."}
           </p>
 
           <form onSubmit={submit} className="mt-8 space-y-4">
@@ -276,7 +348,10 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
 
             {mode === "signup" && (
               <div>
-                <label className="eyebrow">Username</label>
+                <label className="eyebrow flex items-center gap-1.5">
+                  <User size={12} className="text-primary" />
+                  Username
+                </label>
                 <input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -287,13 +362,15 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
                   maxLength={24}
                   pattern="[A-Za-z0-9]{3,24}"
                 />
-                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  {USERNAME_HINT}
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{USERNAME_HINT}</p>
               </div>
             )}
+
             <div>
-              <label className="eyebrow">Email</label>
+              <label className="eyebrow flex items-center gap-1.5">
+                <Mail size={12} className="text-primary" />
+                Email Address
+              </label>
               <input
                 type="email"
                 required
@@ -303,11 +380,11 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
                 placeholder="you@example.com"
               />
               {mode === "signup" ? (
-                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <p className="mt-1 text-xs text-muted-foreground">
                   We use this for account verification and access recovery.
                 </p>
               ) : authMethod === "magiclink" ? (
-                <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <p className="mt-1 text-xs text-muted-foreground">
                   We'll send a 1-click login link directly to your inbox.
                 </p>
               ) : null}
@@ -315,24 +392,33 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
 
             {(mode === "signup" || authMethod === "password") && (
               <div>
-                <label className="eyebrow">Password</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-blue mt-2"
-                  placeholder="••••••••"
-                />
-                {mode === "signin" ? (
-                  <div
-                    className="mt-2 text-right text-xs"
-                    style={{ color: "var(--muted-foreground)" }}
+                <label className="eyebrow flex items-center gap-1.5">
+                  <Lock size={12} className="text-primary" />
+                  Password
+                </label>
+                <div className="relative mt-2">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-blue pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {mode === "signin" ? (
+                  <div className="mt-2 text-right text-xs">
                     <Link
                       to="/reset-password"
-                      className="underline underline-offset-2 hover:text-primary"
+                      className="text-muted-foreground underline underline-offset-2 hover:text-primary transition-colors"
                     >
                       Forgot password?
                     </Link>

@@ -19,6 +19,20 @@ import {
 import { createScript, deleteScript, listScripts } from "@/lib/scripts.functions";
 import { DashboardHeader } from "@/components/DashboardHeader";
 
+interface DashboardScriptItem {
+  id: string;
+  name: string;
+  public_id: string;
+  ffa?: boolean;
+  code?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  is_protected?: boolean;
+  created_at?: string;
+  run_count?: number;
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/")({
   head: () => ({ meta: [{ title: "Scripts — LuaMore" }] }),
   component: Scripts,
@@ -29,7 +43,9 @@ function Scripts() {
   const create = useServerFn(createScript);
   const del = useServerFn(deleteScript);
   const qc = useQueryClient();
-  const scripts = useQuery({ queryKey: ["scripts"], queryFn: () => list() }) as { data?: any[] };
+  const scripts = useQuery({ queryKey: ["scripts"], queryFn: () => list() }) as {
+    data?: DashboardScriptItem[];
+  };
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -71,14 +87,19 @@ function Scripts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["scripts"] }),
   });
 
-  const copyLoader = (s: any) => {
+  const copyLoader = (s: DashboardScriptItem) => {
     const origin =
       typeof window !== "undefined" && window.location.origin
         ? window.location.origin
         : "https://luamore.app";
     const loaderCode = s.ffa
-      ? `loadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`
-      : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`;
+      ? `-- LuaMore Universal Loader (${s.name || "script"})
+local s, r = pcall(function() return game:HttpGet("${origin}/files/loaders/${s.public_id}.lua") end)
+if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loader unreachable. Check URL or use Standalone Script.") end`
+      : `-- LuaMore Key Protected Loader (${s.name || "script"})
+script_key = "YOUR_KEY";
+local s, r = pcall(function() return game:HttpGet("${origin}/files/loaders/${s.public_id}.lua") end)
+if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loader unreachable. Check URL or use Standalone Script.") end`;
 
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(loaderCode);

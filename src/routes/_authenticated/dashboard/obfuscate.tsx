@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import { obfuscateCode } from "@/lib/scripts.functions";
 import { Switch } from "@/components/ui/switch";
+import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
+import { Sparkles, Terminal } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
@@ -347,6 +349,18 @@ function ObfuscatePage() {
             className="input-blue font-mono text-xs h-[440px] resize-none"
           />
         </div>
+      </div>
+
+      <div className="mt-6">
+        <LuaTerminalSandbox
+          code={out || code}
+          title="In-Browser Live Execution Sandbox"
+          subtitle={
+            out
+              ? "Running obfuscated VM bytecode inside the in-browser Lua sandbox"
+              : "Paste or select a preset above, then run live to verify execution"
+          }
+        />
       </div>
     </div>
   );

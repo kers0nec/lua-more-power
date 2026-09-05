@@ -40,13 +40,24 @@ function runLua(code) {
 }
 
 const CASES = [
-  { name: "baseline (single VM)",           opts: { dualVm: false, antiTamper: false, polymorphicVM: false } },
-  { name: "antiTamper",                     opts: { dualVm: false, antiTamper: true,  polymorphicVM: false } },
-  { name: "dualVm",                         opts: { dualVm: true,  antiTamper: true,  polymorphicVM: false } },
-  { name: "depth 3",                        opts: { loaderVMDepth: 3, antiTamper: true, polymorphicVM: false } },
-  { name: "polymorphicVM only",             opts: { dualVm: false, antiTamper: false, polymorphicVM: true } },
-  { name: "dualVm + polymorphicVM",         opts: { dualVm: true,  antiTamper: true,  polymorphicVM: true } },
-  { name: "polymorphicVM + context",        opts: { dualVm: false, antiTamper: false, polymorphicVM: true, context: { publicId: "LM-ABCD-EFGH-1234", mode: "advanced" } } },
+  {
+    name: "baseline (single VM)",
+    opts: { dualVm: false, antiTamper: false, polymorphicVM: false },
+  },
+  { name: "antiTamper", opts: { dualVm: false, antiTamper: true, polymorphicVM: false } },
+  { name: "dualVm", opts: { dualVm: true, antiTamper: true, polymorphicVM: false } },
+  { name: "depth 3", opts: { loaderVMDepth: 3, antiTamper: true, polymorphicVM: false } },
+  { name: "polymorphicVM only", opts: { dualVm: false, antiTamper: false, polymorphicVM: true } },
+  { name: "dualVm + polymorphicVM", opts: { dualVm: true, antiTamper: true, polymorphicVM: true } },
+  {
+    name: "polymorphicVM + context",
+    opts: {
+      dualVm: false,
+      antiTamper: false,
+      polymorphicVM: true,
+      context: { publicId: "LM-ABCD-EFGH-1234", mode: "advanced" },
+    },
+  },
 ];
 
 let failed = 0;
@@ -54,15 +65,22 @@ console.log("LuaMore obfuscation regression\n" + "=".repeat(60));
 for (const c of CASES) {
   const t0 = Date.now();
   let out;
-  try { out = obfuscateLuaWithOptions(SOURCE, c.opts); }
-  catch (e) { console.log(`FAIL  ${c.name} — obfuscation threw: ${e.message}`); failed++; continue; }
+  try {
+    out = obfuscateLuaWithOptions(SOURCE, c.opts);
+  } catch (e) {
+    console.log(`FAIL  ${c.name} — obfuscation threw: ${e.message}`);
+    failed++;
+    continue;
+  }
   const buildMs = Date.now() - t0;
   const r = runLua(out);
   const ok = r.status === 0 && (r.stdout ?? "").includes(SENTINEL);
   const bytes = out.length;
   const H = entropy(out).toFixed(3);
   const status = ok ? "PASS" : "FAIL";
-  console.log(`${status}  ${c.name.padEnd(30)}  bytes=${String(bytes).padStart(8)}  H=${H}  build=${buildMs}ms`);
+  console.log(
+    `${status}  ${c.name.padEnd(30)}  bytes=${String(bytes).padStart(8)}  H=${H}  build=${buildMs}ms`,
+  );
   if (!ok) {
     failed++;
     console.log("  stdout:", (r.stdout ?? "").trim().slice(0, 200));
@@ -70,5 +88,8 @@ for (const c of CASES) {
   }
 }
 console.log("=".repeat(60));
-if (failed) { console.log(`${failed} case(s) failed`); process.exit(1); }
+if (failed) {
+  console.log(`${failed} case(s) failed`);
+  process.exit(1);
+}
 console.log("all cases passed");

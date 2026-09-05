@@ -16,8 +16,9 @@ export const Route = createFileRoute("/scripts/hosted/$publicId.lua")({
 
           const { handleLoaderRequest } = await import("@/lib/loader.server");
           return handleLoaderRequest({ publicId }, request);
-        } catch (err: any) {
-          return new Response(`error("[LuaMore] Hosted route error: ${err?.message || "unknown"}")`, {
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "unknown";
+          return new Response(`error("[LuaMore] Hosted route error: ${message}")`, {
             status: 200,
             headers: {
               "Content-Type": "text/plain; charset=utf-8",

@@ -7,11 +7,14 @@ export const Route = createFileRoute("/api/public/loader/$publicId")({
     handlers: {
       GET: async ({ params, request }) => {
         try {
-          const publicId = String(params?.publicId || "").replace(/\.lua$/i, "").trim();
+          const publicId = String(params?.publicId || "")
+            .replace(/\.lua$/i, "")
+            .trim();
           const { handleLoaderRequest } = await import("@/lib/loader.server");
           return handleLoaderRequest({ publicId }, request);
-        } catch (err: any) {
-          return new Response(`error("[LuaMore] API loader error: ${err?.message || "unknown"}")`, {
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "unknown";
+          return new Response(`error("[LuaMore] API loader error: ${message}")`, {
             status: 200,
             headers: {
               "Content-Type": "text/plain; charset=utf-8",

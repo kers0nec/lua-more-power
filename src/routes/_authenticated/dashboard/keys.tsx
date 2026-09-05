@@ -20,7 +20,7 @@ function Keys() {
   const qc = useQueryClient();
   const keys = useQuery({ queryKey: ["keys"], queryFn: () => list() });
   const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => scripts() }) as {
-    data?: any[];
+    data?: Array<{ id: string; name: string }>;
   };
 
   const [scriptId, setScriptId] = useState<string>("");

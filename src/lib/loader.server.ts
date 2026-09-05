@@ -26,10 +26,10 @@ interface ScriptRecord {
 
 export async function handleLoaderRequest(params: { publicId: string }, request: Request) {
   try {
-    let supabaseAdmin: any = null;
+    let supabaseAdmin: { from: (table: string) => unknown } | null = null;
     try {
       const mod = await import("@/integrations/supabase/client.server");
-      supabaseAdmin = mod.supabaseAdmin;
+      supabaseAdmin = mod.supabaseAdmin as unknown as { from: (table: string) => unknown };
     } catch {
       // Supabase client unavailable
     }
@@ -97,108 +97,111 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
     if (script.is_active === false) return luaError("Script is disabled");
     if (!script.code) return luaError("Script has no code yet");
 
-  const sendExecutionWebhook = async (licenseKeyStr: string | null) => {
-    try {
-      // Look up webhook URL on associated panel or user profile
-      const { data: panel } = await supabaseAdmin
-        .from("panels")
-        .select("webhook_url, name")
-        .eq("script_id", script!.id)
-        .not("webhook_url", "is", null)
-        .limit(1)
-        .maybeSingle();
+    const sendExecutionWebhook = async (licenseKeyStr: string | null) => {
+      try {
+        // Look up webhook URL on associated panel or user profile
+        const { data: panel } = await supabaseAdmin
+          .from("panels")
+          .select("webhook_url, name")
+          .eq("script_id", script!.id)
+          .not("webhook_url", "is", null)
+          .limit(1)
+          .maybeSingle();
 
-      const webhookUrl = panel?.webhook_url;
-      if (webhookUrl && webhookUrl.startsWith("http")) {
-        const embed = {
-          title: `🚀 Script Executed — ${script!.name}`,
-          color: 0x00aaff,
-          fields: [
-            {
-              name: "🔑 License Key",
-              value: licenseKeyStr
-                ? `\`${licenseKeyStr}\``
-                : script!.ffa
-                  ? "`FFA (Public)`"
-                  : "`Direct Execution`",
-              inline: true,
+        const webhookUrl = panel?.webhook_url;
+        if (webhookUrl && webhookUrl.startsWith("http")) {
+          const embed = {
+            title: `🚀 Script Executed — ${script!.name}`,
+            color: 0x00aaff,
+            fields: [
+              {
+                name: "🔑 License Key",
+                value: licenseKeyStr
+                  ? `\`${licenseKeyStr}\``
+                  : script!.ffa
+                    ? "`FFA (Public)`"
+                    : "`Direct Execution`",
+                inline: true,
+              },
+              {
+                name: "💻 Hardware ID (HWID)",
+                value: hwid ? `\`${hwid.slice(0, 36)}\`` : "`Not Provided`",
+                inline: true,
+              },
+              {
+                name: "👤 Roblox User",
+                value:
+                  rbxId !== "0" && rbxId !== "Unknown"
+                    ? `**${rbxUser}** (ID: \`${rbxId}\`)`
+                    : `**${rbxUser}**`,
+                inline: false,
+              },
+              {
+                name: "📜 Script Name",
+                value: `**${script!.name}** (\`${script!.public_id}\`)`,
+                inline: true,
+              },
+              {
+                name: "⏰ Time",
+                value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+                inline: true,
+              },
+            ],
+            footer: {
+              text: "LuaMore Execution Logger • Verified",
             },
-            {
-              name: "💻 Hardware ID (HWID)",
-              value: hwid ? `\`${hwid.slice(0, 36)}\`` : "`Not Provided`",
-              inline: true,
-            },
-            {
-              name: "👤 Roblox User",
-              value:
-                rbxId !== "0" && rbxId !== "Unknown"
-                  ? `**${rbxUser}** (ID: \`${rbxId}\`)`
-                  : `**${rbxUser}**`,
-              inline: false,
-            },
-            {
-              name: "📜 Script Name",
-              value: `**${script!.name}** (\`${script!.public_id}\`)`,
-              inline: true,
-            },
-            {
-              name: "⏰ Time",
-              value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-              inline: true,
-            },
-          ],
-          footer: {
-            text: "LuaMore Execution Logger • Verified",
-          },
-          timestamp: new Date().toISOString(),
-        };
+            timestamp: new Date().toISOString(),
+          };
 
-        void fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: "LuaMore Logger",
-            avatar_url:
-              "https://ais-pre-wjegb7zmws6zwg54su3x6o-944319576513.europe-west2.run.app/favicon.ico",
-            embeds: [embed],
-          }),
-        }).catch((err) => console.warn("[Webhook Log Error]", err));
+          void fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: "LuaMore Logger",
+              avatar_url:
+                "https://ais-pre-wjegb7zmws6zwg54su3x6o-944319576513.europe-west2.run.app/favicon.ico",
+              embeds: [embed],
+            }),
+          }).catch((err) => console.warn("[Webhook Log Error]", err));
+        }
+      } catch {
+        // ignore webhook failures
       }
-    } catch {
-      // ignore webhook failures
+    };
+
+    const bumpRuns = async (usedKey: string | null) => {
+      bumpScriptRuns(script!.id);
+      try {
+        void supabaseAdmin
+          .from("scripts")
+          .update({
+            run_count: (script!.run_count ?? 0) + 1,
+            last_run_at: new Date().toISOString(),
+          })
+          .eq("id", script!.id);
+      } catch {
+        // ignore
+      }
+      void sendExecutionWebhook(usedKey);
+    };
+
+    // Serve fresh hardened obfuscated payload whenever source code is present
+    const payload = script.code
+      ? obfuscateLua(script.code, script.public_id)
+      : (script.obfuscated_code ?? `-- Empty script\nprint("No payload")`);
+
+    if (script.ffa) {
+      await bumpRuns(null);
+      return lua(payload);
     }
-  };
 
-  const bumpRuns = async (usedKey: string | null) => {
-    bumpScriptRuns(script!.id);
-    try {
-      void supabaseAdmin
-        .from("scripts")
-        .update({ run_count: (script!.run_count ?? 0) + 1, last_run_at: new Date().toISOString() })
-        .eq("id", script!.id);
-    } catch {
-      // ignore
-    }
-    void sendExecutionWebhook(usedKey);
-  };
+    // First hit without a HWID: hand back a clean, robust stub that captures executor HWID & LocalPlayer safely
+    if (!hwid) {
+      const rawUrl = new URL(request.url);
+      rawUrl.search = ""; // clear query params for clean base
+      const baseUrl = rawUrl.toString();
 
-  // Serve fresh hardened obfuscated payload whenever source code is present
-  const payload = script.code
-    ? obfuscateLua(script.code, script.public_id)
-    : (script.obfuscated_code ?? `-- Empty script\nprint("No payload")`);
-
-  if (script.ffa) {
-    await bumpRuns(null);
-    return lua(payload);
-  }
-
-  // First hit without a HWID: hand back a clean, robust stub that captures executor HWID & LocalPlayer safely
-  if (!hwid) {
-    const rawUrl = new URL(request.url);
-    rawUrl.search = ""; // clear query params for clean base
-    const baseUrl = rawUrl.toString();
-
-    return lua(`--[[ LuaMore Smart Bootstrap Loader ]]
+      return lua(`--[[ LuaMore Smart Bootstrap Loader ]]
 local _type = (function()
     if type(typeof) == "function" then return typeof end
     if type(type) == "function" then return type end
@@ -289,40 +292,41 @@ if not _compiled then
     error("[LuaMore Compile Error]: " .. tostring(_err))
 end
 return _compiled()`);
-  }
+    }
 
-  if (!key) return luaError("License key required");
+    if (!key) return luaError("License key required");
 
-  const { data: lic } = await supabaseAdmin
-    .from("license_keys")
-    .select("*")
-    .eq("key", key)
-    .maybeSingle();
-  if (!lic) return luaError("Invalid key");
-  if (lic.revoked) return luaError("Key revoked");
-  if (lic.script_id && lic.script_id !== script.id)
-    return luaError("Key not valid for this script");
-  if (lic.expires_at && new Date(lic.expires_at) < new Date()) return luaError("Key expired");
+    const { data: lic } = await supabaseAdmin
+      .from("license_keys")
+      .select("*")
+      .eq("key", key)
+      .maybeSingle();
+    if (!lic) return luaError("Invalid key");
+    if (lic.revoked) return luaError("Key revoked");
+    if (lic.script_id && lic.script_id !== script.id)
+      return luaError("Key not valid for this script");
+    if (lic.expires_at && new Date(lic.expires_at) < new Date()) return luaError("Key expired");
 
-  const { data: banned } = await supabaseAdmin
-    .from("hwid_bans")
-    .select("id")
-    .eq("user_id", script.user_id)
-    .eq("hwid", hwid)
-    .maybeSingle();
-  if (banned) return luaError("HWID banned");
+    const { data: banned } = await supabaseAdmin
+      .from("hwid_bans")
+      .select("id")
+      .eq("user_id", script.user_id)
+      .eq("hwid", hwid)
+      .maybeSingle();
+    if (banned) return luaError("HWID banned");
 
-  if (!lic.hwid) {
-    await supabaseAdmin.from("license_keys").update({ hwid }).eq("id", lic.id);
-  } else if (lic.hwid !== hwid) {
-    return luaError("HWID mismatch — reset your HWID first");
-  }
+    if (!lic.hwid) {
+      await supabaseAdmin.from("license_keys").update({ hwid }).eq("id", lic.id);
+    } else if (lic.hwid !== hwid) {
+      return luaError("HWID mismatch — reset your HWID first");
+    }
 
-  await bumpRuns(lic.key);
-  return lua(payload);
-  } catch (err: any) {
+    await bumpRuns(lic.key);
+    return lua(payload);
+  } catch (err) {
     console.error("[LuaMore Loader Error]", err);
-    return luaError("Loader server error: " + (err?.message || "unknown error"));
+    const msg = err instanceof Error ? err.message : "unknown error";
+    return luaError("Loader server error: " + msg);
   }
 }
 

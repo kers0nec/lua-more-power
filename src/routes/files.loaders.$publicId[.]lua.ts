@@ -15,8 +15,9 @@ export const Route = createFileRoute("/files/loaders/$publicId.lua")({
           publicId = publicId.replace(/\.lua$/i, "").trim();
           const { handleLoaderRequest } = await import("@/lib/loader.server");
           return handleLoaderRequest({ publicId }, request);
-        } catch (err: any) {
-          return new Response(`error("[LuaMore] Route error: ${err?.message || "unknown"}")`, {
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "unknown";
+          return new Response(`error("[LuaMore] Route error: ${message}")`, {
             status: 200,
             headers: {
               "Content-Type": "text/plain; charset=utf-8",

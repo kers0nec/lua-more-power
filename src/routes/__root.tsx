@@ -82,23 +82,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LuaMore — Control who can run your scripts." },
+      { title: "LuaMore — Next-Gen Lua Obfuscation, Anti-Tamper & Protection" },
       {
         name: "description",
-        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+        content:
+          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
       },
       { name: "author", content: "LuaMore" },
-      { property: "og:title", content: "LuaMore — Luau Script Hosting & Protection" },
+      { property: "og:title", content: "LuaMore — Next-Gen Lua Obfuscation & Delivery" },
       {
         property: "og:description",
-        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+        content:
+          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "LuaMore — Luau Script Hosting & Protection" },
+      { name: "twitter:title", content: "LuaMore — Next-Gen Lua Obfuscation & Delivery" },
       {
         name: "twitter:description",
-        content: "LuaMore is an advanced Lua script hosting and protection platform.",
+        content:
+          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
       },
     ],
     links: [

@@ -23,6 +23,14 @@ import { getDashboardStats } from "@/lib/dashboard.functions";
 import { listScripts } from "@/lib/scripts.functions";
 import { useServerFn } from "@tanstack/react-start";
 
+interface ScriptItem {
+  id: string;
+  name: string;
+  public_id: string;
+  ffa?: boolean;
+  code?: string;
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   head: () => ({
     meta: [
@@ -40,7 +48,7 @@ function Dashboard() {
   const q = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => getDashboardStats() });
   const listScriptsFn = useServerFn(listScripts);
   const scriptsQ = useQuery({ queryKey: ["scripts"], queryFn: () => listScriptsFn() }) as {
-    data?: any[];
+    data?: ScriptItem[];
   };
 
   const stats = q.data;
@@ -145,14 +153,16 @@ function Dashboard() {
             <span className="badge-blue text-[10px] tracking-wider font-semibold">
               <Sparkles size={11} className="text-amber-400" /> SYSTEM ACTIVE
             </span>
-            <span className="text-xs text-muted-foreground font-mono">Luarmor v2.4 Engine</span>
+            <span className="text-xs text-muted-foreground font-mono">
+              LuaMore v19 Polymorphic Engine
+            </span>
           </div>
           <h1 className="mt-2.5 font-display text-3xl sm:text-4xl text-foreground font-bold tracking-tight">
             Welcome back{stats?.profile?.display_name ? `, ${stats.profile.display_name}` : ""}
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-xl">
-            Manage your Lua script loaders, hardware bindings, Discord integrations, and license
-            keys.
+            Manage your Lua script loaders, anti-tamper security, hardware bindings, Discord
+            integrations, and license keys.
           </p>
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
@@ -309,7 +319,7 @@ function Dashboard() {
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           {recentScripts.length > 0 ? (
             <div className="divide-y divide-border">
-              {recentScripts.map((s: any) => {
+              {recentScripts.map((s: ScriptItem) => {
                 const loaderCode = s.ffa
                   ? `loadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`
                   : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`;

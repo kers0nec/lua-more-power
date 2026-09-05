@@ -310,3 +310,44 @@ export const obfuscateCode = createServerFn({ method: "POST" })
       dualVm,
     };
   });
+
+// Public demo obfuscator for web playground (unauthenticated)
+export const obfuscatePublicCode = createServerFn({ method: "POST" })
+  .inputValidator(
+    (input: {
+      code: string;
+      dualVm?: boolean;
+      mode?: "hybrid" | "chunked" | "standard" | "basic";
+      oeldAntiTamper?: boolean;
+      chunkedLoader?: boolean;
+    }) =>
+      z
+        .object({
+          code: z.string().min(1).max(500_000),
+          dualVm: z.boolean().optional(),
+          mode: z.enum(["hybrid", "chunked", "standard", "basic"]).optional(),
+          oeldAntiTamper: z.boolean().optional(),
+          chunkedLoader: z.boolean().optional(),
+        })
+        .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
+    const dualVm = data.dualVm ?? true;
+    const mode = data.mode || (dualVm ? "hybrid" : "standard");
+    const analysis = analyzeObfuscation(data.code, {
+      dualVm,
+      mode,
+      oeldAntiTamper: data.oeldAntiTamper ?? true,
+      chunkedLoader: data.chunkedLoader ?? true,
+    });
+    return {
+      obfuscated: analysis.code,
+      size: analysis.size,
+      sourceSize: data.code.length,
+      entropy: analysis.entropy,
+      layers: analysis.layers,
+      mode: analysis.mode,
+      dualVm,
+    };
+  });

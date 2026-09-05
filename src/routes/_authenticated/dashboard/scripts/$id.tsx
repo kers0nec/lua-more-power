@@ -11,12 +11,16 @@ import {
   ExternalLink,
   Key,
   Lock,
+  Play,
   Save,
   ShieldCheck,
+  Terminal,
   Unlock,
   Upload,
+  Zap,
 } from "lucide-react";
 import { getScript, obfuscateScriptNow, updateScript } from "@/lib/scripts.functions";
+import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
 
 export const Route = createFileRoute("/_authenticated/dashboard/scripts/$id")({
   head: () => ({
@@ -55,21 +59,21 @@ function ScriptDetail() {
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState(false);
   const [hydratedId, setHydratedId] = useState<string | null>(null);
-  const [loaderTab, setLoaderTab] = useState<"keysystem" | "ffa">("keysystem");
+  const [loaderTab, setLoaderTab] = useState<"standalone" | "keysystem" | "ffa">("standalone");
   const [sampleKey, setSampleKey] = useState("eggbm6ywzw7k3l1iht1lmeb5");
-  const script = query.data?.script;
+  const script = query.data?.script as Record<string, unknown> | undefined;
 
   useEffect(() => {
-    if (!script || hydratedId === script.id) return;
-    setCode(script.code ?? "");
-    setName(script.name ?? "");
-    setDescription(script.description ?? "");
-    setCategory(script.category ?? "");
-    setTags((script.tags ?? []).join(", "));
-    setFfa(script.ffa ?? false);
-    setLoaderTab(script.ffa ? "ffa" : "keysystem");
-    setAutoProtect(script.is_protected ?? false);
-    setHydratedId(script.id);
+    if (!script || hydratedId === (script.id as string)) return;
+    setCode((script.code as string) ?? "");
+    setName((script.name as string) ?? "");
+    setDescription((script.description as string) ?? "");
+    setCategory((script.category as string) ?? "");
+    setTags(((script.tags as string[]) ?? []).join(", "));
+    setFfa(Boolean(script.ffa));
+    setLoaderTab(script.obfuscated_code ? "standalone" : script.ffa ? "ffa" : "keysystem");
+    setAutoProtect(Boolean(script.is_protected));
+    setHydratedId(script.id as string);
   }, [script, hydratedId]);
 
   const loader = useMemo(() => {
@@ -80,14 +84,42 @@ function ScriptDetail() {
         ? window.location.origin
         : "https://luamore.app";
 
-    if (loaderTab === "ffa") {
-      // FFA loader format
-      return `loadstring(game:HttpGet("${origin}/files/loaders/${publicId}.lua"))()`;
+    if (loaderTab === "standalone") {
+      if (script.obfuscated_code) {
+        return script.obfuscated_code;
+      }
+      return `-- [[ LuaMore Standalone Protected Script ]]
+-- Click 'Protect script' in the Protection card to compile your polymorphic bytecode VM
+-- Or copy the source below for direct execution:
+
+${code}`;
     }
 
-    // Key system format
-    return `script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";\nloadstring(game:HttpGet("${origin}/files/loaders/${publicId}.lua"))()`;
-  }, [script, loaderTab, sampleKey]);
+    if (loaderTab === "ffa") {
+      return `-- LuaMore Free-for-all Universal Loader
+-- Compatible with Delta, Solara, Wave, Codex, Arceus X, Fluxus, Krnl
+local s, r = pcall(function()
+  return game:HttpGet("${origin}/files/loaders/${publicId}.lua")
+end)
+if s and r and not r:find("<html") then
+  loadstring(r)()
+else
+  warn("[LuaMore] Remote loader unreachable. For 100% offline reliability, use the Standalone Protected Script tab.")
+end`;
+    }
+
+    return `-- LuaMore Key-Protected Universal Loader
+script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";
+
+local s, r = pcall(function()
+  return game:HttpGet("${origin}/files/loaders/${publicId}.lua")
+end)
+if s and r and not r:find("<html") then
+  loadstring(r)()
+else
+  warn("[LuaMore] Remote loader unreachable. For 100% offline reliability, use the Standalone Protected Script tab.")
+end`;
+  }, [script, loaderTab, sampleKey, code]);
 
   const canSave = Boolean(script && hydratedId === script.id && name.trim() && !query.isFetching);
 
@@ -291,6 +323,13 @@ function ScriptDetail() {
                 : "Not saved"}
             </span>
           </div>
+          <div className="mt-4">
+            <LuaTerminalSandbox
+              code={script.obfuscated_code || code}
+              title="Live In-Browser Execution Sandbox"
+              subtitle="Run and test this script right now — simulates Roblox Player, print, math, and tables"
+            />
+          </div>
         </section>
 
         <aside className="space-y-5">
@@ -299,38 +338,57 @@ function ScriptDetail() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Code2 size={16} className="text-primary" />
-                <h2 className="font-display text-lg">Hosted Loader</h2>
+                <h2 className="font-display text-lg">Execution & Loader</h2>
               </div>
               <span className="text-[10px] font-mono uppercase bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
-                Luarmor Style
+                Roblox Ready
               </span>
             </div>
 
-            {/* Loader Type Selector Buttons */}
-            <div className="mt-4 grid grid-cols-2 gap-1.5 bg-input p-1 rounded-md border border-border">
+            {/* Loader Type Selector Tabs */}
+            <div className="mt-4 grid grid-cols-3 gap-1 bg-input p-1 rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setLoaderTab("standalone")}
+                className={`flex items-center justify-center gap-1 py-1.5 text-[11px] font-semibold rounded transition-colors ${
+                  loaderTab === "standalone"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+                }`}
+                title="100% Offline Standalone Script (No HTTP needed)"
+              >
+                <Zap size={12} /> Standalone
+              </button>
               <button
                 type="button"
                 onClick={() => setLoaderTab("keysystem")}
-                className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded transition-colors ${
+                className={`flex items-center justify-center gap-1 py-1.5 text-[11px] font-semibold rounded transition-colors ${
                   loaderTab === "keysystem"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                 }`}
               >
-                <Key size={13} /> Key System
+                <Key size={12} /> Key System
               </button>
               <button
                 type="button"
                 onClick={() => setLoaderTab("ffa")}
-                className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded transition-colors ${
+                className={`flex items-center justify-center gap-1 py-1.5 text-[11px] font-semibold rounded transition-colors ${
                   loaderTab === "ffa"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-card/60"
                 }`}
               >
-                <Unlock size={13} /> FFA Loader
+                <Unlock size={12} /> Web Loader
               </button>
             </div>
+
+            {loaderTab === "standalone" && (
+              <div className="mt-2.5 px-2.5 py-1.5 rounded text-[11px] border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 flex items-center gap-1.5">
+                <Check size={13} className="shrink-0" />
+                <span>100% Offline · Paste directly into Delta, Solara, Wave, Codex, Arceus X</span>
+              </div>
+            )}
 
             {loaderTab === "keysystem" && (
               <div className="mt-3">
@@ -352,9 +410,23 @@ function ScriptDetail() {
             </pre>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="btn-outline text-xs col-span-2" onClick={() => void copyLoader()}>
+              <button className="btn-primary text-xs" onClick={() => void copyLoader()}>
                 {copied ? <Check size={14} /> : <Clipboard size={14} />}
-                {copied ? "Copied to Clipboard!" : "Copy Loadstring"}
+                {copied ? "Copied!" : loaderTab === "standalone" ? "Copy Script" : "Copy Loader"}
+              </button>
+              <button
+                className="btn-outline text-xs"
+                onClick={() => {
+                  const blob = new Blob([loader], { type: "text/plain" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${name || "script"}_${loaderTab}.lua`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <Download size={14} /> Download .lua
               </button>
             </div>
 

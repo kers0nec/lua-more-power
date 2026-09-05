@@ -1,6 +1,6 @@
 {
   "name": "LuaMore",
-  "description": "Lua script hosting, license keys, HWID protection, Discord panels, and loading screens.",
+  "description": "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -488,16 +488,18 @@ function encryptStrings(tokens: Token[]): {
     return { tokens, decoderRuntime: "" };
   }
 
-  // Pack strings into encrypted byte buffer
+  // Pack strings into encrypted byte buffer (UTF-8 safe)
   const packedBytes: number[] = [];
   const stringOffsets: number[] = [];
   const stringLengths: number[] = [];
+  const utf8Enc = new TextEncoder();
 
   for (const s of strings) {
+    const rawBytes = utf8Enc.encode(s);
     stringOffsets.push(packedBytes.length);
-    stringLengths.push(s.length);
-    for (let i = 0; i < s.length; i++) {
-      const originalByte = s.charCodeAt(i);
+    stringLengths.push(rawBytes.length);
+    for (let i = 0; i < rawBytes.length; i++) {
+      const originalByte = rawBytes[i];
       const encByte = ((originalByte ^ xorKey) + encKey + i) % 256;
       packedBytes.push(encByte);
     }
@@ -583,23 +585,25 @@ end
 // -------------------------------------------------------------
 // 6. CUSTOM REGISTER VIRTUAL MACHINE (VM) COMPILER
 // -------------------------------------------------------------
-enum VMOpcode {
-  OP_LOADK = 1,
-  OP_GETGLOBAL = 2,
-  OP_SETGLOBAL = 3,
-  OP_GETTABLE = 4,
-  OP_SETTABLE = 5,
-  OP_CALL = 6,
-  OP_METHODCALL = 7,
-  OP_NEWTABLE = 8,
-  OP_BINOP = 9,
-  OP_UNOP = 10,
-  OP_JUMP = 11,
-  OP_JUMP_IF = 12,
-  OP_RETURN = 13,
-  OP_VARARG = 14,
-  OP_EXEC_NATIVE = 15,
-}
+const VMOpcode = {
+  OP_LOADK: 1,
+  OP_GETGLOBAL: 2,
+  OP_SETGLOBAL: 3,
+  OP_GETTABLE: 4,
+  OP_SETTABLE: 5,
+  OP_CALL: 6,
+  OP_METHODCALL: 7,
+  OP_NEWTABLE: 8,
+  OP_BINOP: 9,
+  OP_UNOP: 10,
+  OP_JUMP: 11,
+  OP_JUMP_IF: 12,
+  OP_RETURN: 13,
+  OP_VARARG: 14,
+  OP_EXEC_NATIVE: 15,
+} as const;
+
+type VMOpcode = (typeof VMOpcode)[keyof typeof VMOpcode];
 
 interface VMInstruction {
   op: number;
@@ -1048,7 +1052,13 @@ while ${STATE}~=${HALT} do
     end
     if not _fn then return error("[LuaMore Execution Error] "..tostring(_err or "loadstring unavailable"), 0) end
     if type(setfenv)=="function" then
-      pcall(setfenv, _fn, ${E})
+      pcall(function()
+        local _cur = (type(getfenv)=="function" and getfenv(_fn)) or {}
+        if type(_cur)=="table" then
+          setmetatable(_cur, { __index = ${G} })
+          setfenv(_fn, _cur)
+        end
+      end)
     end
     local _res = _fn()
     ${STATE}=${HALT}
@@ -1061,29 +1071,166 @@ end
 }
 
 // -------------------------------------------------------------
-// 8. ANTI-TAMPER & ANTI-HOOK INTEGRITY CANARIES
+// 8. ANTI-TAMPER & ANTI-HOOK INTEGRITY SHIELD
 // -------------------------------------------------------------
+export const B85_ALPHABET =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
+
+/**
+ * High-speed Base85 encoder matching LuaMore decompression standard
+ */
+export function encodeBase85(source: string | Uint8Array): string {
+  const bytes = typeof source === "string" ? new TextEncoder().encode(source) : source;
+  const padLen = (4 - (bytes.length % 4)) % 4;
+  const totalLen = bytes.length + padLen;
+  const padded = new Uint8Array(totalLen);
+  padded.set(bytes);
+  for (let p = 0; p < padLen; p++) {
+    padded[bytes.length + p] = 32; // Space character padding
+  }
+
+  let result = "";
+  for (let i = 0; i < totalLen; i += 4) {
+    let v =
+      (padded[i] * 16777216 + padded[i + 1] * 65536 + padded[i + 2] * 256 + padded[i + 3]) >>> 0;
+    const d4 = v % 85;
+    v = Math.floor(v / 85);
+    const d3 = v % 85;
+    v = Math.floor(v / 85);
+    const d2 = v % 85;
+    v = Math.floor(v / 85);
+    const d1 = v % 85;
+    v = Math.floor(v / 85);
+    const d0 = v % 85;
+    result +=
+      B85_ALPHABET[d0] + B85_ALPHABET[d1] + B85_ALPHABET[d2] + B85_ALPHABET[d3] + B85_ALPHABET[d4];
+  }
+  return result;
+}
+
 function buildAntiTamperShield(options: ObfuscationOptions): string {
-  if (!options.antiTamper && !options.antiHook) return "";
-  return `--[[ LuaMore OELD Anti-Tamper & Security Shield ]]
+  if (!options.antiTamper && !options.antiHook && !options.oeldAntiTamper) return "";
+
+  return `--[[ LuaMore Ultra Anti-Tamper & Anti-Debug Shield ]]
 do
-  local _die = function() return error("${TAMPER_MSG}", 0) end
-  if type(pcall) ~= "function" then _die() end
-  local _ok, _res = pcall(function()
-    if type(string) ~= "table" or type(table) ~= "table" or type(math) ~= "table" then return false end
-    if type(string.byte) ~= "function" or type(string.char) ~= "function" or type(table.concat) ~= "function" then return false end
-    if string.byte(string.char(76), 1) ~= 76 then return false end
-    if table.concat({"L", "M"}) ~= "LM" then return false end
-    return true
-  end)
-  if not _ok or _res ~= true then _die() end
+  local _safe = {
+    rawget = rawget,
+    rawset = rawset,
+    rawequal = rawequal,
+    type = type,
+    pcall = pcall,
+    error = error,
+    getmetatable = getmetatable,
+    string_byte = string.byte,
+    string_char = string.char,
+    table_concat = table.concat,
+    math_floor = math.floor,
+    math_abs = math.abs,
+    os_clock = (os and os.clock) or tick
+  }
+
+  local function _fail(code)
+    _safe.error("LuaMore security check failed [" .. tostring(code) .. "]", 0)
+    while true do end
+  end
+
+  -- Layer 1: Primitive & standard library integrity checks
+  if _safe.type(_safe.rawget) ~= "function" or _safe.type(_safe.rawset) ~= "function" then
+    _fail("ENV_RAWGET")
+  end
+  if _safe.type(math) ~= "table" or _safe.type(string) ~= "table" or _safe.type(table) ~= "table" then
+    _fail("ENV_TABLES")
+  end
+  if _safe.math_floor(1.9) ~= 1 or _safe.math_abs(-1) ~= 1 then
+    _fail("ENV_MATH")
+  end
+  if _safe.string_byte("Z") ~= 90 or _safe.string_char(90) ~= "Z" then
+    _fail("ENV_CHAR")
+  end
+
+  -- Layer 2: Raw read/write table validation
+  local _canaryTable = {}
+  _safe.rawset(_canaryTable, "integrity", 0xdead)
+  if _safe.rawget(_canaryTable, "integrity") ~= 0xdead then
+    _fail("ENV_RAW_RW")
+  end
+
+  -- Layer 3: Anti-Dumper & Hook Detection (Catches MoonSec/Luraph/table.concat injectors)
+  if _safe.getmetatable(table) ~= nil or _safe.getmetatable(string) ~= nil then
+    _fail("HOOK_DUMP_METATABLE")
+  end
+  if _safe.table_concat({"L", "M"}) ~= "LM" then
+    _fail("HOOK_DUMP_CONCAT")
+  end
+  if type(getfenv) == "function" then
+    local _okEnv, _env = _safe.pcall(getfenv, 0)
+    if _okEnv and type(_env) == "table" and _safe.getmetatable(_env) ~= nil then
+      local _mt = _safe.getmetatable(_env)
+      if type(_mt) == "table" and _mt.__index ~= nil then
+        _fail("HOOK_DUMP_ENV")
+      end
+    end
+  end
+
+  -- Layer 4: Error function integrity (error must throw, cannot return silently)
+  local _errCaught = _safe.pcall(_safe.error, "\\0", 0)
+  if _errCaught then
+    while true do end
+  end
+
+  -- Layer 5: Numeric and arithmetic invariants
+  local _canary = 77
+  if _canary ~= _canary or _canary * 0 ~= 0 or _canary < 0 then
+    _fail("ARITH_CANARY")
+  end
+
+  -- Layer 6: Roblox Sandbox & Honeypot Detection (Active in real Roblox client)
+  if typeof and typeof(game) == "Instance" and game.GetService then
+    if type(game) == "table" then
+      _fail("SANDBOX_MOCK_GAME")
+    end
+    local _okMt, _mt = _safe.pcall(_safe.getmetatable, game)
+    if _okMt and type(_mt) == "table" then
+      _fail("SANDBOX_MOCK_METATABLE")
+    end
+
+    local _okJob, _jobId = _safe.pcall(function() return game.JobId end)
+    if _okJob and _jobId == "00000000-0000-0000-0000-000000000000" then
+      _fail("SANDBOX_ZERO_JOBID")
+    end
+
+    local _okPl, _plId = _safe.pcall(function() return game.PlaceId end)
+    if _okPl and (_plId == 8916037983 or (game.GameId and game.GameId == 8916037983)) then
+      _fail("SANDBOX_MOCK_PLACE")
+    end
+
+    local _okPlyrs, _plyrs = _safe.pcall(function() return game:GetService("Players") end)
+    if _okPlyrs and _plyrs then
+      local _okLp, _lp = _safe.pcall(function() return _plyrs.LocalPlayer end)
+      if _okLp and _lp then
+        local _okUid, _uid = _safe.pcall(function() return _lp.UserId end)
+        local _okName, _uName = _safe.pcall(function() return _lp.Name end)
+        if (_okUid and _uid == 123456789) or (_okName and _uName == "vole7vin") then
+          _fail("SANDBOX_MOCK_USER")
+        end
+      end
+    end
+
+    local _okWs, _ws = _safe.pcall(function() return game:GetService("Workspace") end)
+    if _okWs and _ws then
+      local _okRoot, _isRoot = _safe.pcall(function() return _ws:IsA("WorldRoot") end)
+      if _okRoot and _isRoot == false then
+        _fail("SANDBOX_MOCK_WORKSPACE")
+      end
+    end
+  end
 end
 `;
 }
 
 /** Minify generated Lua */
 function minifyLua(src: string): string {
-  let s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
+  const s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
   const lines = s.split("\n");
   const compact: string[] = [];
   for (const l of lines) {
@@ -1177,15 +1324,16 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   }
 
   const minified = minifyLua(wrapped);
-  const stamp = Math.random().toString(36).slice(2, 10);
-  const banner = `--[[
-  LuaMore High-Security Polymorphic VM v18  //  Build ${stamp}  //  ${layers}-Layer Register VM
-  Transformations: Identifier Protection + Dynamic String Table Encryption + Control-Flow Scrambling + 4-Round XOR/RC4 + OELD Security Shield
-  Protected with LuaMore https://luamore.app
-]]
-`;
+  const base85Payload = encodeBase85(minified);
 
-  return banner + minified;
+  return (
+    "-- This file was protected using LuaMore Obfuscator\n" +
+    'local function _b85d(s)local t="' +
+    B85_ALPHABET +
+    '";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end;b=buffer;local _p=_b85d([==[' +
+    base85Payload +
+    ']==]);local _l=loadstring or load;if b and b.fromstring and b.tostring and game and game.GetService then local _ok,_es=pcall(game.GetService,game,"EncodingService");if _ok and _es and _es.DecompressBuffer and Enum and Enum.CompressionAlgorithm and Enum.CompressionAlgorithm.Zstd then local _s,_r=pcall(function()return b.tostring(_es:DecompressBuffer(b.fromstring(_p),Enum.CompressionAlgorithm.Zstd))end);if _s and _r and #_r>0 then return _l(_r)(...)end end end;return _l(_p)(...)'
+  );
 }
 
 export function analyzeObfuscation(
