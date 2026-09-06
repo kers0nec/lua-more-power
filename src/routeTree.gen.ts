@@ -43,6 +43,7 @@ import { Route as AuthenticatedDashboardObfuscateRouteImport } from './routes/_a
 import { Route as AuthenticatedDashboardPanelsRouteImport } from './routes/_authenticated/dashboard/panels'
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
 import { Route as ApiPublicObfuscateRouteImport } from './routes/api/public/obfuscate'
+import { Route as FilesLoadersPublicIdDotluaRouteImport } from './routes/files.loaders.$publicId[.]lua'
 import { Route as ScriptsHostedPublicIdDotluaRouteImport } from './routes/scripts.hosted.$publicId[.]lua'
 import { Route as ScriptsRawPublicIdDotluaRouteImport } from './routes/scripts.raw.$publicId[.]lua'
 import { Route as AuthenticatedDashboardScriptsIndexRouteImport } from './routes/_authenticated/dashboard/scripts/index'
@@ -233,6 +234,12 @@ const ApiPublicObfuscateRoute = ApiPublicObfuscateRouteImport.update({
   path: '/api/public/obfuscate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FilesLoadersPublicIdDotluaRoute =
+  FilesLoadersPublicIdDotluaRouteImport.update({
+    id: '/files/loaders/$publicId.lua',
+    path: '/files/loaders/$publicId.lua',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ScriptsHostedPublicIdDotluaRoute =
   ScriptsHostedPublicIdDotluaRouteImport.update({
     id: '/scripts/hosted/$publicId.lua',
@@ -330,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/files/loaders/$publicId.lua': typeof FilesLoadersPublicIdDotluaRoute
   '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
   '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -375,6 +383,7 @@ export interface FileRoutesByTo {
   '/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/files/loaders/$publicId.lua': typeof FilesLoadersPublicIdDotluaRoute
   '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
   '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
@@ -423,6 +432,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/panels': typeof AuthenticatedDashboardPanelsRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/api/public/obfuscate': typeof ApiPublicObfuscateRoute
+  '/files/loaders/$publicId.lua': typeof FilesLoadersPublicIdDotluaRoute
   '/scripts/hosted/$publicId.lua': typeof ScriptsHostedPublicIdDotluaRoute
   '/scripts/raw/$publicId.lua': typeof ScriptsRawPublicIdDotluaRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/files/loaders/$publicId.lua'
     | '/scripts/hosted/$publicId.lua'
     | '/scripts/raw/$publicId.lua'
     | '/dashboard/'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/dashboard/panels'
     | '/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/files/loaders/$publicId.lua'
     | '/scripts/hosted/$publicId.lua'
     | '/scripts/raw/$publicId.lua'
     | '/dashboard'
@@ -563,6 +575,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/panels'
     | '/_authenticated/dashboard/settings'
     | '/api/public/obfuscate'
+    | '/files/loaders/$publicId.lua'
     | '/scripts/hosted/$publicId.lua'
     | '/scripts/raw/$publicId.lua'
     | '/_authenticated/dashboard/'
@@ -600,6 +613,7 @@ export interface RootRouteChildren {
   TosRoute: typeof TosRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
+  FilesLoadersPublicIdDotluaRoute: typeof FilesLoadersPublicIdDotluaRoute
   ScriptsHostedPublicIdDotluaRoute: typeof ScriptsHostedPublicIdDotluaRoute
   ScriptsRawPublicIdDotluaRoute: typeof ScriptsRawPublicIdDotluaRoute
   ApiPublicAuthLoginRoute: typeof ApiPublicAuthLoginRoute
@@ -851,6 +865,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicObfuscateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/files/loaders/$publicId.lua': {
+      id: '/files/loaders/$publicId.lua'
+      path: '/files/loaders/$publicId.lua'
+      fullPath: '/files/loaders/$publicId.lua'
+      preLoaderRoute: typeof FilesLoadersPublicIdDotluaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scripts/hosted/$publicId.lua': {
       id: '/scripts/hosted/$publicId.lua'
       path: '/scripts/hosted/$publicId.lua'
@@ -1010,6 +1031,7 @@ const rootRouteChildren: RootRouteChildren = {
   TosRoute: TosRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
+  FilesLoadersPublicIdDotluaRoute: FilesLoadersPublicIdDotluaRoute,
   ScriptsHostedPublicIdDotluaRoute: ScriptsHostedPublicIdDotluaRoute,
   ScriptsRawPublicIdDotluaRoute: ScriptsRawPublicIdDotluaRoute,
   ApiPublicAuthLoginRoute: ApiPublicAuthLoginRoute,
