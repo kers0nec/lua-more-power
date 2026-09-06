@@ -15,8 +15,15 @@ import {
   Sparkles,
   SlidersHorizontal,
   Code2,
+  ShieldCheck,
+  Zap,
 } from "lucide-react";
-import { createScript, deleteScript, listScripts } from "@/lib/scripts.functions";
+import {
+  createScript,
+  deleteScript,
+  listScripts,
+  obfuscateSourceCode,
+} from "@/lib/scripts.functions";
 import { DashboardHeader } from "@/components/DashboardHeader";
 
 interface DashboardScriptItem {
@@ -53,11 +60,27 @@ function Scripts() {
   const [tags, setTags] = useState("");
   const [ffa, setFfa] = useState(false);
   const [code, setCode] = useState("");
+  const [autoObfuscate, setAutoObfuscate] = useState(true);
+  const [obfStats, setObfStats] = useState<{
+    size: number;
+    entropy: number;
+    layers: number;
+  } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const obfFn = useServerFn(obfuscateSourceCode);
+  const obfDirectMut = useMutation({
+    mutationFn: (src: string) => obfFn({ data: { code: src } }),
+    onSuccess: (res) => {
+      setObfStats({ size: res.size, entropy: res.entropy, layers: res.layers });
+      setAutoObfuscate(true);
+    },
+    onError: (e) => setErr(e instanceof Error ? e.message : "Obfuscation failed"),
+  });
 
   const createMut = useMutation({
     mutationFn: (v: {
@@ -67,6 +90,7 @@ function Scripts() {
       category?: string;
       tags?: string[];
       code?: string;
+      autoObfuscate?: boolean;
     }) => create({ data: v }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scripts"] });
@@ -76,6 +100,8 @@ function Scripts() {
       setTags("");
       setCode("");
       setFfa(false);
+      setAutoObfuscate(true);
+      setObfStats(null);
       setErr(null);
       setShowCreate(false);
     },
@@ -153,6 +179,7 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
             createMut.mutate({
               name: name.trim(),
               ffa,
+              autoObfuscate,
               description: description.trim() || undefined,
               category: category.trim() || undefined,
               tags: tags
@@ -227,17 +254,55 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
               </label>
             </div>
           </div>
+
           <div className="md:col-span-2">
-            <label className="text-xs font-semibold text-muted-foreground">
-              INITIAL LUAU SOURCE (optional)
-            </label>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+              <label className="text-xs font-semibold text-muted-foreground">
+                INITIAL LUAU SOURCE (optional)
+              </label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={autoObfuscate}
+                    onChange={(e) => setAutoObfuscate(e.target.checked)}
+                    className="rounded text-primary focus:ring-0"
+                  />
+                  <ShieldCheck size={13} className="text-emerald-400" />
+                  <span>Auto-Obfuscate Source</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => code.trim() && obfDirectMut.mutate(code)}
+                  disabled={!code.trim() || obfDirectMut.isPending}
+                  className="px-2.5 py-1 text-xs font-medium rounded border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                >
+                  <Zap size={12} className={obfDirectMut.isPending ? "animate-spin" : ""} />
+                  {obfDirectMut.isPending ? "Obfuscating…" : "⚡ Obfuscate Code Now"}
+                </button>
+              </div>
+            </div>
             <textarea
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(e.target.value);
+                setObfStats(null);
+              }}
               className="input-blue mt-1 font-mono text-xs h-36 resize-y"
               placeholder="-- Paste Lua / Luau code here (you can also edit or upload later)&#10;print('Hello from LuaMore!')"
               spellCheck={false}
             />
+            {obfStats && (
+              <div className="mt-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1.5 rounded-md flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck size={14} /> Multi-Layer Bytecode VM Compiled
+                </span>
+                <span className="font-mono text-[11px]">
+                  {obfStats.size.toLocaleString()} chars · Entropy: {obfStats.entropy.toFixed(2)} ·{" "}
+                  {obfStats.layers} Layer Shield
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2 flex items-center justify-between pt-2 border-t border-border">

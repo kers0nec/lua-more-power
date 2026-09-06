@@ -16,6 +16,7 @@ Ported from the uploaded HTML, wording changed to LuaMore, no KeyForge reference
 ## Theme
 
 Update `src/styles.css` tokens to dark blue + black:
+
 - `--background` `#05070d`, elevated `#0a1120`
 - `--primary` `#1e5fff` with `--primary-glow` `#3b82f6`
 - Foreground white / muted `#8a95b2`
@@ -37,24 +38,24 @@ Update `src/styles.css` tokens to dark blue + black:
 
 Rewrite `src/lib/discord-commands.server.ts` to register all 16, wire handlers in `src/routes/api/public/discord/interactions.ts`:
 
-| Command | Backing action |
-|---|---|
-| `/create-script` | insert into `scripts` (name, code, ffa, obfuscate flag) |
-| `/panel` | post styled embed with 5 buttons in current channel |
-| `/generatekey` | insert into `license_keys` (hours, note, optional user) |
-| `/whitelist` | insert into `whitelists` with duration parser |
-| `/blacklist` | insert into `user_bans` scoped to script |
-| `/deletekey` | delete a `license_keys` row you own |
-| `/resethwid` | clear `hwid` on your own keys |
-| `/forceresethwid` | owner-only reset on any user's keys |
-| `/banuser` | owner-only `profiles.is_banned = true` |
-| `/unbanuser` | owner-only unban |
-| `/banhwid` | insert `hwid_bans` |
-| `/unbanhwid` | delete `hwid_bans` row |
-| `/loader` | reply with hosted-URL loadstring for a script |
-| `/keys` | list last 10 keys you generated |
-| `/setup` | short setup guide embed |
-| `/help` | list of all commands |
+| Command           | Backing action                                          |
+| ----------------- | ------------------------------------------------------- |
+| `/create-script`  | insert into `scripts` (name, code, ffa, obfuscate flag) |
+| `/panel`          | post styled embed with 5 buttons in current channel     |
+| `/generatekey`    | insert into `license_keys` (hours, note, optional user) |
+| `/whitelist`      | insert into `whitelists` with duration parser           |
+| `/blacklist`      | insert into `user_bans` scoped to script                |
+| `/deletekey`      | delete a `license_keys` row you own                     |
+| `/resethwid`      | clear `hwid` on your own keys                           |
+| `/forceresethwid` | owner-only reset on any user's keys                     |
+| `/banuser`        | owner-only `profiles.is_banned = true`                  |
+| `/unbanuser`      | owner-only unban                                        |
+| `/banhwid`        | insert `hwid_bans`                                      |
+| `/unbanhwid`      | delete `hwid_bans` row                                  |
+| `/loader`         | reply with hosted-URL loadstring for a script           |
+| `/keys`           | list last 10 keys you generated                         |
+| `/setup`          | short setup guide embed                                 |
+| `/help`           | list of all commands                                    |
 
 Panel embed matches the layout you showed (title, description, project, access, 5 buttons, "Sent by @owner").
 

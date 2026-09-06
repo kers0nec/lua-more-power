@@ -102,12 +102,32 @@ export const createScript = createServerFn({ method: "POST" })
       description?: string;
       category?: string;
       tags?: string[];
-    }) => z.object({ ...metaShape, code: z.string().max(1_000_000_000).optional() }).parse(input),
+      autoObfuscate?: boolean;
+    }) =>
+      z
+        .object({
+          ...metaShape,
+          code: z.string().max(1_000_000_000).optional(),
+          autoObfuscate: z.boolean().optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     let row: Record<string, unknown> | null = null;
-
     const publicId = generatePublicId();
+
+    let obfuscated_code: string | undefined = undefined;
+    let is_protected = false;
+    if (data.autoObfuscate !== false && data.code && data.code.trim().length > 0) {
+      try {
+        const { obfuscateLua } = await import("@/lib/obfuscator.server");
+        obfuscated_code = obfuscateLua(data.code);
+        is_protected = true;
+      } catch {
+        // fallback to unprotected if obfuscator has syntax issue
+      }
+    }
+
     try {
       const { data: dbRow } = await context.supabase
         .from("scripts")
@@ -115,6 +135,8 @@ export const createScript = createServerFn({ method: "POST" })
           name: data.name,
           public_id: publicId,
           code: data.code ?? "",
+          obfuscated_code: obfuscated_code ?? null,
+          is_protected,
           ffa: data.ffa ?? false,
           description: data.description ?? null,
           category: data.category ?? null,
@@ -135,12 +157,13 @@ export const createScript = createServerFn({ method: "POST" })
       public_id: (row?.public_id as string | undefined) || publicId,
       name: data.name,
       code: data.code ?? "",
+      obfuscated_code,
       ffa: data.ffa ?? false,
       description: data.description ?? null,
       category: data.category ?? null,
       tags: data.tags ?? [],
       is_active: true,
-      is_protected: false,
+      is_protected,
     });
 
     return row || saved;
@@ -159,6 +182,7 @@ export const updateScript = createServerFn({ method: "POST" })
       tags?: string[];
       is_active?: boolean;
       is_protected?: boolean;
+      autoObfuscate?: boolean;
     }) =>
       z
         .object({
@@ -167,17 +191,21 @@ export const updateScript = createServerFn({ method: "POST" })
           name: metaShape.name.optional(),
           code: z.string().max(1_000_000_000).optional(),
           is_protected: z.boolean().optional(),
+          autoObfuscate: z.boolean().optional(),
         })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { id, ...rest } = data;
+    const { id, autoObfuscate, ...rest } = data;
     const patch: Partial<StoredScript> = { ...rest };
 
-    if (rest.is_protected && typeof rest.code === "string" && rest.code.length > 0) {
+    const shouldObfuscate =
+      (autoObfuscate || rest.is_protected) && typeof rest.code === "string" && rest.code.length > 0;
+    if (shouldObfuscate && rest.code) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       patch.obfuscated_code = obfuscateLua(rest.code);
       patch.obfuscator = "luamore-v12";
+      patch.is_protected = true;
     }
 
     try {
@@ -198,25 +226,31 @@ export const updateScript = createServerFn({ method: "POST" })
       ...patch,
     });
 
-    return { ok: true };
+    return { ok: true, is_protected: patch.is_protected, obfuscated_code: patch.obfuscated_code };
   });
 
 export const obfuscateScriptNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: { id: string; code?: string }) =>
+    z
+      .object({ id: z.string().uuid(), code: z.string().max(1_000_000_000).optional() })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
-    let sourceCode = "";
+    let sourceCode = data.code || "";
 
-    try {
-      const { data: row } = await context.supabase
-        .from("scripts")
-        .select("id, code")
-        .eq("id", data.id)
-        .eq("user_id", context.userId)
-        .maybeSingle();
-      if (row?.code) sourceCode = row.code;
-    } catch {
-      // ignore
+    if (!sourceCode) {
+      try {
+        const { data: row } = await context.supabase
+          .from("scripts")
+          .select("id, code")
+          .eq("id", data.id)
+          .eq("user_id", context.userId)
+          .maybeSingle();
+        if (row?.code) sourceCode = row.code;
+      } catch {
+        // ignore
+      }
     }
 
     if (!sourceCode) {
@@ -226,13 +260,19 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
 
     if (!sourceCode) throw new Error("No source code to obfuscate");
 
-    const { obfuscateLua } = await import("@/lib/obfuscator.server");
-    const obfuscated_code = obfuscateLua(sourceCode);
+    const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
+    const analysis = analyzeObfuscation(sourceCode);
+    const obfuscated_code = analysis.code;
 
     try {
       await context.supabase
         .from("scripts")
-        .update({ obfuscated_code, obfuscator: "luamore-v12" })
+        .update({
+          ...(data.code ? { code: data.code } : {}),
+          obfuscated_code,
+          obfuscator: "luamore-v12",
+          is_protected: true,
+        })
         .eq("id", data.id)
         .eq("user_id", context.userId);
     } catch {
@@ -243,12 +283,30 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
       id: data.id,
       user_id: context.userId,
       name: "Obfuscated Script",
+      ...(data.code ? { code: data.code } : {}),
       obfuscated_code,
       obfuscator: "luamore-v12",
       is_protected: true,
     });
 
-    return { ok: true, size: obfuscated_code.length };
+    return {
+      ok: true,
+      size: obfuscated_code.length,
+      obfuscated_code,
+      entropy: analysis.entropy,
+      originalSize: analysis.originalSize,
+      compressedSize: analysis.compressedSize,
+    };
+  });
+
+export const obfuscateSourceCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { code: string }) =>
+    z.object({ code: z.string().min(1).max(1_000_000_000) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
+    return analyzeObfuscation(data.code);
   });
 
 export const deleteScript = createServerFn({ method: "POST" })

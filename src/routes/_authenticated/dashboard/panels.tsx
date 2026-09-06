@@ -135,13 +135,6 @@ function Page() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="/downloads/luamore-discord-bot.zip"
-            download="luamore-discord-bot.zip"
-            className="btn-solid text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-medium"
-          >
-            <span>📥 Download Bot Code (.zip)</span>
-          </a>
           {isOwner && (
             <button
               onClick={() => syncMut.mutate()}
@@ -292,18 +285,17 @@ function Page() {
                 Delete
               </button>
             </div>
-            {/* Discord message & Embed visual representation matching IMG_0870 */}
+            {/* Discord message & Embed visual representation */}
             <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
               {/* Bot author row */}
               <div className="flex items-center gap-2.5 mb-2">
                 <div className="h-8 w-8 rounded-full bg-[#5865f2] flex items-center justify-center text-white text-xs font-mono font-bold shrink-0">
-                  &lt;/&gt;
+                  LM
                 </div>
                 <div className="flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-emerald-400 hover:underline cursor-pointer">
-                    Luasnapper
+                  <span className="font-semibold text-blue-400 hover:underline cursor-pointer">
+                    LuaMore Security
                   </span>
-                  <span>🐱</span>
                   <span className="bg-[#5865F2] text-[10px] text-white font-bold px-1 py-0.5 rounded">
                     APP
                   </span>

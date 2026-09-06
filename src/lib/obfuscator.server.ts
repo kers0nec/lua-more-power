@@ -1051,16 +1051,7 @@ while ${STATE}~=${HALT} do
       pcall(function() _fn, _err = ${LOAD}(${SRC}) end)
     end
     if not _fn then return error("[LuaMore Execution Error] "..tostring(_err or "loadstring unavailable"), 0) end
-    if type(setfenv)=="function" then
-      pcall(function()
-        local _cur = (type(getfenv)=="function" and getfenv(_fn)) or {}
-        if type(_cur)=="table" then
-          setmetatable(_cur, { __index = ${G} })
-          setfenv(_fn, _cur)
-        end
-      end)
-    end
-    local _res = _fn()
+    local _res = _fn(...)
     ${STATE}=${HALT}
     return _res
   else
@@ -1130,8 +1121,7 @@ do
   }
 
   local function _fail(code)
-    _safe.error("LuaMore security check failed [" .. tostring(code) .. "]", 0)
-    while true do end
+    _safe.error("[LuaMore Security Alert] Integrity validation failed (" .. tostring(code) .. ")", 0)
   end
 
   -- Layer 1: Primitive & standard library integrity checks
@@ -1155,18 +1145,18 @@ do
     _fail("ENV_RAW_RW")
   end
 
-  -- Layer 3: Anti-Dumper & Hook Detection (Catches MoonSec/Luraph/table.concat injectors)
-  if _safe.getmetatable(table) ~= nil or _safe.getmetatable(string) ~= nil then
-    _fail("HOOK_DUMP_METATABLE")
-  end
+  -- Layer 3: Anti-Dumper & Function Hook Detection (Catches memory dumpers and table.concat hooks)
   if _safe.table_concat({"L", "M"}) ~= "LM" then
     _fail("HOOK_DUMP_CONCAT")
   end
+  if _safe.string_byte("A") ~= 65 then
+    _fail("HOOK_DUMP_BYTE")
+  end
   if type(getfenv) == "function" then
     local _okEnv, _env = _safe.pcall(getfenv, 0)
-    if _okEnv and type(_env) == "table" and _safe.getmetatable(_env) ~= nil then
+    if _okEnv and type(_env) == "table" then
       local _mt = _safe.getmetatable(_env)
-      if type(_mt) == "table" and _mt.__index ~= nil then
+      if type(_mt) == "table" and type(_mt.__newindex) == "function" then
         _fail("HOOK_DUMP_ENV")
       end
     end
@@ -1228,6 +1218,212 @@ end
 `;
 }
 
+/**
+ * LuaMore Obfuscator Anti-Tamper & Multi-Key Chunked Encrypted Loader
+ * Integrates:
+ * 1. OELD Chunked Multi-Key Encrypted Loader (3 randomized keys, dynamic byte unrolling)
+ * 2. Watermark Table Integrity (LuaMore Obfuscator watermark verification)
+ * 3. Standard Library & Arithmetic Canary Invariants (math, string, byte, table.concat)
+ * 4. Anti-Sandbox & Honeypot Detector (JobId zero, PlaceId 8916037983, mock user/player, lighting, sound, data ping)
+ * 5. Runtime Heartbeat Integrity Watchdog (periodic verification via RunService.Heartbeat)
+ * 6. Anti-Dumper Hook Traps
+ * 7. Multi-Engine Executor Universal Fallback Resolver (loadstring, load, getgenv, _G)
+ */
+export function buildOELDChunkedLoader(
+  payloadSource: string,
+  options: ObfuscationOptions = {},
+): string {
+  const enc = new TextEncoder();
+  const rawBytes = enc.encode(payloadSource);
+  const numChunks = 3;
+  const chunkSize = Math.max(1, Math.ceil(rawBytes.length / numChunks));
+
+  const chunkTables: string[] = [];
+  const keys: number[] = [];
+
+  for (let c = 0; c < numChunks; c++) {
+    const start = c * chunkSize;
+    const end = Math.min(start + chunkSize, rawBytes.length);
+    if (start >= rawBytes.length) break;
+
+    const slice = rawBytes.subarray(start, end);
+    const key = 50 + Math.floor(Math.random() * 100);
+    keys.push(key);
+
+    const encChunk: number[] = [];
+    for (let i = 0; i < slice.length; i++) {
+      encChunk.push((slice[i] + key + (i + 1)) % 256);
+    }
+    chunkTables.push("{" + encChunk.join(",") + "}");
+  }
+
+  return `--[[ This file was protected using LuaMore Obfuscator & Polymorphic VM Engine ]]
+do
+  local _timeStart = (os and os.clock) and os.clock() or 0
+
+  -- 1. Watermark Integrity
+  local y = {
+    l = { u = { a = { m = { o = { r = { e = { ["obfuscator"] = "Protected using LuaMore Obfuscator https://luamore.app/" } } } } } } }
+  }
+  local function checkWatermark()
+    return y and y.l and y.l.u and y.l.u.a and y.l.u.a.m and y.l.u.a.m.o and y.l.u.a.m.o.r and y.l.u.a.m.o.r.e and y.l.u.a.m.o.r.e["obfuscator"] == "Protected using LuaMore Obfuscator https://luamore.app/"
+  end
+  if not checkWatermark() then
+    while true do end
+  end
+
+  -- 2. Primitive standard-library & arithmetic invariants
+  if math.floor(3.9) ~= 3 or math.floor(math.pi) ~= 3 then while true do end end
+  if string.byte("A") ~= 65 or string.char(65) ~= "A" then while true do end end
+  if table.concat({"L", "M"}) ~= "LM" then while true do end end
+
+  local _canary = 88
+  if _canary ~= _canary or _canary * 0 ~= 0 or _canary < 0 then while true do end end
+
+  local _errCaught = pcall(error, "\\0", 0)
+  if _errCaught then while true do end end
+
+  -- 3. Comprehensive Roblox Sandbox & Honeypot Detection (Active in real Roblox client)
+  local isRoblox = (typeof and typeof(game) == "Instance") or (type(game) == "userdata") or (type(game) == "table" and game.GetService ~= nil)
+  if isRoblox then
+    local _pcall = pcall
+    local _game = game
+
+    -- JobId / Sandbox checks
+    local okJob, jobId = _pcall(function() return _game.JobId end)
+    if okJob and jobId == "00000000-0000-0000-0000-000000000000" then
+      while true do end
+    end
+
+    local okPlace, placeId = _pcall(function() return _game.PlaceId end)
+    if okPlace and (placeId == 8916037983 or (_game.GameId and _game.GameId == 8916037983)) then
+      while true do end
+    end
+
+    -- LocalPlayer & sandbox user fingerprints
+    local okPlayers, players = _pcall(function() return _game:GetService("Players") end)
+    if okPlayers and players then
+      local okLp, lp = _pcall(function() return players.LocalPlayer end)
+      if okLp and lp then
+        local okUid, uid = _pcall(function() return lp.UserId end)
+        local okName, uName = _pcall(function() return lp.Name end)
+        if (okUid and uid == 123456789) or (okName and uName == "vole7vin") then
+          while true do end
+        end
+      end
+      local okPlyrList, plyrList = _pcall(function() return players:GetPlayers() end)
+      if okPlyrList and type(plyrList) == "table" and #plyrList > 0 then
+        local firstP = plyrList[1]
+        if firstP and (firstP.UserId == 123456789 or firstP.Name == "vole7vin") then
+          while true do end
+        end
+      end
+    end
+
+    -- Sandbox Lighting fingerprints
+    local okLight, light = _pcall(function() return _game:GetService("Lighting") end)
+    if okLight and light then
+      local okLat, lat = _pcall(function() return light.GeographicLatitude end)
+      local okFog, fog = _pcall(function() return light.FogEnd end)
+      if okLat and okFog and lat == 41.7 and fog == 100000 then
+        while true do end
+      end
+      local okTime, tod = _pcall(function() return light.TimeOfDay end)
+      if okTime and okLat and tod == "12:00:00" and lat == 41.7 then
+        while true do end
+      end
+    end
+
+    -- Sandbox SoundService fingerprints
+    local okSound, sound = _pcall(function() return _game:GetService("SoundService") end)
+    if okSound and sound then
+      local okDf, df = _pcall(function() return sound.DistanceFactor end)
+      local okRs, rsScale = _pcall(function() return sound.RolloffScale end)
+      if okDf and okRs and df == 3.33 and rsScale == 1 then
+        while true do end
+      end
+    end
+
+    -- Sandbox HttpService check
+    local okHttp, http = _pcall(function() return _game:GetService("HttpService") end)
+    if okHttp and http then
+      local okEn, enabled = _pcall(function() return http.HttpEnabled end)
+      if okEn and enabled and okJob and jobId == "00000000-0000-0000-0000-000000000000" then
+        while true do end
+      end
+    end
+
+    -- Workspace sanity
+    local okWs, ws = _pcall(function() return _game:GetService("Workspace") end)
+    if okWs and ws then
+      local okRoot, isRoot = _pcall(function() return ws:IsA("WorldRoot") end)
+      if okRoot and isRoot == false then
+        while true do end
+      end
+      local okFn, fn = _pcall(function() return ws:GetFullName() end)
+      if okFn and type(fn) == "string" and fn:sub(1, 5) == "Game." then
+        while true do end
+      end
+    end
+
+    -- Periodic Heartbeat Watchdog Integrity Hook
+    local okRs, rs = _pcall(function() return _game:GetService("RunService") end)
+    if okRs and rs and rs.Heartbeat then
+      local _lastTick = (os and os.clock) and os.clock() or tick()
+      _pcall(function()
+        rs.Heartbeat:Connect(function()
+          local _curTick = (os and os.clock) and os.clock() or tick()
+          if _curTick - _lastTick >= 0.5 then
+            _lastTick = _curTick
+            if not checkWatermark() then while true do end end
+            if math.floor(3.9) ~= 3 or string.byte("A") ~= 65 then while true do end end
+          end
+        end)
+      end)
+    end
+  end
+
+  -- 4. Multi-Key Decryption & Assembly
+  local chunks = { ${chunkTables.join(",\n    ")} }
+  local keys = { ${keys.join(", ")} }
+
+  local function decrypt(data, key)
+    local out = {}
+    for i = 1, #data do
+      out[i] = (data[i] - key - i) % 256
+    end
+    return out
+  end
+
+  local decrypted_parts = {}
+  for i = 1, #chunks do
+    local dec = decrypt(chunks[i], keys[i])
+    local p = {}
+    for j = 1, #dec do
+      p[j] = string.char(dec[j])
+    end
+    decrypted_parts[i] = table.concat(p)
+  end
+
+  local original_source = table.concat(decrypted_parts)
+
+  -- 5. Universal Execution Resolver
+  local loadfunc = (function()
+    if type(loadstring) == "function" then return loadstring end
+    if type(load) == "function" then return load end
+    if getgenv and type(getgenv) == "function" and type(getgenv().loadstring) == "function" then return getgenv().loadstring end
+    if _G and type(_G.loadstring) == "function" then return _G.loadstring end
+    return nil
+  end)()
+
+  if not loadfunc then error("[LuaMore Obfuscator] No loading function available in executor environment", 0) end
+  local chunk, err = loadfunc(original_source, "=LuaMoreObfuscator")
+  if not chunk then error("[LuaMore Obfuscator Execution Error]: " .. tostring(err or "Failed to load chunk"), 0) end
+  return chunk(...)
+end
+`;
+}
+
 /** Minify generated Lua */
 function minifyLua(src: string): string {
   const s = src.replace(/--\[\[[\s\S]*?\]\]/g, "");
@@ -1268,6 +1464,7 @@ export function obfuscateLua(source: string): string {
     antiHook: true,
     encryptStrings: true,
     controlFlowFlattening: true,
+    oeldAntiTamper: true,
   });
 }
 
@@ -1324,15 +1521,21 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   }
 
   const minified = minifyLua(wrapped);
+
+  // Step 4: Use OELD Multi-Key Chunked Encrypted Loader by default
+  if (options.oeldAntiTamper ?? true) {
+    return buildOELDChunkedLoader(minified, options);
+  }
+
   const base85Payload = encodeBase85(minified);
 
   return (
     "-- This file was protected using LuaMore Obfuscator\n" +
     'local function _b85d(s)local t="' +
     B85_ALPHABET +
-    '";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end;b=buffer;local _p=_b85d([==[' +
+    '";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end;local _p=_b85d([==[' +
     base85Payload +
-    ']==]);local _l=loadstring or load;if b and b.fromstring and b.tostring and game and game.GetService then local _ok,_es=pcall(game.GetService,game,"EncodingService");if _ok and _es and _es.DecompressBuffer and Enum and Enum.CompressionAlgorithm and Enum.CompressionAlgorithm.Zstd then local _s,_r=pcall(function()return b.tostring(_es:DecompressBuffer(b.fromstring(_p),Enum.CompressionAlgorithm.Zstd))end);if _s and _r and #_r>0 then return _l(_r)(...)end end end;return _l(_p)(...)'
+    ']==]);local _l=(function()if type(loadstring)=="function" then return loadstring elseif type(load)=="function" then return load elseif getgenv and type(getgenv)=="function" and type(getgenv().loadstring)=="function" then return getgenv().loadstring elseif _G and type(_G.loadstring)=="function" then return _G.loadstring end return nil end)();if not _l then error("[LuaMore] loadstring is not supported in this executor environment", 0) end;local _f,_e=_l(_p);if not _f then error("[LuaMore Execution Error]: "..tostring(_e or "Failed to compile bytecode chunk"), 0) end;return _f(...)'
   );
 }
 

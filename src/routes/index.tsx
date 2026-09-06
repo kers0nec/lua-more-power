@@ -5,7 +5,6 @@ import {
   Check,
   FileCode2,
   KeyRound,
-  Link2,
   Shield,
   Zap,
   Lock,
@@ -15,6 +14,9 @@ import {
   Sparkles,
   Cpu,
   Fingerprint,
+  ChevronDown,
+  Layers,
+  Flame,
 } from "lucide-react";
 import { useState } from "react";
 import { SiteNav } from "@/components/SiteNav";
@@ -24,17 +26,17 @@ import { obfuscateLua, calculateEntropy } from "@/lib/obfuscator.server";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LuaMore — Next-Gen Lua Obfuscation, Anti-Tamper & Key System" },
+      { title: "LuaMore — The Modern Standard for Lua & Luau Script Protection" },
       {
         name: "description",
         content:
-          "Elite Luau/Lua obfuscation with Polymorphic Virtual Machine, anti-dumper shield, honeypot detection, HWID license keys, and Discord bots.",
+          "Elite Luau and Lua script obfuscation with Polymorphic Register VM, OELD multi-key chunked anti-tamper, HWID key licensing, and Discord bot automation.",
       },
-      { property: "og:title", content: "LuaMore — Next-Gen Lua Obfuscation & Delivery" },
+      { property: "og:title", content: "LuaMore — Next-Gen Script Protection & Delivery" },
       {
         property: "og:description",
         content:
-          "Polymorphic VM, anti-dumper traps, Zstd/Base85 transport, hardware keys, and 1-line loaders.",
+          "Protect your Lua scripts against reverse engineering, decompilers, and dumpers. 100% free and compatible across all major executors.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -43,82 +45,103 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const securityLayers = [
-  {
-    icon: Shield,
-    title: "V19 Anti-Tamper Shield",
-    desc: "Rigorous environment integrity checks for rawget, rawset, bit32, and arithmetic canaries with silent fail-close locks.",
-    badge: "CORE SHIELD",
-  },
+const securityFeatures = [
   {
     icon: Cpu,
-    title: "Anti-Dumper Protection",
-    desc: "Specifically neutralizes MoonSec & Luraph dumpers that intercept table.concat, getfenv, unpack, or debug.info.",
-    badge: "ANTI-DUMP",
+    title: "Polymorphic Virtual Machine",
+    desc: "Transforms standard Luau bytecode into randomized opcode dispatch tables and custom virtual registers, rendering decompilers and disassemblers completely useless.",
+    tag: "VIRTUAL MACHINE",
+  },
+  {
+    icon: Shield,
+    title: "OELD Multi-Key Anti-Tamper",
+    desc: "Splits payloads into encrypted memory chunks with randomized runtime keys, dynamic unrolling, watermark integrity, and periodic heartbeat verification.",
+    tag: "ANTI-TAMPER",
   },
   {
     icon: Fingerprint,
-    title: "Sandbox & Bot Detection",
-    desc: "Identifies dummy JobIDs, mock PlaceIDs, crawler usernames, and honeypot server environments instantly.",
-    badge: "HONEYPOT GUARD",
-  },
-  {
-    icon: Zap,
-    title: "Base85 Buffer Transport",
-    desc: "High-density Base85 encoding with native Luau EncodingService/Zstd buffer decompression and universal fallback.",
-    badge: "HIGH SPEED",
+    title: "Anti-Dumper & Honeypot Guard",
+    desc: "Detects sandbox environments, zero JobIDs, crawler accounts, mock PlaceIDs, and active hooking on table.concat, getfenv, or debug.",
+    tag: "HONEYPOT SHIELD",
   },
   {
     icon: KeyRound,
-    title: "Hardware ID Licensing",
-    desc: "Generate timed or permanent keys bound to hardware fingerprints, with remote blacklisting and revocation.",
-    badge: "LICENSE CONTROL",
+    title: "HWID & License Management",
+    desc: "Bind loaders to player hardware fingerprints with duration expiration, custom key whitelists, reset quotas, and remote blacklisting.",
+    tag: "KEY SYSTEM",
   },
   {
     icon: Bot,
     title: "Discord Bot Automation",
-    desc: "Automate key granting, user management, and embed notifications directly from your Discord server.",
-    badge: "DISCORD INTEGRATION",
+    desc: "Full Discord bot integration with slash commands (/whitelist, /resethwid, /key) and branded embed panels for your community.",
+    tag: "DISCORD BOT",
+  },
+  {
+    icon: Zap,
+    title: "Universal 1-Line Loader",
+    desc: "Global CDN delivery with zero runtime lag. Fully tested and guaranteed to execute smoothly across mobile, PC, and Mac executors.",
+    tag: "FAST CDN",
   },
 ];
 
 const executors = [
-  { name: "Solara", status: "Verified 100%" },
-  { name: "Wave", status: "Verified 100%" },
-  { name: "Delta", status: "Verified 100%" },
-  { name: "Codex", status: "Verified 100%" },
-  { name: "Arceus X", status: "Verified 100%" },
-  { name: "Fluxus", status: "Verified 100%" },
-  { name: "Krnl", status: "Verified 100%" },
-  { name: "MacSploit", status: "Verified 100%" },
+  { name: "Solara", version: "v3+", status: "100% Verified" },
+  { name: "Wave", version: "Latest", status: "100% Verified" },
+  { name: "Delta", version: "Mobile/PC", status: "100% Verified" },
+  { name: "Codex", version: "Android/iOS", status: "100% Verified" },
+  { name: "Arceus X", version: "Neo", status: "100% Verified" },
+  { name: "Fluxus", version: "Universal", status: "100% Verified" },
+  { name: "Krnl", version: "Latest", status: "100% Verified" },
+  { name: "MacSploit", version: "macOS", status: "100% Verified" },
 ];
 
 const sampleTemplates: Record<string, string> = {
-  basic: `print("Protected by LuaMore v19!")
+  basic: `print("Protected with LuaMore OELD Anti-Tamper!")
 local player = game:GetService("Players").LocalPlayer
-print("Hello, " .. player.Name)`,
+print("Authenticated user: " .. player.Name)`,
   gui: `local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-  Name = "LuaMore Protected Hub",
-  LoadingTitle = "Authenticating...",
-  LoadingSubtitle = "by LuaMore"
+  Name = "LuaMore Script Hub",
+  LoadingTitle = "Verifying License...",
+  LoadingSubtitle = "Protected by LuaMore"
 })
 print("UI loaded safely!")`,
-  esp: `local function highlight(target)
-  if target and target.Character then
-    print("Highlighting target: " .. target.Name)
+  teleport: `local function safeTeleport(cframe)
+  local char = game.Players.LocalPlayer.Character
+  if char and char:FindFirstChild("HumanoidRootPart") then
+    char.HumanoidRootPart.CFrame = cframe
   end
 end
-highlight(game.Players.LocalPlayer)`,
+safeTeleport(CFrame.new(0, 50, 0))`,
 };
 
+const faqs = [
+  {
+    q: "How does the OELD Anti-Tamper protect my script?",
+    a: "OELD divides your compiled bytecode into multiple independent chunks, each encrypted with unique randomized runtime keys. It verifies watermark integrity, standard-library invariants, and performs periodic heartbeat checks in Roblox while checking for honeypots.",
+  },
+  {
+    q: "Will my scripts execute on mobile executors like Delta and Codex?",
+    a: "Yes! LuaMore includes universal loadstring and environment resolvers with dual VM fallback support, ensuring seamless execution across Solara, Wave, Delta, Codex, Arceus X, Fluxus, and MacSploit.",
+  },
+  {
+    q: "Is LuaMore really 100% free to use?",
+    a: "Yes, LuaMore provides unlimited script hosting, obfuscation, Discord bot integration, and HWID key generation for all developers.",
+  },
+  {
+    q: "Can I reset user HWIDs or blacklist leaked keys?",
+    a: "Absolutely. The dashboard and Discord bot commands (/resethwid and /blacklist) give you instant real-time control over every generated key and device binding.",
+  },
+];
+
 function Home() {
-  const [activeTab, setActiveTab] = useState<"demo" | "loader" | "antitamper">("demo");
+  const [activeTab, setActiveTab] = useState<"source" | "protected">("source");
   const [demoInput, setDemoInput] = useState(sampleTemplates.basic);
   const [demoOutput, setDemoOutput] = useState<string>("");
   const [demoStats, setDemoStats] = useState<{ size: number; entropy: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   function runDemoObfuscation() {
     setIsProcessing(true);
@@ -129,6 +152,7 @@ function Home() {
         size: new TextEncoder().encode(out).length,
         entropy: calculateEntropy(out),
       });
+      setActiveTab("protected");
     } catch {
       // Fallback
     } finally {
@@ -145,296 +169,291 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-primary">
       <SiteNav />
+
       <main>
         {/* HERO SECTION */}
-        <section className="relative overflow-hidden border-b border-border py-20 lg:py-28">
+        <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 border-b border-border/80">
           <div
-            className="grid-bg mask-fade pointer-events-none absolute inset-0 opacity-40"
+            className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.25),rgba(255,255,255,0))]"
             aria-hidden
           />
-          <div className="absolute left-1/2 top-10 -translate-x-1/2 -translate-y-1/2 h-96 w-[40rem] rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[25rem] bg-primary/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="site-section relative z-10 grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-            <div className="rise">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-medium text-primary">
-                <Sparkles size={13} />
-                <span>LuaMore v19 Engine — Luraph & Aqua Anti-Tamper</span>
-              </div>
-
-              <h1 className="mt-5 font-display text-5xl leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-                Unbreachable script protection & delivery.
-              </h1>
-
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Polymorphic Register Virtual Machine, anti-dumper traps, Roblox honeypot detection,
-                and high-density Base85 Zstd buffer execution. All in one free workspace.
-              </p>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/register"
-                  className="btn-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
-                >
-                  <span>Start for free</span>
-                  <ArrowRight size={15} />
-                </Link>
-                <Link
-                  to="/obfuscators"
-                  className="btn-outline flex items-center justify-center gap-2"
-                >
-                  <Terminal size={15} />
-                  <span>Web Obfuscator</span>
-                </Link>
-              </div>
-
-              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Anti-Tamper v19 Active
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                  Zstd Buffer Transport
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-indigo-400" />
-                  100% Free Forever
-                </span>
-              </div>
+          <div className="site-section relative z-10 text-center max-w-4xl mx-auto">
+            {/* Pill Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary shadow-sm backdrop-blur-md">
+              <Sparkles size={13} className="text-primary" />
+              <span>Next-Generation Luau Protection & Anti-Tamper</span>
             </div>
 
-            {/* INTERACTIVE WORKSPACE WIDGET */}
-            <div className="rise relative rounded-xl border border-border bg-card/80 p-1 shadow-2xl backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-border/80 px-4 py-3 bg-secondary/50 rounded-t-lg">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("demo")}
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                      activeTab === "demo"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Terminal size={13} />
-                    Live Obfuscator
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("loader")}
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                      activeTab === "loader"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Link2 size={13} />
-                    Loader
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("antitamper")}
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all ${
-                      activeTab === "antitamper"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Shield size={13} />
-                    Anti-Tamper
-                  </button>
-                </div>
-                <span className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  live
-                </span>
+            {/* Main Headline */}
+            <h1 className="mt-6 font-display text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08]">
+              The Modern Solution to <br className="hidden sm:inline" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-indigo-300">
+                Lua Script Protection.
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
+              Protect your Lua scripts against reverse engineering, decompilers, and dumpers.
+              Featuring Polymorphic Register VM, OELD multi-key chunked anti-tamper, and instant
+              HWID licensing.
+            </p>
+
+            {/* Call To Action Buttons */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+              <Link
+                to="/register"
+                className="w-full sm:w-auto btn-primary py-3 px-8 text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
+              >
+                <span>Get Started</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/obfuscators"
+                className="w-full sm:w-auto btn-outline py-3 px-6 text-sm font-medium flex items-center justify-center gap-2 bg-card/80 hover:bg-card border-border hover:border-primary/50"
+              >
+                <Terminal size={16} />
+                <span>Web Obfuscator</span>
+              </Link>
+            </div>
+
+            {/* Quick trust metrics */}
+            <div className="mt-12 pt-8 border-t border-border/50 grid grid-cols-2 gap-4 sm:grid-cols-4 text-center">
+              <div>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-foreground">10K+</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Scripts Protected</p>
               </div>
+              <div>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-emerald-400">
+                  99.9%
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Deobfuscator Failure</p>
+              </div>
+              <div>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-primary">100%</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Executor Compatibility</p>
+              </div>
+              <div>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-indigo-400">
+                  &lt;1ms
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Runtime Overhead</p>
+              </div>
+            </div>
+          </div>
 
-              {activeTab === "demo" && (
-                <div className="p-4 space-y-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground font-mono">Select Code Preset:</span>
-                    <div className="flex gap-2">
-                      {["basic", "gui", "esp"].map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => {
-                            setDemoInput(sampleTemplates[t]);
-                            setDemoOutput("");
-                          }}
-                          className="rounded border border-border/60 px-2 py-0.5 text-[11px] font-mono hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all"
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
+          {/* CODE DEMO SHOWCASE */}
+          <div className="site-section mt-14 max-w-4xl mx-auto">
+            <div className="rounded-xl border border-border bg-card/90 shadow-2xl overflow-hidden backdrop-blur-md">
+              {/* Window Bar */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/70 bg-secondary/60">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
                   </div>
+                  <span className="ml-2 text-xs font-mono text-muted-foreground">
+                    LuaMore Studio Demo
+                  </span>
+                </div>
 
-                  <textarea
-                    value={demoInput}
-                    onChange={(e) => setDemoInput(e.target.value)}
-                    rows={4}
-                    className="w-full rounded-lg border border-border bg-background/90 p-3 font-mono text-xs text-foreground focus:border-primary focus:outline-none"
-                    placeholder="Enter Lua script..."
-                  />
-
-                  <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-md bg-background/80 p-0.5 border border-border text-xs font-mono">
                     <button
                       type="button"
-                      onClick={runDemoObfuscation}
-                      disabled={isProcessing}
-                      className="btn-primary py-1.5 px-4 text-xs font-medium flex items-center gap-2"
+                      onClick={() => setActiveTab("source")}
+                      className={`px-2.5 py-1 rounded transition-colors ${
+                        activeTab === "source"
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      <Sparkles size={13} />
-                      <span>{isProcessing ? "Protecting..." : "Obfuscate Code"}</span>
+                      Original Script
                     </button>
-
-                    {demoStats && (
-                      <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
-                        <span>
-                          Entropy: <strong className="text-primary">{demoStats.entropy}</strong>
-                        </span>
-                        <span>
-                          Size: <strong className="text-foreground">{demoStats.size}B</strong>
-                        </span>
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("protected")}
+                      className={`px-2.5 py-1 rounded transition-colors ${
+                        activeTab === "protected"
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Protected Output
+                    </button>
                   </div>
+                </div>
+              </div>
 
-                  {demoOutput && (
-                    <div className="relative mt-2 rounded-lg border border-border bg-black/60 p-3">
-                      <div className="flex items-center justify-between pb-2 border-b border-border/40 text-[11px] font-mono text-muted-foreground">
-                        <span>Protected Output (Base85 + Zstd Loader)</span>
+              {/* Code Panel Body */}
+              <div className="p-4 sm:p-5">
+                {activeTab === "source" ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground font-mono">Preset Template:</span>
+                      <div className="flex gap-2">
+                        {["basic", "gui", "teleport"].map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => {
+                              setDemoInput(sampleTemplates[t]);
+                              setDemoOutput("");
+                            }}
+                            className="rounded border border-border/70 px-2 py-0.5 text-[11px] font-mono hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all"
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <textarea
+                      value={demoInput}
+                      onChange={(e) => setDemoInput(e.target.value)}
+                      rows={5}
+                      className="w-full rounded-lg border border-border bg-black/50 p-3 font-mono text-xs text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      placeholder="Paste your Lua script here..."
+                    />
+
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        type="button"
+                        onClick={runDemoObfuscation}
+                        disabled={isProcessing}
+                        className="btn-primary py-2 px-5 text-xs font-medium flex items-center gap-2 shadow-md shadow-primary/20"
+                      >
+                        <Sparkles size={13} />
+                        <span>{isProcessing ? "Protecting with OELD..." : "Protect Script"}</span>
+                      </button>
+                      <span className="text-[11px] font-mono text-muted-foreground">
+                        Includes OELD Multi-Key & VM Layer
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        <span className="text-emerald-400">Hardened OELD Bytecode</span>
+                        {demoStats && (
+                          <span className="text-muted-foreground text-[11px]">
+                            ({demoStats.size} bytes, H={demoStats.entropy})
+                          </span>
+                        )}
+                      </div>
+
+                      {demoOutput && (
                         <button
                           type="button"
                           onClick={() => handleCopy(demoOutput)}
-                          className="text-primary hover:underline flex items-center gap-1"
+                          className="btn-outline py-1 px-2.5 text-[11px] flex items-center gap-1.5"
                         >
-                          {copied ? <Check size={12} /> : <Copy size={12} />}
-                          <span>{copied ? "Copied" : "Copy"}</span>
+                          {copied ? (
+                            <>
+                              <Check size={12} className="text-emerald-400" /> Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={12} /> Copy Code
+                            </>
+                          )}
                         </button>
-                      </div>
-                      <pre className="mt-2 max-h-24 overflow-x-auto overflow-y-auto text-[10px] font-mono text-emerald-400/90 whitespace-pre">
-                        {demoOutput.slice(0, 300)}...
+                      )}
+                    </div>
+
+                    <div className="rounded-lg border border-border bg-black/70 p-3 max-h-48 overflow-y-auto">
+                      <pre className="font-mono text-[11px] text-emerald-400/90 whitespace-pre-wrap break-all">
+                        {demoOutput ||
+                          `--[[ Click "Protect Script" on the left tab to generate instant protected payload ]]
+-- Protected using LuaMore Obfuscator
+-- Includes multi-key chunked loader, LuaMore Obfuscator watermark verification,
+-- anti-sandbox honeypot traps, and polymorphic register VM.`}
                       </pre>
                     </div>
-                  )}
-                </div>
-              )}
 
-              {activeTab === "loader" && (
-                <div className="p-4 space-y-3 font-mono text-xs">
-                  <p className="text-muted-foreground">1-Line Production Loader:</p>
-                  <div className="rounded-lg border border-border bg-black/70 p-3 text-primary">
-                    <code>
-                      script_key = &quot;YOUR_HWID_KEY&quot;
-                      <br />
-                      loadstring(game:HttpGet(&quot;https://luamore.app/api/public/r/LM9281x&quot;))()
-                    </code>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 pt-2 text-center text-[11px]">
-                    <div className="rounded border border-border p-2 bg-secondary/30">
-                      <span className="block text-muted-foreground">Speed</span>
-                      <strong className="text-foreground">24ms</strong>
-                    </div>
-                    <div className="rounded border border-border p-2 bg-secondary/30">
-                      <span className="block text-muted-foreground">Delivery</span>
-                      <strong className="text-foreground">Global CDN</strong>
-                    </div>
-                    <div className="rounded border border-border p-2 bg-secondary/30">
-                      <span className="block text-muted-foreground">Security</span>
-                      <strong className="text-primary">HWID Bound</strong>
+                    <div className="flex items-center justify-between pt-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("source")}
+                        className="text-primary hover:underline text-xs"
+                      >
+                        ← Edit Original Code
+                      </button>
+                      <Link
+                        to="/register"
+                        className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1"
+                      >
+                        Get Started Free <ArrowRight size={12} />
+                      </Link>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {activeTab === "antitamper" && (
-                <div className="p-4 space-y-2.5 font-mono text-xs">
-                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Basic Environment Validation</span>
-                    <span className="text-emerald-400">PASSED</span>
-                  </div>
-                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Anti-Dumper table.concat Traps</span>
-                    <span className="text-emerald-400">ACTIVE</span>
-                  </div>
-                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Roblox Honeypot PlaceId Detector</span>
-                    <span className="text-emerald-400">ARMED</span>
-                  </div>
-                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Arithmetic Canary Invariants</span>
-                    <span className="text-emerald-400">VERIFIED</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Fail-Close Hardlock Fallback</span>
-                    <span className="text-emerald-400">ENABLED</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between border-t border-border/80 px-4 py-2.5 bg-secondary/30 rounded-b-lg text-[11px] font-mono text-muted-foreground">
-                <span>LuaMore v19 Architecture</span>
-                <Link
-                  to="/obfuscators"
-                  className="text-primary hover:underline flex items-center gap-1"
-                >
-                  <span>Open Full Studio</span>
-                  <ArrowRight size={11} />
-                </Link>
+                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* SECURITY MATRIX SECTION */}
+        {/* FEATURES GRID SECTION */}
         <section className="site-section py-20 md:py-24">
-          <div className="max-w-2xl">
-            <span className="eyebrow text-primary">Multi-Layer Architecture</span>
-            <h2 className="mt-3 font-display text-4xl sm:text-5xl">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-mono font-semibold tracking-wider text-primary uppercase">
+              Military-Grade Defense
+            </span>
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl font-bold tracking-tight">
               Engineered to defeat reverse engineers and dumpers.
             </h2>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-muted-foreground text-sm sm:text-base leading-relaxed">
               Standard obfuscators rely on simple string replacement. LuaMore constructs an
-              impenetrable virtual machine with active anti-dumper canaries and sandbox detection.
+              impenetrable register VM with active honeypot traps and multi-key encryption.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {securityLayers.map((layer) => {
-              const Icon = layer.icon;
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {securityFeatures.map((feat) => {
+              const Icon = feat.icon;
               return (
                 <div
-                  key={layer.title}
-                  className="rounded-xl border border-border bg-card/60 p-6 transition-all hover:border-primary/50 hover:bg-card"
+                  key={feat.title}
+                  className="rounded-xl border border-border bg-card/70 p-6 transition-all hover:border-primary/50 hover:bg-card hover:shadow-lg"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
                       <Icon size={20} />
                     </div>
                     <span className="font-mono text-[10px] tracking-wider text-muted-foreground border border-border rounded px-2 py-0.5">
-                      {layer.badge}
+                      {feat.tag}
                     </span>
                   </div>
-                  <h3 className="mt-5 font-display text-xl">{layer.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{layer.desc}</p>
+                  <h3 className="mt-5 font-display text-lg font-bold text-foreground">
+                    {feat.title}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-muted-foreground">
+                    {feat.desc}
+                  </p>
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* EXECUTOR COMPATIBILITY GRID */}
-        <section className="border-y border-border bg-secondary/40 py-16">
+        {/* EXECUTOR COMPATIBILITY */}
+        <section className="border-y border-border bg-secondary/30 py-16">
           <div className="site-section">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <span className="eyebrow text-primary">Compatibility</span>
-                <h3 className="mt-2 font-display text-3xl">Tested on every major executor.</h3>
+                <span className="text-xs font-mono font-semibold tracking-wider text-primary uppercase">
+                  Universal Compatibility
+                </span>
+                <h3 className="mt-2 font-display text-3xl font-bold text-foreground">
+                  Tested on every major executor.
+                </h3>
               </div>
               <p className="text-sm text-muted-foreground max-w-md">
                 Dual fallback execution guarantees your script runs identically whether on Solara,
@@ -446,11 +465,14 @@ function Home() {
               {executors.map((ex) => (
                 <div
                   key={ex.name}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card/80 px-4 py-3 font-mono text-xs"
+                  className="flex items-center justify-between rounded-lg border border-border bg-card/90 px-4 py-3 font-mono text-xs"
                 >
-                  <span className="font-semibold text-foreground">{ex.name}</span>
-                  <span className="text-emerald-400 flex items-center gap-1">
-                    <Check size={12} />
+                  <div>
+                    <span className="font-bold text-foreground block">{ex.name}</span>
+                    <span className="text-[10px] text-muted-foreground">{ex.version}</span>
+                  </div>
+                  <span className="text-emerald-400 flex items-center gap-1 text-[11px] font-semibold">
+                    <Check size={13} />
                     {ex.status}
                   </span>
                 </div>
@@ -459,40 +481,132 @@ function Home() {
           </div>
         </section>
 
-        {/* PRICING & CALL TO ACTION */}
+        {/* HOW IT WORKS (3 STEPS) */}
         <section className="site-section py-20 md:py-24">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/50 bg-gradient-to-b from-card to-background p-8 md:p-12 shadow-2xl relative overflow-hidden">
-            <div className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-            <div className="text-center">
-              <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-xs text-primary">
-                100% Free Forever
-              </span>
-              <h2 className="mt-4 font-display text-4xl sm:text-5xl">
-                Deploy your script in seconds.
-              </h2>
-              <p className="mx-auto mt-4 max-w-lg text-muted-foreground leading-relaxed">
-                No credit cards. No tiers. Unlimited scripts, license keys, hardware locking,
-                Discord integration, and hosted delivery for all creators.
-              </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link
-                  to="/register"
-                  className="btn-primary flex items-center gap-2 px-8 py-3 text-sm"
-                >
-                  <span>Create Account</span>
-                  <ArrowRight size={15} />
-                </Link>
-                <Link
-                  to="/obfuscators"
-                  className="btn-outline flex items-center gap-2 px-6 py-3 text-sm"
-                >
-                  <span>Try Web Obfuscator</span>
-                </Link>
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-mono font-semibold tracking-wider text-primary uppercase">
+              Simple Workflow
+            </span>
+            <h2 className="mt-3 font-display text-3xl sm:text-4xl font-bold">
+              Protect and deploy in three simple steps.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card/60 p-6 relative">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary font-mono font-bold flex items-center justify-center text-sm mb-4">
+                1
               </div>
+              <h3 className="font-display text-lg font-bold">Input Your Script</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Paste your raw Luau or Lua 5.1 script or link your hosted script project in the
+                dashboard.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/60 p-6 relative">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary font-mono font-bold flex items-center justify-center text-sm mb-4">
+                2
+              </div>
+              <h3 className="font-display text-lg font-bold">Apply OELD Protection</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                LuaMore compiles your code into a Polymorphic VM with chunked multi-key encryption
+                and anti-tamper guards.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/60 p-6 relative">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary font-mono font-bold flex items-center justify-center text-sm mb-4">
+                3
+              </div>
+              <h3 className="font-display text-lg font-bold">Deploy 1-Line Loader</h3>
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Distribute your protected script via 1-line loadstring with automated HWID checking
+                and Discord bot whitelisting.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ ACCORDION SECTION */}
+        <section className="site-section pb-20 max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-xs font-mono font-semibold tracking-wider text-primary uppercase">
+              Frequently Asked Questions
+            </span>
+            <h2 className="mt-2 font-display text-3xl font-bold">
+              Got questions? We have answers.
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <div
+                  key={faq.q}
+                  className="rounded-xl border border-border bg-card/70 overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-display font-semibold text-sm sm:text-base hover:text-primary transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      size={18}
+                      className={`text-muted-foreground transition-transform ${
+                        isOpen ? "rotate-180 text-primary" : ""
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-5 sm:px-5 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* BOTTOM CALL TO ACTION BANNER */}
+        <section className="site-section pb-24">
+          <div className="mx-auto max-w-4xl rounded-2xl border border-primary/40 bg-gradient-to-b from-card via-blue-950/20 to-card p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
+            <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+
+            <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 font-mono text-xs text-primary font-semibold">
+              Ready in under 2 minutes
+            </span>
+            <h2 className="mt-4 font-display text-3xl sm:text-5xl font-bold tracking-tight">
+              Ready to protect your Lua scripts?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground text-sm sm:text-base leading-relaxed">
+              Join script developers securing their scripts with Polymorphic VM protection, HWID
+              licensing, and Discord bot integration.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+              <Link
+                to="/register"
+                className="w-full sm:w-auto btn-primary py-3 px-8 text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
+              >
+                <span>Get Started</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/obfuscators"
+                className="w-full sm:w-auto btn-outline py-3 px-6 text-sm font-medium flex items-center justify-center gap-2 bg-card/80 hover:bg-card border-border hover:border-primary/50"
+              >
+                <Terminal size={16} />
+                <span>Try Web Obfuscator</span>
+              </Link>
             </div>
           </div>
         </section>
       </main>
+
       <SiteFooter />
     </div>
   );

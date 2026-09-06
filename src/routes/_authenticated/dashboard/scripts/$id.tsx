@@ -61,6 +61,7 @@ function ScriptDetail() {
   const [hydratedId, setHydratedId] = useState<string | null>(null);
   const [loaderTab, setLoaderTab] = useState<"standalone" | "keysystem" | "ffa">("standalone");
   const [sampleKey, setSampleKey] = useState("eggbm6ywzw7k3l1iht1lmeb5");
+  const [editorView, setEditorView] = useState<"source" | "obfuscated">("source");
   const script = query.data?.script as Record<string, unknown> | undefined;
 
   useEffect(() => {
@@ -149,11 +150,12 @@ end`;
       setStatus(`✗ ${error instanceof Error ? error.message : "Could not save source"}`),
   });
   const protectMutation = useMutation({
-    mutationFn: () => protect({ data: { id } }),
+    mutationFn: () => protect({ data: { id, code } }),
     onSuccess: (result) => {
       setStatus(`✓ Protected output generated · ${result.size.toLocaleString()} characters`);
       setAutoProtect(true);
       queryClient.invalidateQueries({ queryKey: ["script", id] });
+      queryClient.invalidateQueries({ queryKey: ["scripts"] });
     },
     onError: (error) =>
       setStatus(`✗ ${error instanceof Error ? error.message : "Protection failed"}`),
@@ -263,6 +265,21 @@ end`;
           >
             <Key size={14} /> Keys
           </Link>
+          <button
+            type="button"
+            className="btn-outline border-blue-500/40 text-blue-300 hover:bg-blue-500/10 flex items-center gap-1.5"
+            onClick={() => protectMutation.mutate()}
+            disabled={protectMutation.isPending || !code.trim()}
+            title="Auto-obfuscate source code with multi-layer bytecode VM"
+          >
+            <Zap
+              size={14}
+              className={
+                protectMutation.isPending ? "animate-spin text-amber-400" : "text-amber-400"
+              }
+            />
+            {protectMutation.isPending ? "Obfuscating…" : "⚡ Auto Obfuscate"}
+          </button>
           <button className="btn-outline" onClick={downloadSource}>
             <Download size={15} /> Export
           </button>
@@ -278,54 +295,143 @@ end`;
 
       <div className="mt-7 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
         <Metric label="Source" value={`${code.length.toLocaleString()} chars`} />
-        <Metric label="Runs" value={String(script.run_count ?? 0)} />
+        <Metric label="Runs" value={String(script?.run_count ?? 0)} />
         <Metric label="Access" value={ffa ? "Public (FFA)" : "Key System (Protected)"} />
-        <Metric label="Protection" value={script.is_protected ? "Active" : "Source"} />
+        <Metric
+          label="Protection"
+          value={
+            script?.obfuscated_code
+              ? `${(script.obfuscated_code as string).length.toLocaleString()} chars (VM)`
+              : script?.is_protected
+                ? "Active"
+                : "Source"
+          }
+        />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="landing-instrument">
           <div className="instrument-topbar">
-            <span className="flex items-center gap-2">
-              <span className="status-dot" /> source.lua
-            </span>
-            <label className="btn-ghost cursor-pointer text-xs">
-              <Upload size={14} /> Upload
-              <input
-                type="file"
-                accept=".lua,.luau,.txt,text/plain"
-                className="hidden"
-                onChange={(event) => {
-                  void readFile(event.target.files?.[0]);
-                  event.target.value = "";
-                }}
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setEditorView("source")}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
+                  editorView === "source"
+                    ? "bg-primary/20 text-primary border border-primary/30 font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span className="status-dot" /> source.lua
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorView("obfuscated")}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
+                  editorView === "obfuscated"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <ShieldCheck size={13} className="text-emerald-400" />
+                <span>obfuscated.lua</span>
+                {script?.obfuscated_code && (
+                  <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
+                    VM
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {editorView === "obfuscated" && script?.obfuscated_code && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(script.obfuscated_code as string);
+                    setStatus("✓ Obfuscated bytecode VM copied to clipboard");
+                  }}
+                  className="btn-ghost text-xs flex items-center gap-1"
+                >
+                  <Clipboard size={13} /> Copy Output
+                </button>
+              )}
+              {editorView === "source" && (
+                <label className="btn-ghost cursor-pointer text-xs">
+                  <Upload size={14} /> Upload
+                  <input
+                    type="file"
+                    accept=".lua,.luau,.txt,text/plain"
+                    className="hidden"
+                    onChange={(event) => {
+                      void readFile(event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </div>
           </div>
-          <textarea
-            className="min-h-[560px] w-full resize-y border-0 bg-input p-5 font-mono text-sm leading-6 text-foreground outline-none"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            spellCheck={false}
-            placeholder="Paste your Lua or Luau source here"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              void readFile(event.dataTransfer.files?.[0]);
-            }}
-          />
+
+          {editorView === "source" ? (
+            <textarea
+              className="min-h-[560px] w-full resize-y border-0 bg-input p-5 font-mono text-sm leading-6 text-foreground outline-none"
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+              spellCheck={false}
+              placeholder="Paste your Lua or Luau source here"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                void readFile(event.dataTransfer.files?.[0]);
+              }}
+            />
+          ) : (
+            <div className="min-h-[560px] w-full bg-black/80 p-5 font-mono text-xs leading-5 text-emerald-300/90 overflow-auto select-all border-b border-border/30">
+              {script?.obfuscated_code ? (
+                <pre className="whitespace-pre-wrap break-all">
+                  {script.obfuscated_code as string}
+                </pre>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
+                  <ShieldCheck size={36} className="text-muted-foreground/40 mb-3" />
+                  <p className="text-sm font-medium text-foreground">
+                    No Obfuscated Bytecode Generated Yet
+                  </p>
+                  <p className="text-xs max-w-sm mt-1 mb-4">
+                    Click "Auto Obfuscate" to compile your source code into LuaMore's polymorphic
+                    Register VM with anti-tamper shields.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => protectMutation.mutate()}
+                    disabled={protectMutation.isPending || !code.trim()}
+                    className="btn-primary text-xs flex items-center gap-1.5"
+                  >
+                    <Zap size={14} />{" "}
+                    {protectMutation.isPending ? "Obfuscating…" : "⚡ Auto Obfuscate Now"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="instrument-footer">
-            <span>{code.length.toLocaleString()} characters</span>
+            <span>
+              {editorView === "source"
+                ? `${code.length.toLocaleString()} characters (source)`
+                : `${((script?.obfuscated_code as string) || "").length.toLocaleString()} characters (protected VM)`}
+            </span>
             <span>Original source retained</span>
             <span>
-              {script.updated_at
-                ? `Saved ${new Date(script.updated_at).toLocaleString()}`
+              {script?.updated_at
+                ? `Saved ${new Date(script.updated_at as string).toLocaleString()}`
                 : "Not saved"}
             </span>
           </div>
           <div className="mt-4">
             <LuaTerminalSandbox
-              code={script.obfuscated_code || code}
+              code={(script?.obfuscated_code as string) || code}
               title="Live In-Browser Execution Sandbox"
               subtitle="Run and test this script right now — simulates Roblox Player, print, math, and tables"
             />
@@ -444,34 +550,64 @@ end`;
           </section>
 
           <section className="border border-border bg-card p-5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-primary" />
-              <h2 className="font-display text-lg">Protection</h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-emerald-400" />
+                <h2 className="font-display text-lg">Protection Engine</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">
+                LuaMore VM
+              </span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Build protected output from the saved source without replacing the original.
+              Compiles Luau source into a polymorphic register-based Virtual Machine with dynamic
+              opcode dispatch and anti-tamper shields.
             </p>
-            <label className="mt-4 flex items-center justify-between gap-4 border-y border-border py-3 text-sm">
-              <span>Protect on every save</span>
+
+            {script?.obfuscated_code ? (
+              <div className="mt-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3 rounded-lg text-xs space-y-1">
+                <div className="flex items-center justify-between font-semibold">
+                  <span>✓ Bytecode VM Active</span>
+                  <span className="font-mono">
+                    {(script.obfuscator as string) || "luamore-v12"}
+                  </span>
+                </div>
+                <div className="text-[11px] text-emerald-200/80 font-mono">
+                  Payload: {(script.obfuscated_code as string).length.toLocaleString()} chars ·
+                  3-Layer RLE + Polymorphic XOR + Base85
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 bg-muted/40 border border-border p-3 rounded-lg text-xs text-muted-foreground">
+                No obfuscated bytecode generated yet. Click below to compile and protect this
+                script.
+              </div>
+            )}
+
+            <label className="mt-4 flex items-center justify-between gap-4 border-y border-border py-3 text-sm cursor-pointer">
+              <span className="flex items-center gap-1.5">
+                <Zap size={14} className="text-amber-400" /> Auto-obfuscate on save
+              </span>
               <input
                 type="checkbox"
                 checked={autoProtect}
                 onChange={(event) => setAutoProtect(event.target.checked)}
+                className="rounded text-primary focus:ring-0 cursor-pointer"
               />
             </label>
             <button
-              className="btn-primary mt-4 w-full"
+              className="btn-primary mt-4 w-full flex items-center justify-center gap-2"
               onClick={() => protectMutation.mutate()}
               disabled={protectMutation.isPending || !code.trim()}
             >
               {protectMutation.isPending ? (
                 <>
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />{" "}
-                  Protecting…
+                  Compiling Bytecode VM…
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={15} /> Protect script
+                  <Zap size={15} className="text-amber-300" /> ⚡ Auto-Obfuscate Source Code
                 </>
               )}
             </button>

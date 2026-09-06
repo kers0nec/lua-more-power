@@ -1,23 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import {
   FileCode2,
   KeyRound,
   PanelsTopLeft,
-  Package,
   ArrowUpRight,
   Ban,
   Shield,
   Copy,
   Check,
-  Globe,
   Sparkles,
   Zap,
   Activity,
-  Terminal,
-  Server,
-  Lock,
 } from "lucide-react";
 import { getDashboardStats } from "@/lib/dashboard.functions";
 import { listScripts } from "@/lib/scripts.functions";
@@ -171,58 +166,6 @@ function Dashboard() {
           </Link>
         </div>
       </header>
-
-      {/* Active Domain & Universal Loader Hub */}
-      <div className="mt-6 rounded-xl border border-primary/30 bg-gradient-to-r from-card via-blue-950/20 to-card p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
-                Production Loader Host Active
-              </span>
-            </div>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Globe size={16} className="text-primary" /> Active Loader Host:
-              <span className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 text-xs sm:text-sm">
-                https://luamore.app
-              </span>
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              All scripts route through{" "}
-              <code className="text-foreground/90 font-mono">
-                https://luamore.app/files/loaders/&lt;public_id&gt;.lua
-              </code>{" "}
-              with instant key & HWID checks.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <button
-              onClick={() => copyText(sampleLoader, true)}
-              className="btn-outline text-xs flex items-center justify-center gap-2 py-2 px-3 bg-input/80 border-border hover:border-primary/50"
-            >
-              {copiedSample ? (
-                <>
-                  <Check size={13} className="text-emerald-400" /> Copied Test Loader!
-                </>
-              ) : (
-                <>
-                  <Copy size={13} /> Copy Master Template
-                </>
-              )}
-            </button>
-            <Link
-              to="/dashboard/scripts"
-              className="btn-primary text-xs flex items-center justify-center gap-1.5 py-2 px-3"
-            >
-              View Scripts <ArrowUpRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* KPI Stats Grid */}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -394,32 +337,6 @@ function Dashboard() {
               No scripts created yet. Click "Create Script" to host your first Luau project.
             </div>
           )}
-        </div>
-      </div>
-
-      {/* System Security & Integrity Banner */}
-      <div className="mt-10 rounded-xl border border-border bg-card/60 p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-400">
-            <Lock size={18} />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground">
-              PolSec Anti-Tamper & HWID Lock Active
-            </h4>
-            <p className="text-xs text-muted-foreground">
-              All loaders enforce runtime byte-tamper integrity, player Roblox ID telemetry, and
-              device-bound HWIDs.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link to="/dashboard/hwid" className="btn-outline text-xs py-1.5 px-3">
-            Manage HWID Bans
-          </Link>
-          <Link to="/dashboard/logs" className="btn-outline text-xs py-1.5 px-3">
-            Telemetry Logs
-          </Link>
         </div>
       </div>
     </div>

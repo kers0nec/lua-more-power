@@ -94,6 +94,16 @@ export async function runLuaInBrowser(
       _G.workspace = {}
       _G.script = { Name = "LuaMoreLoader" }
       _G.getgenv = function() return _G end
+      _G.loadstring = load
+      _G.game.HttpGet = function(self, url)
+        return "-- [LuaMore Sandbox] Live Mock response for "..tostring(url).."\nprint('[Roblox HttpGet] Successfully fetched: '..tostring(url))"
+      end
+      _G.game.HttpPost = function(self, url, data)
+        return '{"success":true,"status":"ok"}'
+      end
+      _G.HttpGet = function(url) return _G.game:HttpGet(url) end
+      _G.request = function(opt) return { StatusCode = 200, Body = 'print("[Roblox Request OK]")', Success = true } end
+      _G.http_request = _G.request
       _G.identifyexecutor = function() return "LuaMore In-Browser Engine", "v15.0" end
       _G.getexecutorname = function() return "LuaMore Engine" end
       _G.gethwid = function() return "MOCK_HWID_ABC123" end

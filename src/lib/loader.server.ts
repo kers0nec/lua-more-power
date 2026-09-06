@@ -185,10 +185,28 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
       void sendExecutionWebhook(usedKey);
     };
 
-    // Serve fresh hardened obfuscated payload whenever source code is present
-    const payload = script.code
-      ? obfuscateLua(script.code, script.public_id)
-      : (script.obfuscated_code ?? `-- Empty script\nprint("No payload")`);
+    // Serve cached/pre-built obfuscated payload if available, or automatically obfuscate and cache source
+    let payload = script.obfuscated_code;
+    if (!payload && script.code) {
+      payload = obfuscateLua(script.code);
+      // Cache back to local store and supabase
+      saveScript({
+        ...script,
+        obfuscated_code: payload,
+        is_protected: true,
+      });
+      try {
+        void supabaseAdmin
+          .from("scripts")
+          .update({ obfuscated_code: payload, is_protected: true })
+          .eq("id", script.id);
+      } catch {
+        // ignore
+      }
+    }
+    if (!payload) {
+      payload = script.code || `-- Empty script\nprint("[LuaMore] No payload configured")`;
+    }
 
     if (script.ffa) {
       await bumpRuns(null);
@@ -277,9 +295,18 @@ if not _http then
 end
 
 local _response = _http(_reqUrl)
+if not _response or _response == "" then
+    error("[LuaMore] Received empty response from loader server.")
+end
+if string.sub(_response, 1, 6) == "<!DOCT" or string.sub(_response, 1, 5) == "<html" then
+    error("[LuaMore] Connection intercepted by firewall or invalid route.")
+end
+
 local _fn = (function()
     if _type(loadstring) == "function" then return loadstring end
     if _type(load) == "function" then return load end
+    if getgenv and _type(getgenv) == "function" and _type(getgenv().loadstring) == "function" then return getgenv().loadstring end
+    if _G and _type(_G.loadstring) == "function" then return _G.loadstring end
     return nil
 end)()
 
@@ -291,7 +318,7 @@ local _compiled, _err = _fn(_response)
 if not _compiled then
     error("[LuaMore Compile Error]: " .. tostring(_err))
 end
-return _compiled()`);
+return _compiled(...)`);
     }
 
     if (!key) return luaError("License key required");

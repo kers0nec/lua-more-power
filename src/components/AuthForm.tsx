@@ -222,7 +222,7 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
             Script security &amp; instant delivery.
           </h2>
           <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-            Protect your scripts with polymorphic VM encryption, Luraph &amp; Aqua anti-tamper
+            Protect your scripts with polymorphic VM encryption, LuaMore Obfuscator anti-tamper
             shields, and hardware-bound license keys.
           </p>
 
