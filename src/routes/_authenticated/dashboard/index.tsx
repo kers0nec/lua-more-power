@@ -55,7 +55,7 @@ function Dashboard() {
       ? window.location.origin
       : "https://luamore.app";
 
-  const sampleLoader = `loadstring(game:HttpGet("${origin}/files/loaders/87b653a7b59a722de8.lua"))()`;
+  const sampleLoader = `loadstring(game:HttpGet("${origin}/scripts/hosted/87b653a7b59a722de8.lua"))()`;
 
   const copyText = (text: string, isSample = false, scriptId?: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -264,8 +264,8 @@ function Dashboard() {
             <div className="divide-y divide-border">
               {recentScripts.map((s: ScriptItem) => {
                 const loaderCode = s.ffa
-                  ? `loadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`
-                  : `script_key = "YOUR_KEY";\nloadstring(game:HttpGet("${origin}/files/loaders/${s.public_id}.lua"))()`;
+                  ? `script_key = "trial"\nloadstring(game:HttpGet("${origin}/scripts/hosted/${s.public_id}.lua"))()`
+                  : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${origin}/scripts/hosted/${s.public_id}.lua"))()`;
                 const isCopied = copiedId === s.id;
 
                 return (

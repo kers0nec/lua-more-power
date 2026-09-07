@@ -2192,21 +2192,37 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
 
   const minified = minifyLua(wrapped);
 
-  // Step 4: Use OELD Multi-Key Chunked Encrypted Loader by default
-  if (options.oeldAntiTamper ?? true) {
-    return buildOELDChunkedLoader(minified, options);
-  }
+  // Step 4: Use strong Roblox Buffer Loader with zlib + base85 + EncodingService
+  return buildRobloxBufferLoader(minified);
+}
 
-  const base85Payload = encodeBase85(minified);
+/**
+ * Strong Roblox Buffer Loader
+ * Uses zlib compression + base85 + Roblox EncodingService DecompressBuffer
+ */
+export function buildRobloxBufferLoader(payloadSource: string): string {
+  const zlib = require("zlib");
+  const enc = new TextEncoder();
+  const compressed = zlib.deflateSync(enc.encode(payloadSource));
+  const base85Payload = encodeBase85(compressed);
 
-  return (
-    "-- This file was protected using LuaMore Obfuscator | https://luamore.app/dashboard/obfuscate\n" +
-    'local function _b85d(s)local t="' +
-    B85_ALPHABET +
-    '";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end;local _p=_b85d([==[' +
-    base85Payload +
-    ']==]);local _l=(function()if type(loadstring)=="function" then return loadstring elseif type(load)=="function" then return load elseif getgenv and type(getgenv)=="function" and type(getgenv().loadstring)=="function" then return getgenv().loadstring elseif _G and type(_G.loadstring)=="function" then return _G.loadstring end return nil end)();if not _l then error("[LuaMore] loadstring is not supported in this executor environment", 0) end;local _f,_e=_l(_p);if not _f then error("[LuaMore Execution Error]: "..tostring(_e or "Failed to compile bytecode chunk"), 0) end;return _f(...)'
-  );
+  return `-- This file was protected using LuaMore Obfuscator | https://luamore.app/dashboard/obfuscate
+local function _b85d(s)local t="${B85_ALPHABET}";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end
+local _p=_b85d([===[${base85Payload}]===])
+local _b=setmetatable({},{__tostring=function(t)return t end})local _ok,_buf=pcall(function()return require("buffer")end)if not _ok then _buf=nil end
+local _decoded=nil
+if _buf and type(_buf.fromstring)=="function" and type(_buf.tostring)=="function" then
+  local _compressed=_buf.fromstring(_p)
+  local _ok2,_decompressed=pcall(function()return game:GetService("EncodingService"):DecompressBuffer(_compressed)end)
+  if _ok2 and _decompressed then
+    _decoded=_buf.tostring(_decompressed)
+  end
+end
+if not _decoded then
+  _decoded=_p
+end
+local _l=loadstring(_decoded)if not _l then error("[LuaMore] loadstring is not supported in this executor environment",0)end
+return _l(...)`;
 }
 
 export function analyzeObfuscation(

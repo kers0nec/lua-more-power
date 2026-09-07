@@ -65,20 +65,23 @@ function HomePage() {
             </p>
             <div className="mt-10 flex justify-center gap-3 sm:mt-12">
               <Link
-                to="/login"
-                className="inline-flex h-10 items-center justify-center rounded-md bg-gradient-hero text-primary-foreground shadow-glow px-8 text-sm font-extrabold transition-all hover:opacity-90"
+                to="/register"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-gradient-hero text-primary-foreground shadow-glow px-10 text-base font-extrabold transition-all hover:opacity-90"
               >
-                Get started <ArrowRight className="ml-2 h-4 w-4" />
+                LM VM RUN <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <a
                 href="https://discord.gg/F2uYN9gWCk"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-extrabold shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-12 items-center justify-center rounded-md border border-input bg-background px-8 text-base font-extrabold shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Join Discord
               </a>
             </div>
+            <p className="mt-4 text-center text-xs text-muted-foreground font-mono">
+              Polymorphic VM • Anti-Tamper Shield • attempt to perform arithmetic
+            </p>
           </div>
         </section>
 
