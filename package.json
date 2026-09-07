@@ -13,7 +13,8 @@
     "test:roundtrip": "node --experimental-strip-types --no-warnings test/roundtrip.mjs",
     "test:pack": "node --experimental-strip-types --no-warnings test/pack.mjs",
     "test:obfuscator": "node --experimental-strip-types --no-warnings test/obfuscate.mjs",
-    "test:engine": "npm run test:roundtrip && npm run test:pack && npm run test:obfuscator",
+    "test:realworld": "node --experimental-strip-types --no-warnings test/realworld.mjs",
+    "test:engine": "npm run test:roundtrip && npm run test:pack && npm run test:obfuscator && npm run test:realworld",
     "test:regression": "node scripts/obfuscation-regression.mjs",
     "format": "prettier --write ."
   },

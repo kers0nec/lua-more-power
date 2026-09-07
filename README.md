@@ -89,6 +89,7 @@ Open `http://localhost:3000` in your browser.
   - `npm run test:roundtrip` — 19 parse → emit → reparse checks: the emitter must reproduce every corpus program, including Luau type syntax
   - `npm run test:pack` — transport property test: the emitted Lua loader must decode every payload back byte-for-byte
   - `npm run test:obfuscator` — the differential gate: original vs obfuscated, executed in fengari (Lua 5.3), must behave identically. Set `LUAMORE_TEST_SEED=<n>` to pin and replay one random build shape.
+  - `npm run test:realworld` — the same differential gate run against the ~12 KB Roblox loading-screen scripts this project actually ships, under a stubbed Roblox API that records every read of an undefined global
 - `npm run test:regression` — 16 option combinations (including the legacy option names) obfuscated, executed and compared against the reference output
 
 ---
