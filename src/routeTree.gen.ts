@@ -29,6 +29,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TosRouteImport } from './routes/tos'
+import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ApiDocsRouteImport } from './routes/api.docs'
 import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
@@ -153,6 +154,11 @@ const TermsRoute = TermsRouteImport.update({
 const TosRoute = TosRouteImport.update({
   id: '/tos',
   path: '/tos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDocsRoute = ApiDocsRouteImport.update({
@@ -324,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
+  '/vault': typeof VaultRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
@@ -370,6 +377,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
+  '/vault': typeof VaultRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
@@ -419,6 +427,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
+  '/vault': typeof VaultRoute
   '/api/docs': typeof ApiDocsRoute
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/tos'
+    | '/vault'
     | '/api/docs'
     | '/docs/loading'
     | '/features/key-system-gui'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/tos'
+    | '/vault'
     | '/api/docs'
     | '/docs/loading'
     | '/features/key-system-gui'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/tos'
+    | '/vault'
     | '/api/docs'
     | '/docs/loading'
     | '/features/key-system-gui'
@@ -611,6 +623,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   TosRoute: typeof TosRoute
+  VaultRoute: typeof VaultRoute
   ApiDocsRoute: typeof ApiDocsRoute
   ApiPublicObfuscateRoute: typeof ApiPublicObfuscateRoute
   FilesLoadersPublicIdDotluaRoute: typeof FilesLoadersPublicIdDotluaRoute
@@ -765,6 +778,13 @@ declare module '@tanstack/react-router' {
       path: '/tos'
       fullPath: '/tos'
       preLoaderRoute: typeof TosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/docs': {
@@ -1029,6 +1049,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   TosRoute: TosRoute,
+  VaultRoute: VaultRoute,
   ApiDocsRoute: ApiDocsRoute,
   ApiPublicObfuscateRoute: ApiPublicObfuscateRoute,
   FilesLoadersPublicIdDotluaRoute: FilesLoadersPublicIdDotluaRoute,
