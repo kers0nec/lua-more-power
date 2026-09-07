@@ -51,9 +51,9 @@ function HomePage() {
       <main className="flex-1">
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-border/60">
-          <div className="absolute inset-0 bg-gradient-hero opacity-60" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-hero opacity-70" aria-hidden="true" />
           <div className="relative mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5 text-[11px] font-medium text-muted-foreground backdrop-blur sm:px-4 sm:text-xs">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1.5 text-[11px] font-medium text-muted-foreground backdrop-blur sm:px-4 sm:text-xs">
               <span className="text-primary">●</span> Luau obfuscation, made effortless
             </span>
             <h1 className="mt-8 text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl">
@@ -71,7 +71,7 @@ function HomePage() {
                 Get started <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
               <a
-                href="https://discord.gg/YECBsBfJy5"
+                href="https://discord.gg/F2uYN9gWCk"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-extrabold shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -88,9 +88,9 @@ function HomePage() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group rounded-2xl border border-border/60 bg-card/50 p-5 text-left shadow-card backdrop-blur-md transition-all duration-300 hover:border-primary/40 hover:shadow-glow sm:p-6"
+                className="group rounded-2xl border border-border/60 bg-card/60 p-5 text-left shadow-card backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-glow sm:p-6"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 transition-colors duration-300 group-hover:bg-primary/25">
                   <span className="text-primary text-lg">◆</span>
                 </div>
                 <h3 className="mt-4 font-bold text-foreground">{f.title}</h3>

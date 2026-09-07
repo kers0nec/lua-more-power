@@ -5,8 +5,9 @@ import { Logo } from "./Logo";
 import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
-  { to: "/vault", label: "Source Vault" },
-  { to: "/obfuscators", label: "Obfuscator" },
+  { to: "/features", label: "Features" },
+  { to: "/how", label: "How" },
+  { to: "/pricing", label: "Pricing" },
   { to: "/docs", label: "Docs" },
 ];
 
@@ -52,23 +53,14 @@ export function SiteNav() {
 
         <div className="hidden items-center gap-3 md:flex">
           <a
-            href={DISCORD_INVITE}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs font-bold transition-colors hover:text-foreground"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Discord
-          </a>
-          <Link
-            to="/auth"
+            href="/login"
             className="text-xs font-bold transition-colors hover:text-foreground"
             style={{ color: "var(--muted-foreground)" }}
           >
             Sign in
-          </Link>
-          <Link to="/auth" className="btn-primary py-1.5 px-3.5 text-xs font-extrabold">
-            Start hosting
+          </a>
+          <Link to="/register" className="btn-primary py-1.5 px-3.5 text-xs font-extrabold">
+            Get started
           </Link>
         </div>
 
@@ -97,14 +89,6 @@ export function SiteNav() {
                 {l.label}
               </Link>
             ))}
-            <a
-              href={DISCORD_INVITE}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)] font-bold"
-            >
-              Discord
-            </a>
           </nav>
           <div className="mt-4 flex flex-col gap-2">
             <Link to="/login" className="btn-outline">

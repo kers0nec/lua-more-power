@@ -28,7 +28,7 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
-    version: "v13.0.0",
+    version: "v1.0.0",
     date: "August 2026",
     badge: "Latest Release",
     highlights: [
@@ -165,12 +165,12 @@ function ChangelogPage() {
                 {rel.changes.map((c, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
                     {c.type === "security" && (
-                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-blue-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-blue-400 border border-blue-800/40">
+                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-lime-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-lime-400 border border-lime-800/40">
                         <Lock size={10} /> Security
                       </span>
                     )}
                     {c.type === "feature" && (
-                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-400 border border-emerald-800/40">
+                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-lime-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-lime-400 border border-lime-800/40">
                         <Zap size={10} /> New
                       </span>
                     )}

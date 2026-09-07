@@ -27,8 +27,8 @@ interface FaqItem {
 const FAQS: FaqItem[] = [
   {
     category: "obfuscator",
-    q: "How does the LuaMore v13 Obfuscation & Anti-Hook Engine work?",
-    a: "LuaMore v13 utilizes a quad-layer encryption pipeline consisting of RLE bytecode compression, 4-round dynamic rotating XOR ciphers, RC4 stream encryption, and keyed PRNG permutations. The runtime includes a virtualized state-machine dispatcher with randomized opcodes, FNV-1a & djb2 dual integrity verification, and our signature Silent Entropy Poisoning anti-hook protection that stealthily corrupts decryption keys whenever debug hooks or C-closure interceptions are detected.",
+    q: "How does the LuaMore Obfuscation & Anti-Hook Engine work?",
+    a: "LuaMore utilizes a quad-layer encryption pipeline consisting of RLE bytecode compression, 4-round dynamic rotating XOR ciphers, RC4 stream encryption, and keyed PRNG permutations. The runtime includes a virtualized state-machine dispatcher with randomized opcodes, FNV-1a & djb2 dual integrity verification, and our signature Silent Entropy Poisoning anti-hook protection that stealthily corrupts decryption keys whenever debug hooks or C-closure interceptions are detected.",
   },
   {
     category: "obfuscator",
@@ -121,7 +121,7 @@ function FaqPage() {
                 onClick={() => setSelectedCat(cat.id)}
                 className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-medium transition-all ${
                   active
-                    ? "bg-[color:var(--primary)] text-white shadow-md shadow-blue-500/20"
+                    ? "bg-[color:var(--primary)] text-white shadow-md shadow-lime-500/20"
                     : "bg-[color:var(--card)] text-[color:var(--muted-foreground)] border border-[color:var(--border)] hover:border-[color:var(--primary)] hover:text-white"
                 }`}
               >

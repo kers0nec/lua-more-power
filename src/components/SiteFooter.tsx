@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
-import { DISCORD_INVITE } from "@/lib/site";
 
 export function SiteFooter() {
   return (
@@ -9,21 +8,12 @@ export function SiteFooter() {
         <div className="flex items-center gap-4">
           <Logo size={24} />
           <span className="hidden sm:inline text-muted-foreground/60">|</span>
-          <span className="hidden sm:inline">LuaMore — protected Luau delivery & obfuscation.</span>
+          <span className="hidden sm:inline">LuaMore — Protect lua scripts</span>
         </div>
 
         <nav className="flex items-center gap-4">
-          <Link to="/vault" className="hover:text-primary transition-colors font-bold">
-            Vault
-          </Link>
-          <Link to="/obfuscators" className="hover:text-primary transition-colors font-bold">
-            Obfuscator
-          </Link>
-          <Link to="/dashboard" className="hover:text-primary transition-colors font-bold">
-            Dashboard
-          </Link>
           <a
-            href={DISCORD_INVITE}
+            href="https://discord.gg/F2uYN9gWCk"
             target="_blank"
             rel="noreferrer"
             className="hover:text-primary transition-colors font-bold"
@@ -32,6 +22,9 @@ export function SiteFooter() {
           </a>
           <Link to="/tos" className="hover:text-primary transition-colors font-bold">
             Terms
+          </Link>
+          <Link to="/privacy" className="hover:text-primary transition-colors font-bold">
+            Privacy
           </Link>
         </nav>
       </div>

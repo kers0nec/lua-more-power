@@ -10,9 +10,9 @@ export function Logo({
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
       <img
-        src="/brand/logo.png"
+        src="/luamore-logo.webp"
         alt="LuaMore"
-        className="shrink-0 rounded-md shadow-sm transition-transform hover:scale-105"
+        className="shrink-0 rounded-lg shadow-sm transition-transform hover:scale-105"
         style={{
           width: size,
           height: size,

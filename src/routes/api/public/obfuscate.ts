@@ -122,7 +122,7 @@ export const Route = createFileRoute("/api/public/obfuscate")({
             obfuscated: out,
             bytes_in: source.length,
             bytes_out: out.length,
-            engine: "LuaMore VM v13",
+            engine: "LuaMore VM",
             settings: {
               encryptStrings: b("encryptStrings") ?? true,
               proxifyLocals: b("proxifyLocals") ?? true,

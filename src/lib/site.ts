@@ -1,5 +1,5 @@
-export const DISCORD_INVITE = "https://discord.gg/YECBsBfJy5";
-export const DISCORD_SUPPORT = "https://discord.gg/yupFgUkFfr";
+export const DISCORD_INVITE = "https://discord.gg/F2uYN9gWCk";
+export const DISCORD_SUPPORT = "https://discord.gg/F2uYN9gWCk";
 export const SITE_NAME = "LuaMore";
 export const SITE_TAGLINE = "More Power, More Security, More Lua.";
 export const USERNAME_RE = /^[A-Za-z0-9]{3,24}$/;
