@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { ENGINE_NAME } from "@/lib/obfuscator.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   getAllScripts,
@@ -204,7 +205,7 @@ export const updateScript = createServerFn({ method: "POST" })
     if (shouldObfuscate && rest.code) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       patch.obfuscated_code = obfuscateLua(rest.code);
-      patch.obfuscator = "luamore-v13";
+      patch.obfuscator = ENGINE_NAME;
       patch.is_protected = true;
     }
 
@@ -270,7 +271,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
         .update({
           ...(data.code ? { code: data.code } : {}),
           obfuscated_code,
-          obfuscator: "luamore-v13",
+          obfuscator: ENGINE_NAME,
           is_protected: true,
         })
         .eq("id", data.id)
@@ -285,7 +286,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
       name: "Obfuscated Script",
       ...(data.code ? { code: data.code } : {}),
       obfuscated_code,
-      obfuscator: "luamore-v13",
+      obfuscator: ENGINE_NAME,
       is_protected: true,
     });
 

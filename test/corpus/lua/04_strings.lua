@@ -1,0 +1,25 @@
+print("tab\there")
+print("quote\"inside")
+print('single\'quote')
+print("esc\\back")
+print("nul[\0]end")
+print("\65\66\67")
+print("\x41\x42")
+print("multi\nline")
+print([[long
+string]])
+print([==[brackets ]] inside]==])
+print("utf8: héllo wörld ✓")
+local s = "The quick brown fox"
+print(s:upper(), s:lower())
+print(s:sub(5, 9), s:find("brown"), s:gsub("o", "0"))
+print(("a,b,c"):gsub(",", "|"))
+print(string.format("%d %.2f %s %q", 42, 3.14159, "x", 'q"q'))
+print(string.rep("ab", 3))
+print(table.concat({1, 2, 3}, "-"))
+print(string.byte("A"), string.char(65, 66))
+print(#"", #"", ("x"):rep(0) == "")
+local t = {}
+for w in s:gmatch("%a+") do t[#t + 1] = w end
+print(#t, t[1], t[#t])
+print(("abc"):match("^(.)"), ("abc"):match("(.*)$"))

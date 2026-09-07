@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { ENGINE_NAME } from "@/lib/lua/version.ts";
 
 export interface StoredScript {
   id: string;
@@ -166,7 +167,7 @@ export function saveScript(
         ? payload.obfuscated_code
         : existing?.obfuscated_code || null,
     obfuscator:
-      payload.obfuscator !== undefined ? payload.obfuscator : existing?.obfuscator || "luamore-v13",
+      payload.obfuscator !== undefined ? payload.obfuscator : existing?.obfuscator || ENGINE_NAME,
     ffa: payload.ffa !== undefined ? Boolean(payload.ffa) : (existing?.ffa ?? false),
     description:
       payload.description !== undefined ? payload.description : existing?.description || null,

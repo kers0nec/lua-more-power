@@ -552,7 +552,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                 <div className="flex items-center justify-between font-semibold">
                   <span>✓ Bytecode VM Active</span>
                   <span className="font-mono">
-                    {(script.obfuscator as string) || "luamore-v13"}
+                    {(script.obfuscator as string) || "LuaMore VM v7"}
                   </span>
                 </div>
                 <div className="text-[11px] text-lime-200/80 font-mono">

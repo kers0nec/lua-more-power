@@ -1,21 +1,34 @@
-// LuaMore obfuscation regression tests.
-// For each option combo: obfuscate, execute in `lua` (5.1), assert the payload's
-// sentinel print reaches stdout, and report bytes + Shannon entropy.
-//
-// Usage: node scripts/obfuscation-regression.mjs
-// Requires: a working `lua` (5.1) on PATH.
+/**
+ * LuaMore obfuscation regression suite.
+ *
+ * For every option combination: obfuscate a real program, execute both the
+ * original and the build in the same Lua 5.3 VM (fengari), and require the
+ * observable behaviour to be *identical* — same stdout, same error, same
+ * success. A sentinel check alone would pass on a build that prints the marker
+ * and then dies, which is exactly the failure mode this suite exists to catch.
+ *
+ * Usage: npm run test:regression
+ * Requires: `npm install` (fengari is a devDependency). No `lua` binary needed.
+ */
 
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { obfuscateLuaWithOptions } from "../src/lib/obfuscator.server.ts";
+import { runLua, signature } from "../test/luarun.mjs";
 
-const SENTINEL = "LUAMORE_TEST_PASS_" + Math.random().toString(36).slice(2, 10);
 const SOURCE = `
-local function fib(n) if n<2 then return n end return fib(n-1)+fib(n-2) end
-if fib(10) ~= 55 then error("fib failed") end
-print("${SENTINEL}")
+local function fib(n) if n < 2 then return n end return fib(n - 1) + fib(n - 2) end
+local function build(limit)
+  local t = {}
+  for i = 1, limit do t[i] = fib(i) end
+  return t
+end
+local values = build(12)
+print(table.concat(values, ","))
+local config = { name = "LuaMore", retries = 3, enabled = true, tags = { "a", "b" } }
+for _, tag in ipairs(config.tags) do print(config.name .. ":" .. tag) end
+local ok, err = pcall(function() return error("deliberate", 0) end)
+print(ok, err)
+print(string.format("%d/%.2f/%s", #values, 7 / 2, tostring(2 ^ 10)))
+print("LUAMORE_REGRESSION_SENTINEL")
 `;
 
 function entropy(str) {
@@ -30,66 +43,117 @@ function entropy(str) {
   return h;
 }
 
-function runLua(code) {
-  const dir = mkdtempSync(join(tmpdir(), "lm-regression-"));
-  const file = join(dir, "case.lua");
-  writeFileSync(file, code);
-  const r = spawnSync("lua", [file], { encoding: "utf8", timeout: 60_000 });
-  rmSync(dir, { recursive: true, force: true });
-  return r;
-}
-
 const CASES = [
+  { name: "fast preset", opts: { preset: "fast" } },
+  { name: "standard preset", opts: { preset: "standard" } },
+  { name: "strong preset", opts: { preset: "strong" } },
+  { name: "paranoid preset", opts: { preset: "paranoid" } },
   {
-    name: "baseline (single VM)",
-    opts: { dualVm: false, antiTamper: false, polymorphicVM: false },
-  },
-  { name: "antiTamper", opts: { dualVm: false, antiTamper: true, polymorphicVM: false } },
-  { name: "dualVm", opts: { dualVm: true, antiTamper: true, polymorphicVM: false } },
-  { name: "depth 3", opts: { loaderVMDepth: 3, antiTamper: true, polymorphicVM: false } },
-  { name: "polymorphicVM only", opts: { dualVm: false, antiTamper: false, polymorphicVM: true } },
-  { name: "dualVm + polymorphicVM", opts: { dualVm: true, antiTamper: true, polymorphicVM: true } },
-  {
-    name: "polymorphicVM + context",
+    name: "rename only",
     opts: {
-      dualVm: false,
-      antiTamper: false,
-      polymorphicVM: true,
-      context: { publicId: "LM-ABCD-EFGH-1234", mode: "advanced" },
+      preset: "fast",
+      pack: false,
+      encryptStrings: false,
+      obfuscateNumbers: false,
+      injectJunk: false,
+      controlFlowFlattening: false,
     },
   },
+  {
+    name: "string encryption",
+    opts: {
+      preset: "strong",
+      pack: false,
+      renameLocals: false,
+      obfuscateNumbers: false,
+      injectJunk: false,
+      controlFlowFlattening: false,
+    },
+  },
+  {
+    name: "control-flow flattening",
+    opts: {
+      preset: "strong",
+      pack: false,
+      renameLocals: false,
+      encryptStrings: false,
+      obfuscateNumbers: false,
+      injectJunk: false,
+    },
+  },
+  {
+    name: "opaque predicates",
+    opts: {
+      preset: "strong",
+      pack: false,
+      renameLocals: false,
+      encryptStrings: false,
+      obfuscateNumbers: false,
+      controlFlowFlattening: false,
+    },
+  },
+  { name: "integrity check", opts: { preset: "strong", integrityCheck: true } },
+  { name: "3 packing layers", opts: { preset: "strong", packLayers: 3, integrityCheck: true } },
+  { name: "legacy: dualVm + antiTamper", opts: { dualVm: true, antiTamper: true } },
+  {
+    name: "legacy: loaderVMDepth 5",
+    opts: { loaderVMDepth: 5, oeldAntiTamper: true, chunkedLoader: true },
+  },
+  {
+    name: "legacy: proxifyLocals/Functions",
+    opts: { proxifyLocals: true, proxifyFunctions: true, controlFlowFlattening: true },
+  },
+  { name: "legacy: polymorphicVM", opts: { polymorphicVM: true, dualVm: true } },
+  { name: "Luau target", opts: { preset: "strong", target: "luau" } },
+  { name: "Lua 5.1 target", opts: { preset: "strong", target: "lua51" } },
 ];
 
+const baseline = runLua(SOURCE);
+const baseSig = signature(baseline);
+if (!baseline.stdout.includes("LUAMORE_REGRESSION_SENTINEL")) {
+  console.log("FATAL  the test program itself does not run — fix the harness first");
+  console.log(baseline.errorText);
+  process.exit(1);
+}
+
 let failed = 0;
-console.log("LuaMore obfuscation regression\n" + "=".repeat(60));
+console.log("LuaMore obfuscation regression");
+console.log(
+  `source ${SOURCE.length} bytes · reference output ${JSON.stringify(baseline.stdout.slice(0, 60))}…`,
+);
+console.log("=".repeat(96));
 for (const c of CASES) {
   const t0 = Date.now();
   let out;
   try {
     out = obfuscateLuaWithOptions(SOURCE, c.opts);
   } catch (e) {
-    console.log(`FAIL  ${c.name} — obfuscation threw: ${e.message}`);
+    console.log(`FAIL  ${c.name.padEnd(30)} obfuscation threw: ${e.message}`);
     failed++;
     continue;
   }
   const buildMs = Date.now() - t0;
-  const r = runLua(out);
-  const ok = r.status === 0 && (r.stdout ?? "").includes(SENTINEL);
-  const bytes = out.length;
-  const H = entropy(out).toFixed(3);
-  const status = ok ? "PASS" : "FAIL";
+  const run = runLua(out);
+  const sig = signature(run);
+  const identical = sig === baseSig;
+  const sentinel = run.stdout.includes("LUAMORE_REGRESSION_SENTINEL");
+  const ok = identical && sentinel;
   console.log(
-    `${status}  ${c.name.padEnd(30)}  bytes=${String(bytes).padStart(8)}  H=${H}  build=${buildMs}ms`,
+    `${ok ? "PASS" : "FAIL"}  ${c.name.padEnd(30)} bytes=${String(out.length).padStart(7)} ` +
+      `x${(out.length / SOURCE.length).toFixed(1).padStart(5)}  H=${entropy(out).toFixed(3)}  build=${buildMs}ms`,
   );
   if (!ok) {
     failed++;
-    console.log("  stdout:", (r.stdout ?? "").trim().slice(0, 200));
-    console.log("  stderr:", (r.stderr ?? "").trim().slice(0, 400));
+    if (!identical) {
+      console.log(`        expected ${baseSig.slice(0, 180)}`);
+      console.log(`        actual   ${sig.slice(0, 180)}`);
+    }
+    if (!sentinel) console.log("        sentinel missing from stdout");
   }
 }
-console.log("=".repeat(60));
+console.log("=".repeat(96));
 if (failed) {
   console.log(`${failed} case(s) failed`);
   process.exit(1);
 }
-console.log("all cases passed");
+console.log(`all ${CASES.length} cases passed`);
