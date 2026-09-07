@@ -4,25 +4,7 @@ import { useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
 import { obfuscatePublicCode } from "@/lib/scripts.functions";
-
-type LocalObfuscator = {
-  obfuscateLua: (source: string) => string;
-  obfuscateLuaWithOptions: (
-    source: string,
-    options?: {
-      vmDepth?: number;
-      antiTamper?: boolean;
-      antiHook?: boolean;
-      dualVm?: boolean;
-    },
-  ) => string;
-};
-
-declare global {
-  interface Window {
-    LMObfuscator?: LocalObfuscator;
-  }
-}
+import type { ObfuscationOptions } from "@/lib/lua/obfuscate.ts";
 
 export const Route = createFileRoute("/obfuscators")({
   head: () => ({
@@ -42,32 +24,34 @@ const SAMPLE = `local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 print("LuaMore protected script for " .. player.Name)`;
 
-function loadLocalEngine(): Promise<LocalObfuscator> {
-  if (typeof window === "undefined") return Promise.reject(new Error("Browser engine unavailable"));
-  if (window.LMObfuscator) return Promise.resolve(window.LMObfuscator);
+/**
+ * The browser engine *is* the server engine: `src/lib/lua` is pure TypeScript
+ * with no Node builtins, so the page imports it as its own chunk instead of
+ * loading a second, hand-maintained copy from `/lua-more/assets`. One engine,
+ * one set of tests, no drift.
+ */
+type LocalObfuscator = {
+  obfuscateLua: (source: string) => string;
+  obfuscateLuaWithOptions: (source: string, options?: ObfuscationOptions) => string;
+};
 
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-luamore-obfuscator]");
-    if (existing) {
-      existing.addEventListener("load", () =>
-        window.LMObfuscator
-          ? resolve(window.LMObfuscator)
-          : reject(new Error("Engine failed to load")),
-      );
-      existing.addEventListener("error", () => reject(new Error("Engine failed to load")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "/lua-more/assets/luamore-obfuscator.js";
-    script.async = true;
-    script.dataset.luamoreObfuscator = "true";
-    script.onload = () =>
-      window.LMObfuscator
-        ? resolve(window.LMObfuscator)
-        : reject(new Error("Engine failed to load"));
-    script.onerror = () => reject(new Error("Could not load the local LuaMore VM"));
-    document.head.appendChild(script);
-  });
+let enginePromise: Promise<LocalObfuscator> | null = null;
+
+function loadLocalEngine(): Promise<LocalObfuscator> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Browser engine unavailable"));
+  }
+  enginePromise ??= import("@/lib/lua/obfuscate.ts")
+    .then((mod) => ({
+      obfuscateLua: (source: string) => mod.obfuscateLuaWithOptions(source, { preset: "strong" }),
+      obfuscateLuaWithOptions: (source: string, options?: ObfuscationOptions) =>
+        mod.obfuscateLuaWithOptions(source, options ?? { preset: "strong" }),
+    }))
+    .catch((error) => {
+      enginePromise = null;
+      throw error instanceof Error ? error : new Error("Could not load the local LuaMore engine");
+    });
+  return enginePromise;
 }
 
 function ObfuscatorsPage() {
@@ -76,9 +60,8 @@ function ObfuscatorsPage() {
   const [output, setOutput] = useState("");
   const [apiOutput, setApiOutput] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const [depth, setDepth] = useState("0");
   const [antiTamper, setAntiTamper] = useState(true);
-  const [antiHook, setAntiHook] = useState(true);
+  const [opaquePredicates, setOpaquePredicates] = useState(true);
   const [dualVm, setDualVm] = useState(true);
   const [status, setStatus] = useState("");
   const [apiStatus, setApiStatus] = useState("");
@@ -123,10 +106,13 @@ function ObfuscatorsPage() {
       try {
         const engine = await loadLocalEngine();
         result = engine.obfuscateLuaWithOptions(source, {
-          vmDepth: Number(depth),
-          antiTamper,
-          antiHook,
-          dualVm,
+          preset: "strong",
+          // "dual VM" always meant "wrap the payload twice"; that is exactly
+          // what packLayers: 2 does now
+          packLayers: dualVm ? 2 : 1,
+          integrityCheck: antiTamper,
+          injectJunk: opaquePredicates,
+          target: "luau",
         });
       } catch {
         // Fallback to high-speed server VM
@@ -141,7 +127,7 @@ function ObfuscatorsPage() {
         result = res.obfuscated;
       }
       setOutput(result);
-      setStatus(`Done · ${result.length.toLocaleString()} output characters (Anti-Hook active)`);
+      setStatus(`Done · ${result.length.toLocaleString()} output characters`);
     } catch (error) {
       setOutput("");
       setStatus(error instanceof Error ? error.message : "Obfuscation failed");
@@ -230,22 +216,22 @@ function ObfuscatorsPage() {
               <div className="eyebrow">In-browser</div>
               <h2 className="mt-2 font-display text-2xl">LuaMore Obfuscator</h2>
             </div>
-            <span className="badge-blue">Anti-Hook Shield</span>
+            <span className="badge-blue">{engineReady ? "Engine ready" : "Loading engine"}</span>
           </div>
           <p className="mt-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            Layered virtual machine with Silent Entropy Poisoning anti-hook shield, rotating 4-key
-            XOR, RC4 stream cipher, and dual FNV-1a/djb2 integrity verification. Source stays 100%
-            inside your browser.
+            A real Lua parser, not a regex pass: lexical renaming, encrypted string pools, split
+            numeric constants, opaque predicates, control-flow flattening and multi-layer LZSS
+            packing with a per-build base-85 alphabet. Source stays 100% inside your browser.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="space-y-3 pt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={antiHook}
-                  onChange={(event) => setAntiHook(event.target.checked)}
+                  checked={opaquePredicates}
+                  onChange={(event) => setOpaquePredicates(event.target.checked)}
                 />{" "}
-                Anti-Hook Shield (Silent Poison)
+                Opaque predicates &amp; junk blocks
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -253,7 +239,7 @@ function ObfuscatorsPage() {
                   checked={antiTamper}
                   onChange={(event) => setAntiTamper(event.target.checked)}
                 />{" "}
-                Anti-Tamper Primitives
+                Payload integrity check (djb2)
               </label>
             </div>
             <div className="space-y-3 pt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
@@ -263,7 +249,7 @@ function ObfuscatorsPage() {
                   checked={dualVm}
                   onChange={(event) => setDualVm(event.target.checked)}
                 />{" "}
-                Dual-VM Multi-Layer Wrapping
+                Multi-layer packing
               </label>
             </div>
           </div>
@@ -273,11 +259,7 @@ function ObfuscatorsPage() {
             disabled={!source.trim() || running || !engineReady}
             onClick={runLocal}
           >
-            {running
-              ? "Obfuscating with Anti-Hook…"
-              : engineReady
-                ? "Obfuscate with LuaMore"
-                : "Loading local VM…"}
+            {running ? "Obfuscating…" : engineReady ? "Obfuscate with LuaMore" : "Loading engine…"}
           </button>
           {status ? (
             <p

@@ -1,0 +1,16 @@
+print(math.floor(3.7), math.ceil(3.2), math.abs(-5), math.max(1, 9, 3), math.min(1, 9, 3))
+print(math.sqrt(16), math.huge > 1e308, math.pi > 3)
+print(tostring(math.fmod(7, 3)))
+print(math.type(1), math.type(1.0))
+print(2 ^ 3 == 8.0, math.tointeger(4.0), math.tointeger(4.5))
+print(10 & 6, 10 | 6, 10 ~ 6, ~0, 1 << 4, 16 >> 2)
+print(0xFF & 0x0F)
+print(-2 ^ 2, 2 ^ -1)
+print(#"abc", #{1, 2, 3})
+local r = math.random(1, 6)
+print(r >= 1 and r <= 6)
+print(math.random() >= 0)
+local sum = 0
+for i = 1, 100 do sum = sum + i end
+print(sum)
+print(huge == nil, (function() local huge = 1 return huge end)())

@@ -1,14 +1,18 @@
 # LuaMore — Luau Script Obfuscation & Security Platform
 
-**LuaMore** is a complete, production-grade Luau / Roblox script security, hosting, and licensing suite. Built with high-performance polymorphic bytecode virtualization, dynamic license authentication, hardware fingerprinting (HWID locks), and live Discord slash command integrations.
+**LuaMore** is a complete, production-grade Luau / Roblox script security, hosting, and licensing suite. Built around a real Lua/Luau compiler front end (lexer → parser → AST → scope resolution → transforms → emitter), plus dynamic license authentication, hardware fingerprinting (HWID locks), and live Discord slash command integrations.
 
 ---
 
 ## 🚀 Key Features
 
-- **LuaMore VM v6 Virtualization Engine**:
-  - Multilayer AST transforms, opcode virtualization, control flow flattening, and anti-tamper runtime checks.
-  - Variable name mangling, string dynamic XOR decryptors, and number mutation.
+- **LuaMore VM v7 obfuscation engine** (`src/lib/lua/`):
+  - **Correctness first.** Every transform is guarded by a differential test suite: the original and the build are both executed in a Lua 5.3 VM over a 16-program corpus × 13 option combinations, and any difference in observable behaviour fails the run (`npm run test:engine`).
+  - Lexical identifier renaming resolved through a real scope graph, so shadowed and same-named locals in different functions never collide.
+  - Encrypted string pools with a shuffled physical slot order, split numeric constants that preserve the integer/float class, opaque predicates and junk blocks.
+  - Control-flow flattening into a shuffled state machine with unreachable states; loop `break`/`continue` are re-issued outside the dispatcher so they still bind to the real loop.
+  - Multi-layer transport: LZSS → stream cipher → base-85 with a per-build shuffled alphabet, optional djb2 payload integrity check. Pure TypeScript — no `zlib`, no Node builtins — so the same module runs on the server *and* in the browser.
+  - Emits Lua 5.1–5.4 and Luau; anything it cannot prove safe is left untouched rather than broken.
 - **License Key & Whitelist Management**:
   - Key creation with custom expiration, batch generation, activations counter, and automated whitelisting.
 - **Hardware ID (HWID) Device Fingerprinting**:
@@ -44,8 +48,11 @@ cd luamore
 ### 2. Install dependencies
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
+
+(`--legacy-peer-deps` is required: `@lovable.dev/vite-tanstack-config` declares a peer range that
+conflicts with the installed React 19 / Vite versions.)
 
 ### 3. Environment Variables Setup
 
@@ -78,7 +85,11 @@ Open `http://localhost:3000` in your browser.
 - `npm run preview` — Preview production build locally
 - `npm run lint` — Run ESLint code checks
 - `npm run format` — Format codebase with Prettier
-- `npm run test:obfuscator` — Run self-test on the LuaMore VM v6 obfuscation pipeline
+- `npm run test:engine` — Full obfuscator suite (round-trip + transport + differential)
+  - `npm run test:roundtrip` — 19 parse → emit → reparse checks: the emitter must reproduce every corpus program, including Luau type syntax
+  - `npm run test:pack` — transport property test: the emitted Lua loader must decode every payload back byte-for-byte
+  - `npm run test:obfuscator` — the differential gate: original vs obfuscated, executed in fengari (Lua 5.3), must behave identically. Set `LUAMORE_TEST_SEED=<n>` to pin and replay one random build shape.
+- `npm run test:regression` — 16 option combinations (including the legacy option names) obfuscated, executed and compared against the reference output
 
 ---
 
