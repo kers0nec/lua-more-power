@@ -7,6 +7,7 @@ export const USERNAME_HINT =
   "Use 3–24 letters or numbers only — no spaces, underscores, or symbols.";
 
 export const OWNER_EMAILS = ["kers0nedontrunit@outlook.com", "brittainjaden347@gmail.com"];
+export const OWNER_DISCORD_IDS = ["1207803375807373415"];
 
 export function isOwnerAccount(emailOrUsername?: string | null): boolean {
   if (!emailOrUsername) return false;
@@ -14,6 +15,7 @@ export function isOwnerAccount(emailOrUsername?: string | null): boolean {
   return (
     OWNER_EMAILS.some((e) => e.toLowerCase() === lower) ||
     lower === "kers0ne" ||
-    lower === "kers0nedontrunit"
+    lower === "kers0nedontrunit" ||
+    OWNER_DISCORD_IDS.includes(emailOrUsername.trim())
   );
 }

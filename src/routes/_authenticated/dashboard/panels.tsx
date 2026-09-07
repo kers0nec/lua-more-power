@@ -289,9 +289,7 @@ function Page() {
             <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
               {/* Bot author row */}
               <div className="flex items-center gap-2.5 mb-2.5">
-                <div className="h-8 w-8 rounded-full bg-black flex items-center justify-center text-[#84cc16] text-xs font-mono font-bold shrink-0 border border-[#84cc16]/40">
-                  &#123;&#125;
-                </div>
+                <img src="/brand/logo.png" alt="LuaMore" className="h-8 w-8 rounded-full shrink-0 border border-[#84cc16]/40" />
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className="font-semibold text-white hover:underline cursor-pointer">
                     LuaMore
@@ -304,15 +302,18 @@ function Page() {
               </div>
 
               {/* Embed body matching IMG_7322 */}
-              <div className="ml-10 rounded bg-[#1e1f22] border-l-4 border-[#84cc16] p-3 text-xs space-y-2">
-                <h4 className="text-sm font-bold text-white">
-                  LuaMore —{" "}
-                  {(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || p.name}
-                </h4>
-                <p className="text-[#dbdee1] leading-relaxed whitespace-pre-line text-xs">
-                  {p.description ||
-                    "Whitelist panel. Use the buttons below to get a key, view the loader, check your stats, or reset your device lock.\n\nFree key: disabled"}
-                </p>
+              <div className="ml-10 rounded bg-[#1e1f22] border-l-4 border-[#84cc16] overflow-hidden">
+                <img src="/brand/panel-banner.png" alt="Panel banner" className="w-full h-32 object-cover opacity-90" />
+                <div className="p-3 text-xs space-y-2">
+                  <h4 className="text-sm font-bold text-white">
+                    LuaMore —{" "}
+                    {(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || p.name}
+                  </h4>
+                  <p className="text-[#dbdee1] leading-relaxed whitespace-pre-line text-xs">
+                    {p.description ||
+                      "Whitelist panel. Use the buttons below to get a key, view the loader, check your stats, or reset your device lock.\n\nFree key: disabled"}
+                  </p>
+                </div>
               </div>
 
               {/* Action Rows / Buttons exactly matching IMG_7322 */}
