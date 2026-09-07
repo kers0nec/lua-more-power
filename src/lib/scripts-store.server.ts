@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { ENGINE_NAME } from "@/lib/lua/version.ts";
+import { ENGINE_NAME } from "@/lib/obfuscator.server";
 
 export interface StoredScript {
   id: string;
