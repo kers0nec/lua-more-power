@@ -2016,7 +2016,7 @@ do
       local byte = decoded[i]
       local key_byte = state % 256
       local result = xor(byte, key_byte) % 256
-      sbox[i] = (result == 0 and "\000" or string.format("%c", result))
+      sbox[i] = (result == 0 and "\x00" or string.format("%c", result))
       state = hash_mix(to_u32((state + result) + i * 2654435769))
     end
 
