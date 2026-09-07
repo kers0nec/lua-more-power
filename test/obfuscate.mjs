@@ -65,6 +65,23 @@ const CASES = [
   { name: "strong-lua51", opts: { preset: "strong", target: "lua51" } },
   { name: "strong-luau", opts: { preset: "strong", target: "luau" } },
   { name: "strong-seeded", opts: { preset: "strong", seed: 12345 } },
+  {
+    name: "shields-lua51",
+    opts: {
+      preset: "strong",
+      target: "lua51",
+      antiTamper: true,
+      antiHook: true,
+      antiLogger: true,
+      seed: 9876,
+    },
+  },
+  { name: "antiTamper-only", opts: { pack: false, antiTamper: true, seed: 11 } },
+  { name: "antiHook-only", opts: { pack: false, antiTamper: false, antiHook: true, seed: 22 } },
+  { name: "depth2", opts: { loaderVMDepth: 2, seed: 33 } },
+  { name: "depth5", opts: { preset: "paranoid", loaderVMDepth: 5, seed: 44 } },
+  { name: "poly-depth3", opts: { polymorphicVM: true, loaderVMDepth: 3, seed: 55 } },
+  { name: "all-off", opts: { preset: "fast", antiTamper: false, antiHook: false, seed: 66 } },
 ];
 
 const only = process.argv[2];

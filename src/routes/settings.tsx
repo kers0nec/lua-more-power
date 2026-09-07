@@ -75,9 +75,9 @@ function SettingsPage() {
         data: { display_name: displayName.trim(), discord_id: discordId.trim() || undefined },
       });
       if (error) throw error;
-      setStatus("✓ Profile saved successfully.");
+      setStatus("OK Profile saved successfully.");
     } catch (e) {
-      setStatus(`✗ ${e instanceof Error ? e.message : "Failed to save profile"}`);
+      setStatus(`ERR ${e instanceof Error ? e.message : "Failed to save profile"}`);
     }
   }
 
@@ -85,17 +85,17 @@ function SettingsPage() {
     e.preventDefault();
     setStatus("");
     if (newPassword.length < 6) {
-      setStatus("✗ Password must be at least 6 characters.");
+      setStatus("ERR Password must be at least 6 characters.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setStatus("✗ Passwords do not match.");
+      setStatus("ERR Passwords do not match.");
       return;
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) setStatus(`✗ ${error.message}`);
+    if (error) setStatus(`ERR ${error.message}`);
     else {
-      setStatus("✓ Password updated securely.");
+      setStatus("OK Password updated securely.");
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -186,9 +186,9 @@ function SettingsPage() {
         <div
           className="mt-5 rounded-lg border p-4 text-sm font-medium"
           style={{
-            borderColor: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
-            color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
-            background: status.startsWith("✓")
+            borderColor: status.startsWith("OK ") ? "var(--success)" : "var(--destructive)",
+            color: status.startsWith("OK ") ? "var(--success)" : "var(--destructive)",
+            background: status.startsWith("OK ")
               ? "rgba(52, 211, 153, 0.08)"
               : "rgba(244, 63, 94, 0.08)",
           }}
@@ -400,8 +400,8 @@ function SettingsPage() {
                 onClick={async () => {
                   setStatus("");
                   const { error } = await supabase.auth.signOut();
-                  if (error) setStatus(`✗ ${error.message}`);
-                  else setStatus("✓ All sessions signed out.");
+                  if (error) setStatus(`ERR ${error.message}`);
+                  else setStatus("OK All sessions signed out.");
                 }}
                 className="btn-outline flex items-center gap-2 text-red-400 border-red-800/40 hover:bg-red-950/20"
               >
@@ -645,7 +645,7 @@ function SettingsPage() {
                 a.download = `luamore-account-${Date.now()}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-                setStatus("✓ Account backup downloaded.");
+                setStatus("OK Account backup downloaded.");
               }}
               className="btn-primary flex items-center gap-2"
             >
@@ -677,8 +677,8 @@ function SettingsPage() {
                 onClick={async () => {
                   if (confirm("Are you sure? This will sign you out permanently.")) {
                     const { error } = await supabase.auth.signOut();
-                    if (error) setStatus(`✗ ${error.message}`);
-                    else setStatus("✓ Signed out.");
+                    if (error) setStatus(`ERR ${error.message}`);
+                    else setStatus("OK Signed out.");
                   }
                 }}
                 className="btn-outline text-sm text-red-400 border-red-800/40 hover:bg-red-950/20 flex items-center gap-2"

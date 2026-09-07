@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { obfuscateCode } from "@/lib/scripts.functions";
 import { Switch } from "@/components/ui/switch";
 import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
-import { Sparkles, Terminal } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
@@ -13,12 +12,12 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
       {
         name: "description",
         content:
-          "Protect Luau source with LuaMore Obfuscation's independent dual-VM integrity layers.",
+          "Protect Luau source with LuaMore's compiler pipeline, runtime shields and nested loader stages.",
       },
-      { property: "og:title", content: "LuaMore Obfuscation — Dual VM" },
+      { property: "og:title", content: "LuaMore Obfuscator" },
       {
         property: "og:description",
-        content: "Protect Luau source with independent dual-VM integrity layers.",
+        content: "Obfuscate Luau source with runtime integrity shields and layered loader transport.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,6 +25,73 @@ export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   }),
   component: ObfuscatePage,
 });
+
+type Preset = "fast" | "standard" | "strong" | "paranoid";
+
+interface ShieldToggles {
+  encryptStrings: boolean;
+  proxifyLocals: boolean;
+  controlFlowFlattening: boolean;
+  antiTamper: boolean;
+  antiHook: boolean;
+  antiLogger: boolean;
+  isLuauRuntime: boolean;
+}
+
+const PRESET_OPTIONS: Array<{ id: Preset; label: string }> = [
+  { id: "fast", label: "Fast Pass" },
+  { id: "standard", label: "Standard Pass" },
+  { id: "strong", label: "Hardened Pass" },
+  { id: "paranoid", label: "Paranoid Pass" },
+];
+
+const DEFAULT_TOGGLES: ShieldToggles = {
+  encryptStrings: true,
+  proxifyLocals: true,
+  controlFlowFlattening: true,
+  antiTamper: true,
+  antiHook: true,
+  antiLogger: false,
+  isLuauRuntime: true,
+};
+
+const TOGGLE_ROWS: Array<{ key: keyof ShieldToggles; title: string; hint: string }> = [
+  {
+    key: "encryptStrings",
+    title: "Encrypt strings",
+    hint: "Pull string constants into a shuffled, cipher-encoded pool with a runtime decoder.",
+  },
+  {
+    key: "proxifyLocals",
+    title: "Proxify locals (rename)",
+    hint: "Scope-aware renaming of locals and local functions through the resolved scope graph.",
+  },
+  {
+    key: "controlFlowFlattening",
+    title: "Control-flow flattening",
+    hint: "Rewrite structured blocks into a shuffled state machine with unreachable states.",
+  },
+  {
+    key: "antiTamper",
+    title: "Anti-tamper",
+    hint: "Arithmetic canaries, self-checksum prelude and loader payload integrity. Fail-closed on tamper.",
+  },
+  {
+    key: "antiHook",
+    title: "Anti-hook",
+    hint: "Pin the standard-library functions the payload depends on; fail closed if one was replaced.",
+  },
+  {
+    key: "antiLogger",
+    title: "Anti env-logger",
+    hint: "Guarded environment on legacy Lua 5.1 executors that blocks getfenv/loadstring traps.",
+  },
+  {
+    key: "isLuauRuntime",
+    title: "Luau runtime",
+    hint: "Target Luau (Roblox). Disable to target plain Lua 5.3 output.",
+  },
+];
 
 function prettyError(e: unknown) {
   const raw = e instanceof Error ? e.message : String(e ?? "Failed");
@@ -53,8 +119,9 @@ function ObfuscatePage() {
   const [status, setStatus] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
-  const [mode, setMode] = useState<"hybrid" | "chunked" | "standard">("hybrid");
-  const [oeldShield, setOeldShield] = useState(true);
+  const [preset, setPreset] = useState<Preset>("strong");
+  const [depth, setDepth] = useState(2);
+  const [toggles, setToggles] = useState<ShieldToggles>(DEFAULT_TOGGLES);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -66,33 +133,26 @@ function ObfuscatePage() {
     timersRef.current = [];
   };
 
+  const setToggle = (key: keyof ShieldToggles, value: boolean) =>
+    setToggles((prev) => ({ ...prev, [key]: value }));
+
   const startProgress = (bytes: number) => {
-    const stages =
-      mode === "chunked"
-        ? [
-            "analyzing Luau syntax tree",
-            "splitting into modular polynomial blocks",
-            "generating non-XOR dynamic encryption keys",
-            "injecting OELD 10-point Roblox integrity shield",
-            "mounting continuous Heartbeat security hooks",
-            "signing watermark signature",
-            "assembling chunked loader",
-            "minifying output",
-          ]
-        : [
-            "parsing source",
-            "compressing (LZ4 high-ratio block)",
-            "VM1: derived 4-key XOR + RC4 stream cipher",
-            ...(mode === "hybrid" ? ["VM2: polymorphic nested VM compilation"] : []),
-            "signing (FNV-1a 32-bit + djb2 32-bit)",
-            "injecting OELD Roblox runtime integrity shield",
-            "wrapping in Non-XOR Polynomial Chunked Loader",
-            "flattening dispatcher",
-            "minifying bootstrap",
-          ];
+    const d = Math.max(1, Math.min(5, depth));
+    const stages = [
+      "parsing source",
+      "renaming locals from the scope graph",
+      ...(toggles.encryptStrings ? ["encrypting string constants"] : []),
+      ...(toggles.controlFlowFlattening ? ["flattening control flow into a state machine"] : []),
+      ...(toggles.antiTamper || toggles.antiHook || toggles.antiLogger
+        ? ["injecting runtime integrity shield"]
+        : []),
+      "compressing and cipher-encoding payload",
+      ...(d > 1 ? [`wrapping loader in ${d} nested loader stages`] : ["assembling single-stage loader"]),
+      "minifying output",
+    ];
     pushLog(`input: ${bytes.toLocaleString()} bytes`);
     stages.forEach((s, i) => {
-      const t = setTimeout(() => pushLog(`… ${s}`), 180 + i * 280);
+      const t = setTimeout(() => pushLog(`... ${s}`), 140 + i * 200);
       timersRef.current.push(t);
     });
   };
@@ -110,30 +170,37 @@ function ObfuscatePage() {
       const r = await obf({
         data: {
           code,
-          mode,
-          dualVm: mode === "hybrid",
-          oeldAntiTamper: oeldShield,
-          chunkedLoader: oeldShield,
+          mode: preset,
+          encryptStrings: toggles.encryptStrings,
+          proxifyLocals: toggles.proxifyLocals,
+          controlFlowFlattening: toggles.controlFlowFlattening,
+          antiTamper: toggles.antiTamper,
+          antiHook: toggles.antiHook,
+          antiLogger: toggles.antiLogger,
+          isLuauRuntime: toggles.isLuauRuntime,
+          loaderVMDepth: depth,
         },
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;
       clearTimers();
-      pushLog(`✓ done — ${r.size.toLocaleString()} chars out · entropy ${r.entropy ?? "6.1"}`);
+      pushLog(
+        `done - ${r.size.toLocaleString()} chars out · entropy ${r.entropy ?? "6.1"} · ${r.layers} loader stage(s)`,
+      );
       setOut(r.obfuscated);
       setStatus(
-        `✓ Obfuscated — ${r.sourceSize.toLocaleString()} → ${r.size.toLocaleString()} chars · ${r.mode}`,
+        `OK - Obfuscated · ${r.sourceSize.toLocaleString()} -> ${r.size.toLocaleString()} chars · ${r.layers} loader stage(s) · ${preset}`,
       );
     } catch (e) {
       clearTimers();
       if (controller.signal.aborted) {
-        pushLog("✗ cancelled by user");
-        setStatus("✗ Cancelled");
+        pushLog("cancelled by user");
+        setStatus("ERR - Cancelled");
       } else {
         const msg = prettyError(e);
-        pushLog(`✗ ${msg}`);
+        pushLog(`error: ${msg}`);
         setOut("");
-        setStatus(`✗ ${msg}`);
+        setStatus(`ERR - ${msg}`);
       }
     } finally {
       setRunning(false);
@@ -151,9 +218,9 @@ function ObfuscatePage() {
     try {
       const text = await file.text();
       setCode(text);
-      setStatus(`✓ Loaded ${file.name} (${text.length.toLocaleString()} chars)`);
+      setStatus(`OK - Loaded ${file.name} (${text.length.toLocaleString()} chars)`);
     } catch {
-      setStatus("✗ Could not read that file");
+      setStatus("ERR - Could not read that file");
     }
   };
 
@@ -161,9 +228,9 @@ function ObfuscatePage() {
     if (!out) return;
     try {
       await navigator.clipboard.writeText(out);
-      setStatus("✓ Copied to clipboard");
+      setStatus("OK - Copied to clipboard");
     } catch {
-      setStatus("✗ Copy failed");
+      setStatus("ERR - Copy failed");
     }
   };
 
@@ -173,24 +240,30 @@ function ObfuscatePage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `luamore-vm-${Date.now()}.lua`;
+    a.download = `luamore-protected-${Date.now()}.lua`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   };
 
+  const statusColor = status.startsWith("ERR")
+    ? "var(--destructive)"
+    : status.startsWith("OK")
+      ? "var(--success)"
+      : "var(--muted-foreground)";
+
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div>
-         <div className="eyebrow">Protection Engine</div>
+        <div className="eyebrow">Protection Engine</div>
         <h1 className="mt-3 font-display text-5xl md:text-6xl">
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore Advanced Luau Obfuscator — Multi-layered VM, Anti-Tamper Shield
-          with runtime integrity checks, continuous Heartbeat security hooks, and Non-XOR
-          Polynomial Chunked Encoding.
+          LuaMore Advanced Luau Obfuscator: a real compiler pipeline (lexer, parser, scope
+          resolution, transforms) plus runtime anti-tamper, anti-hook and anti env-logger
+          shields, wrapped in 1-5 nested loader stages.
         </p>
       </div>
 
@@ -229,51 +302,76 @@ function ObfuscatePage() {
               onUpload(e.dataTransfer.files?.[0]);
             }}
             placeholder='print("hello luamore")'
-            className="input-blue font-mono text-sm h-[360px] resize-none"
+            className="input-blue font-mono text-sm h-[300px] resize-none"
           />
 
-          {/* Obfuscation Mode Selector */}
+          {/* Preset + loader depth */}
           <div className="mt-3 grid gap-2 border-y py-3" style={{ borderColor: "var(--border)" }}>
-            <div className="flex items-center justify-between gap-4">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="text-sm font-semibold">Protection Mode</label>
+                <label className="text-sm font-semibold">Protection preset</label>
                 <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  Select obfuscation architecture
+                  Base transform strength
                 </p>
+                <select
+                  value={preset}
+                  onChange={(e) => setPreset(e.target.value as Preset)}
+                  disabled={running}
+                  className="input-blue text-xs py-1.5 px-3 rounded"
+                >
+                  {PRESET_OPTIONS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value as "hybrid" | "chunked" | "standard")}
-                disabled={running}
-                className="input-blue text-xs py-1.5 px-3 rounded"
-              >
-                <option value="hybrid">Dual VM + Anti-Tamper Shield (Maximum)</option>
-                <option value="chunked">Non-XOR Chunked Loader (No VM Bytecode)</option>
-                <option value="standard">Single VM + Anti-Tamper Shield</option>
-              </select>
+              <div>
+                <label className="text-sm font-semibold">Loader VM depth</label>
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  1-5 nested loader stages (dual VM = 2+)
+                </p>
+                <select
+                  value={depth}
+                  onChange={(e) => setDepth(Number(e.target.value))}
+                  disabled={running}
+                  className="input-blue text-xs py-1.5 px-3 rounded"
+                >
+                  {[1, 2, 3, 4, 5].map((d) => (
+                    <option key={d} value={d}>
+                      {d} stage{d > 1 ? "s" : ""}
+                      {d === 2 ? " (dual VM)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 pt-2">
-              <div>
-                <label htmlFor="oeld-shield" className="text-sm font-semibold">
-                  OELD Anti-Tamper & Heartbeat Shield
-                </label>
-                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  10+ Roblox runtime integrity checks, silent anti-hook traps, and Heartbeat loop.
-                </p>
-              </div>
-              <Switch
-                id="oeld-shield"
-                checked={oeldShield}
-                onCheckedChange={setOeldShield}
-                disabled={running}
-              />
+            <div className="mt-2 space-y-3">
+              {TOGGLE_ROWS.map((row) => (
+                <div key={row.key} className="flex items-start justify-between gap-4">
+                  <div>
+                    <label htmlFor={`tog-${row.key}`} className="text-sm font-semibold">
+                      {row.title}
+                    </label>
+                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                      {row.hint}
+                    </p>
+                  </div>
+                  <Switch
+                    id={`tog-${row.key}`}
+                    checked={toggles[row.key]}
+                    onCheckedChange={(v) => setToggle(row.key, v)}
+                    disabled={running}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button onClick={runObf} disabled={running || !code.trim()} className="btn-primary">
-              {running ? "Obfuscating…" : "Obfuscate"}
+              {running ? "Obfuscating..." : "Obfuscate"}
             </button>
             {running && (
               <button onClick={cancelObf} className="btn-outline">
@@ -293,10 +391,7 @@ function ObfuscatePage() {
               Clear
             </button>
             {status && (
-              <span
-                className="text-sm"
-                style={{ color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)" }}
-              >
+              <span className="text-sm" style={{ color: statusColor }}>
                 {status}
               </span>
             )}
@@ -346,7 +441,7 @@ function ObfuscatePage() {
             readOnly
             spellCheck={false}
             placeholder="Obfuscated output appears here"
-            className="input-blue font-mono text-xs h-[440px] resize-none"
+            className="input-blue font-mono text-xs h-[400px] resize-none"
           />
         </div>
       </div>
@@ -354,11 +449,11 @@ function ObfuscatePage() {
       <div className="mt-6">
         <LuaTerminalSandbox
           code={out || code}
-          title="In-Browser Live Execution Sandbox"
+          title="In-Browser Execution Sandbox"
           subtitle={
             out
-              ? "Running obfuscated VM bytecode inside the in-browser Lua sandbox"
-              : "Paste or select a preset above, then run live to verify execution"
+              ? "Running the obfuscated build inside the in-browser Lua sandbox"
+              : "Paste or select source above, then run live to verify execution"
           }
         />
       </div>

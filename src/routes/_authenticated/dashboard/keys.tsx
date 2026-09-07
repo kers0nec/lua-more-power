@@ -132,7 +132,7 @@ function Keys() {
                 revoked
               </span>
             )}
-            {k.hwid && <span className="badge-blue">🖥 {k.hwid.slice(0, 8)}…</span>}
+            {k.hwid && <span className="badge-blue"> {k.hwid.slice(0, 8)}…</span>}
             {k.discord_id && <span className="badge-blue">@ {k.discord_id}</span>}
             {k.expires_at && (
               <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>

@@ -140,7 +140,7 @@ export async function runLuaInBrowser(
       };
     }
 
-    addLog("info", `✓ Execution finished in ${executionTimeMs}ms`);
+    addLog("info", `OK Execution finished in ${executionTimeMs}ms`);
     lua.lua_close(L);
 
     return {

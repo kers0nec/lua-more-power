@@ -17,6 +17,7 @@ import { injectJunk, obfuscateNumbers, hexifyNumbers, renameLocals } from "./tra
 import { encryptStrings } from "./strings.ts";
 import { flattenControlFlow } from "./flatten.ts";
 import { packLuaSource } from "./pack.ts";
+import { buildShieldPrelude } from "./shields.ts";
 import { ENGINE_NAME } from "./version.ts";
 import type { Chunk } from "./ast.ts";
 
@@ -34,9 +35,11 @@ export interface ObfuscationOptions {
   injectJunk?: boolean;
   controlFlowFlattening?: boolean;
   /**
-   * Reserved. Bytecode virtualization is NOT implemented — the option is kept so
-   * the API and stored presets stay stable, and requesting it adds a warning to
-   * the build output rather than silently pretending it happened.
+   * Reserved. Bytecode virtualization (a register/stack VM interpreter) is NOT
+   * implemented — the option is kept so the API and stored presets stay stable,
+   * and requesting it adds a warning to the build output rather than silently
+   * pretending it happened. The loader chain (`loaderVMDepth`) provides bounded
+   * VM-style nesting instead.
    */
   virtualize?: boolean;
   pack?: boolean;
@@ -48,14 +51,32 @@ export interface ObfuscationOptions {
   isLuauRuntime?: boolean;
   banner?: boolean | string;
 
-  /* --- legacy option names still accepted by the API and the dashboard --- */
+  /**
+   * Anti-tamper runtime prelude: arithmetic canaries plus a self-checksum over
+   * the shield body. When `pack` is enabled this also arms the loader's
+   * payload-integrity checksum. Fail-closed, silent while the environment is
+   * clean. Also enables the runtime prelude in the emitted chunk.
+   */
   antiTamper?: boolean;
+  /**
+   * Anti-hook runtime prelude: pins the standard-library functions the payload
+   * depends on and fails closed if any of them was replaced or wrapped before
+   * the chunk starts.
+   */
   antiHook?: boolean;
+  /**
+   * Anti env-logger: gives the chunk a guarded environment on legacy Lua 5.1
+   * executors (the only platform with `setfenv`), where a logging
+   * `getfenv`/`loadstring` trap would otherwise read locals. Inert on
+   * Lua 5.2+, Luau and Roblox, which have no `setfenv`.
+   */
   antiLogger?: boolean;
-  dualVm?: boolean;
-  polymorphicVM?: boolean;
+
+  /* --- legacy option names still accepted by the API and the dashboard --- */
   proxifyLocals?: boolean;
   proxifyFunctions?: boolean;
+  dualVm?: boolean;
+  polymorphicVM?: boolean;
   oeldAntiTamper?: boolean;
   vmDepth?: number;
   loaderVMDepth?: number;
@@ -74,11 +95,27 @@ export interface ObfuscationStats {
   flattenedBlocks: number;
   virtualizedBlocks: number;
   layers: number;
+  /** runtime shield preludes present in the emitted chunk */
+  runtimeShields?: Array<"antiTamper" | "antiHook" | "antiLogger">;
   inputBytes: number;
   outputBytes: number;
   entropy: number;
   ms: number;
   engine: string;
+}
+
+/** The `obfuscate(source, settings)` contract: code plus a machine-readable summary. */
+export interface ObfuscationResultV2 {
+  output: string;
+  metadata: {
+    engine: string;
+    seed: number;
+    preset?: string;
+    passthrough: boolean;
+    stats: ObfuscationStats;
+    warnings: string[];
+    settings: Record<string, unknown>;
+  };
 }
 
 export interface ObfuscationOutput {
@@ -107,6 +144,10 @@ interface ResolvedOptions {
   compact: boolean;
   target: LuaTarget;
   banner: string;
+  /** runtime shield preludes (fail-closed, silent while clean) */
+  antiTamper: boolean;
+  antiHook: boolean;
+  antiLogger: boolean;
 }
 
 function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOptions {
@@ -121,6 +162,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       virtualize: false,
       pack: true,
       packLayers: 1,
+      antiTamper: false,
+      antiHook: false,
+      antiLogger: false,
     },
     standard: {
       renameLocals: true,
@@ -131,6 +175,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       virtualize: false,
       pack: true,
       packLayers: 1,
+      antiTamper: true,
+      antiHook: false,
+      antiLogger: false,
     },
     strong: {
       renameLocals: true,
@@ -141,6 +188,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       virtualize: false,
       pack: true,
       packLayers: 1,
+      antiTamper: true,
+      antiHook: false,
+      antiLogger: false,
     },
     paranoid: {
       renameLocals: true,
@@ -152,6 +202,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       pack: true,
       packLayers: 2,
       integrityCheck: true,
+      antiTamper: true,
+      antiHook: true,
+      antiLogger: false,
     },
   };
   const d = presetDefaults[preset] ?? presetDefaults["strong"];
@@ -188,9 +241,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
     ),
     obfuscateNumbers: bool(options.obfuscateNumbers, [], d.obfuscateNumbers!),
     encryptStrings: bool(options.encryptStrings, [], d.encryptStrings!),
-    injectJunk: bool(options.injectJunk, [options.antiLogger], d.injectJunk!),
+    injectJunk: bool(options.injectJunk, [], d.injectJunk!),
     controlFlowFlattening: bool(options.controlFlowFlattening, [], d.controlFlowFlattening!),
-    virtualize: bool(options.virtualize, [options.polymorphicVM], d.virtualize!),
+    virtualize: bool(options.virtualize, [], d.virtualize!),
     pack: bool(options.pack, [options.chunkedLoader], d.pack!),
     packLayers: options.packLayers ?? legacyLayers ?? d.packLayers!,
     integrityCheck: bool(
@@ -201,6 +254,9 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
     compact: options.compact ?? true,
     target,
     banner,
+    antiTamper: bool(options.antiTamper, [options.oeldAntiTamper], d.antiTamper!),
+    antiHook: bool(options.antiHook, [], d.antiHook!),
+    antiLogger: bool(options.antiLogger, [], d.antiLogger!),
   };
 }
 
@@ -214,6 +270,7 @@ export function obfuscateLuaDetailed(
   options: ObfuscationOptions = {},
 ): ObfuscationOutput {
   const started = Date.now();
+  validateSettings(source, options);
   const warnings: string[] = [];
   const inputBytes = new TextEncoder().encode(source).length;
 
@@ -298,6 +355,22 @@ export function obfuscateLuaDetailed(
 
     let code = emit(chunk, { compact: resolved.compact });
 
+    // Runtime integrity shields. These are textual preludes generated from the
+    // settings — the engine never runs or evaluates the source while building.
+    const built = buildShieldPrelude({
+      antiTamper: resolved.antiTamper,
+      antiHook: resolved.antiHook,
+      antiLogger: resolved.antiLogger,
+      // `setfenv` only exists on legacy Lua 5.1 executors; everywhere else the
+      // env-lock block would be dead code, so it is not emitted at all.
+      hasSetfenvPlatform: resolved.target === "lua51",
+      rng,
+    });
+    if (built.code) {
+      code = built.code + "\n" + code;
+      stats.runtimeShields = built.active;
+    }
+
     if (resolved.pack) {
       const names = createLocalNameGenerator(rng);
       code = packLuaSource(code, {
@@ -343,6 +416,165 @@ export function obfuscateLua(source: string): string {
 
 export function obfuscateLuaWithOptions(source: string, options: ObfuscationOptions = {}): string {
   return obfuscateLuaDetailed(source, options).code;
+}
+
+/**
+ * Simple documented entry point: `obfuscate(source, settings)`.
+ *
+ * ```ts
+ * const { output, metadata } = obfuscate(source, {
+ *   encryptStrings: true,
+ *   antiTamper: true,
+ *   loaderVMDepth: 2,
+ *   isLuauRuntime: true,
+ * });
+ * ```
+ */
+export function obfuscate(source: string, settings: ObfuscationOptions = {}): ObfuscationResultV2 {
+  const result = obfuscateLuaDetailed(source, settings);
+  return {
+    output: result.code,
+    metadata: {
+      engine: result.stats.engine,
+      seed: settings.seed ?? hashString(source) ^ (Date.now() & 0xffff),
+      preset: settings.preset,
+      passthrough: result.passthrough,
+      stats: result.stats,
+      warnings: result.warnings,
+      settings: { ...settings },
+    },
+  };
+}
+
+const KNOWN_SETTING_KEYS = new Set<string>([
+  "preset",
+  "seed",
+  "renameLocals",
+  "obfuscateNumbers",
+  "encryptStrings",
+  "injectJunk",
+  "controlFlowFlattening",
+  "virtualize",
+  "pack",
+  "packLayers",
+  "integrityCheck",
+  "compact",
+  "target",
+  "isLuauRuntime",
+  "banner",
+  "antiTamper",
+  "antiHook",
+  "antiLogger",
+  "proxifyLocals",
+  "proxifyFunctions",
+  "dualVm",
+  "polymorphicVM",
+  "oeldAntiTamper",
+  "vmDepth",
+  "loaderVMDepth",
+  "chunkedLoader",
+  "validationMarkers",
+  "mode",
+  "publicId",
+]);
+
+const BOOLEAN_SETTING_KEYS = [
+  "renameLocals",
+  "obfuscateNumbers",
+  "encryptStrings",
+  "injectJunk",
+  "controlFlowFlattening",
+  "virtualize",
+  "pack",
+  "integrityCheck",
+  "compact",
+  "isLuauRuntime",
+  "antiTamper",
+  "antiHook",
+  "antiLogger",
+  "proxifyLocals",
+  "proxifyFunctions",
+  "dualVm",
+  "polymorphicVM",
+  "oeldAntiTamper",
+  "chunkedLoader",
+  "validationMarkers",
+] as const;
+
+const PRESETS = new Set(["fast", "standard", "strong", "paranoid"]);
+const TARGETS = new Set(["auto", "lua51", "lua53", "luau"]);
+
+/**
+ * Rejects invalid settings with a clear error (no silent fallbacks):
+ *   - unknown setting keys,
+ *   - non-boolean boolean options,
+ *   - a `loaderVMDepth`/`vmDepth` outside the supported 1–5 range,
+ *   - non-integer depth/layer/seed values,
+ *   - unknown presets or targets.
+ */
+export function validateSettings(source: string, options: ObfuscationOptions): void {
+  if (typeof source !== "string") {
+    throw new TypeError(`obfuscate(source, settings): source must be a string, got ${typeof source}`);
+  }
+  if (options == null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError(
+      "obfuscate(source, settings): settings must be a plain object (got " +
+        (options === null ? "null" : Array.isArray(options) ? "array" : typeof options) +
+        ")",
+    );
+  }
+  for (const key of Object.keys(options)) {
+    if (!KNOWN_SETTING_KEYS.has(key)) {
+      throw new Error(`invalid setting "${key}" — unknown option for LuaMore obfuscation`);
+    }
+  }
+  for (const key of BOOLEAN_SETTING_KEYS) {
+    const v = (options as Record<string, unknown>)[key];
+    if (v !== undefined && typeof v !== "boolean") {
+      throw new Error(
+        `invalid setting "${key}": expected boolean, got ${v === null ? "null" : typeof v}`,
+      );
+    }
+  }
+  if (options.preset !== undefined && !PRESETS.has(options.preset)) {
+    throw new Error(
+      `invalid setting "preset": expected one of ${[...PRESETS].join(", ")}, got "${options.preset}"`,
+    );
+  }
+  if (options.target !== undefined && !TARGETS.has(options.target)) {
+    throw new Error(
+      `invalid setting "target": expected one of ${[...TARGETS].join(", ")}, got "${options.target}"`,
+    );
+  }
+  for (const key of ["loaderVMDepth", "vmDepth"] as const) {
+    const v = options[key];
+    if (v === undefined) continue;
+    if (!Number.isInteger(v)) {
+      throw new Error(`invalid setting "${key}": expected an integer from 1 to 5, got ${v}`);
+    }
+    if (v < 1 || v > 5) {
+      throw new Error(
+        `invalid setting "${key}": loader VM depth must be between 1 and 5, got ${v}`,
+      );
+    }
+  }
+  if (options.packLayers !== undefined) {
+    if (!Number.isInteger(options.packLayers) || options.packLayers < 1 || options.packLayers > 8) {
+      throw new Error(
+        `invalid setting "packLayers": expected an integer from 1 to 8, got ${options.packLayers}`,
+      );
+    }
+  }
+  if (options.seed !== undefined && !Number.isInteger(options.seed)) {
+    throw new Error(`invalid setting "seed": expected an integer, got ${options.seed}`);
+  }
+  if (
+    options.banner !== undefined &&
+    typeof options.banner !== "boolean" &&
+    typeof options.banner !== "string"
+  ) {
+    throw new Error(`invalid setting "banner": expected boolean or string, got ${typeof options.banner}`);
+  }
 }
 
 export function calculateEntropy(str: string): number {

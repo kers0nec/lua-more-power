@@ -329,35 +329,56 @@ export const deleteScript = createServerFn({ method: "POST" })
   });
 
 // Standalone: obfuscate arbitrary code without saving it.
+const obfuscationSettingsSchema = {
+  encryptStrings: z.boolean().optional(),
+  proxifyLocals: z.boolean().optional(),
+  proxifyFunctions: z.boolean().optional(),
+  antiTamper: z.boolean().optional(),
+  antiHook: z.boolean().optional(),
+  antiLogger: z.boolean().optional(),
+  controlFlowFlattening: z.boolean().optional(),
+  isLuauRuntime: z.boolean().optional(),
+  polymorphicVM: z.boolean().optional(),
+  loaderVMDepth: z.number().int().min(1).max(5).optional(),
+};
+
 export const obfuscateCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (input: {
       code: string;
+      mode?: string;
       dualVm?: boolean;
-      mode?: "hybrid" | "chunked" | "standard" | "basic";
       oeldAntiTamper?: boolean;
       chunkedLoader?: boolean;
-    }) =>
+    } & { [K in keyof typeof obfuscationSettingsSchema]?: unknown }) =>
       z
         .object({
           code: z.string().min(1).max(1_000_000_000),
+          mode: z.string().optional(),
           dualVm: z.boolean().optional(),
-          mode: z.enum(["hybrid", "chunked", "standard", "basic"]).optional(),
           oeldAntiTamper: z.boolean().optional(),
           chunkedLoader: z.boolean().optional(),
+          ...obfuscationSettingsSchema,
         })
         .parse(input),
   )
   .handler(async ({ data }) => {
     const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
-    const dualVm = data.dualVm ?? true;
-    const mode = data.mode || (dualVm ? "hybrid" : "standard");
+    const depth = data.loaderVMDepth ?? (data.dualVm === false ? 1 : data.dualVm ? 2 : 1);
     const analysis = analyzeObfuscation(data.code, {
-      dualVm,
-      mode,
-      oeldAntiTamper: data.oeldAntiTamper ?? true,
-      chunkedLoader: data.chunkedLoader ?? true,
+      mode: data.mode,
+      encryptStrings: data.encryptStrings,
+      proxifyLocals: data.proxifyLocals,
+      proxifyFunctions: data.proxifyFunctions,
+      antiTamper: data.antiTamper ?? data.oeldAntiTamper,
+      antiHook: data.antiHook,
+      antiLogger: data.antiLogger,
+      controlFlowFlattening: data.controlFlowFlattening,
+      isLuauRuntime: data.isLuauRuntime,
+      polymorphicVM: data.polymorphicVM,
+      loaderVMDepth: depth,
+      chunkedLoader: data.chunkedLoader,
     });
     return {
       obfuscated: analysis.code,
@@ -366,7 +387,8 @@ export const obfuscateCode = createServerFn({ method: "POST" })
       entropy: analysis.entropy,
       layers: analysis.layers,
       mode: analysis.mode,
-      dualVm,
+      loaderVMDepth: depth,
+      dualVm: depth >= 2,
     };
   });
 
@@ -376,29 +398,37 @@ export const obfuscatePublicCode = createServerFn({ method: "POST" })
     (input: {
       code: string;
       dualVm?: boolean;
-      mode?: "hybrid" | "chunked" | "standard" | "basic";
+      mode?: string;
       oeldAntiTamper?: boolean;
       chunkedLoader?: boolean;
-    }) =>
+    } & { [K in keyof typeof obfuscationSettingsSchema]?: unknown }) =>
       z
         .object({
           code: z.string().min(1).max(500_000),
           dualVm: z.boolean().optional(),
-          mode: z.enum(["hybrid", "chunked", "standard", "basic"]).optional(),
+          mode: z.string().optional(),
           oeldAntiTamper: z.boolean().optional(),
           chunkedLoader: z.boolean().optional(),
+          ...obfuscationSettingsSchema,
         })
         .parse(input),
   )
   .handler(async ({ data }) => {
     const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
-    const dualVm = data.dualVm ?? true;
-    const mode = data.mode || (dualVm ? "hybrid" : "standard");
+    const depth = data.loaderVMDepth ?? (data.dualVm === false ? 1 : data.dualVm ? 2 : 1);
     const analysis = analyzeObfuscation(data.code, {
-      dualVm,
-      mode,
-      oeldAntiTamper: data.oeldAntiTamper ?? true,
-      chunkedLoader: data.chunkedLoader ?? true,
+      mode: data.mode,
+      encryptStrings: data.encryptStrings,
+      proxifyLocals: data.proxifyLocals,
+      proxifyFunctions: data.proxifyFunctions,
+      antiTamper: data.antiTamper ?? data.oeldAntiTamper,
+      antiHook: data.antiHook,
+      antiLogger: data.antiLogger,
+      controlFlowFlattening: data.controlFlowFlattening,
+      isLuauRuntime: data.isLuauRuntime,
+      polymorphicVM: data.polymorphicVM,
+      loaderVMDepth: depth,
+      chunkedLoader: data.chunkedLoader,
     });
     return {
       obfuscated: analysis.code,
@@ -407,6 +437,7 @@ export const obfuscatePublicCode = createServerFn({ method: "POST" })
       entropy: analysis.entropy,
       layers: analysis.layers,
       mode: analysis.mode,
-      dualVm,
+      loaderVMDepth: depth,
+      dualVm: depth >= 2,
     };
   });

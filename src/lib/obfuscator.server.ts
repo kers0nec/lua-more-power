@@ -40,6 +40,7 @@ export type ObfuscationResult = {
   code: string;
   size: number;
   originalSize: number;
+  compressedSize?: number;
   entropy: number;
   layers: number;
   mode: string;
@@ -75,12 +76,18 @@ export function analyzeObfuscation(
   if (out.stats.stringsEncrypted > 0) features.push(`${out.stats.uniqueStrings} strings encrypted`);
   if (out.stats.flattenedBlocks > 0) features.push(`${out.stats.flattenedBlocks} blocks flattened`);
   if (out.stats.junkBlocks > 0) features.push("opaque predicates");
+  if (out.stats.runtimeShields?.includes("antiTamper")) features.push("anti-tamper canaries");
+  if (out.stats.runtimeShields?.includes("antiHook")) features.push("anti-hook pins");
+  if (out.stats.runtimeShields?.includes("antiLogger")) features.push("anti env-logger");
   if (out.passthrough) features.push("passthrough");
 
   return {
     code: out.code,
     size: encoder.encode(out.code).length,
     originalSize: encoder.encode(source).length,
+    compressedSize: out.passthrough
+      ? encoder.encode(source).length
+      : encoder.encode(out.code).length,
     entropy: out.stats.entropy,
     layers,
     mode:

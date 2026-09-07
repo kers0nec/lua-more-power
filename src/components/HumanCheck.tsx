@@ -44,7 +44,7 @@ export function HumanCheck({
             Human Verification
             {value && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-lime-500/20 text-lime-400 font-normal">
-                ✓ Passed
+                Passed
               </span>
             )}
           </span>
@@ -72,7 +72,7 @@ export function HumanCheck({
           />
           {value && (
             <span className="text-xs font-semibold text-lime-400 flex items-center gap-1">
-              ✓ Verified
+              Verified
             </span>
           )}
         </div>

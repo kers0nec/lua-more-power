@@ -96,19 +96,33 @@ export const Route = createFileRoute("/api/public/obfuscate")({
           const b = (k: string) =>
             typeof rawSettings[k] === "boolean" ? (rawSettings[k] as boolean) : undefined;
           const depthRaw = rawSettings["loaderVMDepth"];
-          const depth =
-            typeof depthRaw === "number" && depthRaw >= 1 && depthRaw <= 5
-              ? Math.floor(depthRaw)
-              : undefined;
+          if (depthRaw !== undefined) {
+            if (
+              typeof depthRaw !== "number" ||
+              !Number.isInteger(depthRaw) ||
+              depthRaw < 1 ||
+              depthRaw > 5
+            ) {
+              return json(
+                {
+                  status: "error",
+                  error: `invalid setting "loaderVMDepth": loader VM depth must be an integer from 1 to 5, got ${JSON.stringify(depthRaw)}`,
+                },
+                400,
+              );
+            }
+          }
           const out = obfuscateLuaWithOptions(source, {
             encryptStrings: b("encryptStrings"),
             proxifyLocals: b("proxifyLocals"),
             proxifyFunctions: b("proxifyFunctions"),
             antiTamper: b("antiTamper"),
+            antiHook: b("antiHook"),
+            antiLogger: b("antiLogger"),
             controlFlowFlattening: b("controlFlowFlattening"),
             isLuauRuntime: b("isLuauRuntime"),
             dualVm: b("dualVm"),
-            loaderVMDepth: depth,
+            loaderVMDepth: depthRaw as number | undefined,
             polymorphicVM: b("polymorphicVM"),
           });
           void supabaseAdmin
@@ -128,9 +142,11 @@ export const Route = createFileRoute("/api/public/obfuscate")({
               proxifyLocals: b("proxifyLocals") ?? true,
               proxifyFunctions: b("proxifyFunctions") ?? true,
               antiTamper: b("antiTamper") ?? true,
+              antiHook: b("antiHook") ?? false,
+              antiLogger: b("antiLogger") ?? false,
               controlFlowFlattening: b("controlFlowFlattening") ?? true,
               isLuauRuntime: b("isLuauRuntime") ?? true,
-              loaderVMDepth: depth ?? (b("dualVm") === false ? 1 : 2),
+              loaderVMDepth: depthRaw ?? (b("dualVm") === false ? 1 : 2),
               polymorphicVM: b("polymorphicVM") ?? false,
             },
           });
