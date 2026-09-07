@@ -32,6 +32,13 @@ export function buildPanelEmbed({
     title,
     description: body,
     color: PANEL_ACCENT,
+    author: {
+      name: "LuaMore",
+      icon_url: "/brand/logo.png",
+    },
+    image: {
+      url: "/brand/panel-banner.png",
+    },
     footer: {
       text: sentBy ? `Sent by ${sentBy}` : "LuaMore",
       icon_url: avatarUrl || undefined,
