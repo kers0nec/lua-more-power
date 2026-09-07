@@ -68,88 +68,36 @@ function HomePage() {
       <main className="flex-1">
         {/* HERO */}
         <section className="grid-lines border-b border-border/60">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-              <div>
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-                  Luau delivery infrastructure
-                </p>
-                <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
-                  Ship your script.
-                  <br />
-                  Keep your source.
-                </h1>
-                <p className="mt-5 max-w-xl text-base text-muted-foreground">
-                  LuaMore turns a Luau file into a key-gated, device-locked loadstring — and hands
-                  your Discord server a whitelist panel to run it all.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link
-                    to="/auth"
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                  >
-                    Host a script
-                  </Link>
-                  <Link
-                    to="/dashboard"
-                    className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    Open dashboard
-                  </Link>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-md border border-border bg-[oklch(0.13_0.01_260)]">
-                <div className="border-b border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  what your users run
-                </div>
-                <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed">
-                  <span className="text-muted-foreground">_G</span>.KEY ={" "}
-                  <span className="text-primary">"LMK-9fQx2mTvKdRa"</span>
-                  {"\n"}
-                  <span className="text-blue-400">loadstring</span>(game:
-                  <span className="text-amber-300">HttpGet</span>({"\n"}{" "}
-                  <span className="text-emerald-400">"https://luamore.app/l/8f0b3629"</span>
-                  {"\n"}))()
-                  {"\n\n"}
-                  <span className="text-muted-foreground">--&gt; key checked</span>
-                  {"\n"}
-                  <span className="text-muted-foreground">--&gt; hwid bound to this device</span>
-                  {"\n"}
-                  <span className="text-muted-foreground">--&gt; ip logged</span>
-                  {"\n"}
-                  <span className="text-muted-foreground">--&gt; script source returned</span>
-                </pre>
-              </div>
+          <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+              Luau delivery infrastructure
+            </p>
+            <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
+              Ship your script.
+              <br />
+              Keep your source.
+            </h1>
+            <p className="mt-5 text-base text-muted-foreground">
+              LuaMore turns a Luau file into a key-gated, device-locked loadstring — and hands
+              your Discord server a whitelist panel to run it all.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/auth"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+              >
+                Host a script
+              </Link>
+              <Link
+                to="/dashboard"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Open dashboard
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* STATS */}
-        <section className="border-b border-border/60">
-          <div className="mx-auto grid max-w-6xl gap-4 px-6 py-12 sm:grid-cols-2">
-            <div className="rounded-lg border border-border bg-card p-6 text-center">
-              <p className="font-mono text-3xl font-bold text-primary">3,420+</p>
-              <p className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                People hosting
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-6 text-center">
-              <p className="font-mono text-3xl font-bold text-primary">28,950+</p>
-              <p className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Scripts hosted
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto max-w-6xl px-6 pb-12 text-center">
-            <Link
-              to="/vault"
-              className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-xs font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              Open your Source Vault <ArrowRight className="ml-1.5 h-3.5 w-3.5 text-primary" />
-            </Link>
-          </div>
-        </section>
 
         {/* FEATURES */}
         <section className="mx-auto max-w-6xl px-6 py-20">
