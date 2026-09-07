@@ -159,23 +159,35 @@ export function obfuscateNumbers(chunk: Chunk, rng: RNG, options: NumberOptions 
 
     if (asInt) {
       if (Math.abs(v) > 2 ** 48) return null;
-      const choices: Array<() => Expression> = [];
       const a = rng.range(1, 4096);
-      choices.push(() => bin("+", intLiteral(v - a), intLiteral(a)));
-      choices.push(() => bin("-", intLiteral(v + a), intLiteral(a)));
       const factor = pickDivisor(v, rng);
-      if (factor) {
-        choices.push(() => bin("*", intLiteral(factor), intLiteral(v / factor)));
-        if (modernOps) choices.push(() => bin("//", intLiteral(v * factor), intLiteral(factor)));
-      }
       const xor = rng.int(0xffff);
-      if (modernOps && Number.isInteger(v ^ xor)) {
-        choices.push(() => bin("~", intLiteral(v ^ xor), intLiteral(xor)));
+      // Every candidate is evaluated exactly (BigInt, Lua 5.3 semantics) and
+      // dropped unless it reproduces the original value. Silent value
+      // corruption is the one failure mode this transform must never have.
+      const candidates: Expression[] = [];
+      const push = (candidate: Expression): void => {
+        if (evaluatesTo(candidate, BigInt(v))) candidates.push(candidate);
+      };
+
+      push(bin("+", intLiteral(v - a), intLiteral(a)));
+      push(bin("-", intLiteral(v + a), intLiteral(a)));
+      if (factor) {
+        push(bin("*", intLiteral(factor), intLiteral(v / factor)));
+        if (modernOps) push(bin("//", intLiteral(v * factor), intLiteral(factor)));
       }
-      choices.push(() => un("-", un("-", intLiteral(v))));
-      choices.push(() => bin("*", intLiteral(v), intLiteral(1)));
-      if (modernOps) choices.push(() => bin("//", intLiteral(v), intLiteral(1)));
-      return rng.pick(choices)();
+      // JavaScript's `^` truncates to 32 bits; Lua's `~` is 64-bit. Outside the
+      // signed 32-bit range the two disagree, so `v ^ xor` is not the operand
+      // the emitted expression needs it to be.
+      if (modernOps && v >= -0x80000000 && v <= 0x7fffffff) {
+        push(bin("~", intLiteral(v ^ xor), intLiteral(xor)));
+      }
+      push(un("-", un("-", intLiteral(v))));
+      push(bin("*", intLiteral(v), intLiteral(1)));
+      if (modernOps) push(bin("//", intLiteral(v), intLiteral(1)));
+
+      if (candidates.length === 0) return null;
+      return rng.pick(candidates);
     }
 
     // floats — only exactly-reversible identities
@@ -186,14 +198,15 @@ export function obfuscateNumbers(chunk: Chunk, rng: RNG, options: NumberOptions 
       raw: floatRepr(n),
       isInteger: false,
     });
-    const choices: Array<() => Expression> = [
-      () => bin("+", lit(v / 2), lit(v / 2)),
-      () => bin("/", bin("*", lit(v), lit(2)), lit(2)),
-      () => un("-", un("-", lit(v))),
-      () => bin("^", lit(v), lit(1)),
-      () => bin("+", lit(v / 4), bin("+", lit(v / 4), bin("+", lit(v / 4), lit(v / 4)))),
-    ];
-    return rng.pick(choices)();
+    const floatCandidates = [
+      bin("+", lit(v / 2), lit(v / 2)),
+      bin("/", bin("*", lit(v), lit(2)), lit(2)),
+      un("-", un("-", lit(v))),
+      bin("^", lit(v), lit(1)),
+      bin("+", lit(v / 4), bin("+", lit(v / 4), bin("+", lit(v / 4), lit(v / 4)))),
+    ].filter((candidate) => evalFloat(candidate) === v);
+    if (floatCandidates.length === 0) return null;
+    return rng.pick(floatCandidates);
   };
 
   visit(chunk, {
@@ -209,6 +222,93 @@ export function obfuscateNumbers(chunk: Chunk, rng: RNG, options: NumberOptions 
   });
 
   return changed;
+}
+
+/* -------------------------------------------------- exact identity checks */
+
+const MASK64 = (1n << 64n) - 1n;
+
+/** Lua 5.3 `//` is floor division, not truncation. */
+function luaFloorDiv(a: bigint, b: bigint): bigint {
+  const q = a / b;
+  return a % b !== 0n && a < 0n !== b < 0n ? q - 1n : q;
+}
+
+/** Lua 5.3 bitwise operators act on 64-bit two's-complement integers. */
+function luaBxor(a: bigint, b: bigint): bigint {
+  const u = ((a & MASK64) ^ (b & MASK64)) & MASK64;
+  return u >= 1n << 63n ? u - (1n << 64n) : u;
+}
+
+function evalExact(e: Expression): bigint | null {
+  switch (e.kind) {
+    case "NumericLiteral":
+      return e.isInteger && Number.isSafeInteger(e.value) ? BigInt(e.value) : null;
+    case "UnaryExpression": {
+      if (e.op !== "-") return null;
+      const x = evalExact(e.arg);
+      return x === null ? null : -x;
+    }
+    case "BinaryExpression": {
+      const l = evalExact(e.left);
+      const r = evalExact(e.right);
+      if (l === null || r === null) return null;
+      switch (e.op) {
+        case "+":
+          return l + r;
+        case "-":
+          return l - r;
+        case "*":
+          return l * r;
+        case "//":
+          return r === 0n ? null : luaFloorDiv(l, r);
+        case "~":
+          return luaBxor(l, r);
+        default:
+          return null;
+      }
+    }
+    default:
+      return null;
+  }
+}
+
+function evaluatesTo(e: Expression, expected: bigint): boolean {
+  return evalExact(e) === expected;
+}
+
+/** Same idea for float candidates, in IEEE doubles. */
+function evalFloat(e: Expression): number | null {
+  switch (e.kind) {
+    case "NumericLiteral":
+      return Number.isFinite(e.value) ? e.value : null;
+    case "UnaryExpression": {
+      if (e.op !== "-") return null;
+      const x = evalFloat(e.arg);
+      return x === null ? null : -x;
+    }
+    case "BinaryExpression": {
+      const l = evalFloat(e.left);
+      const r = evalFloat(e.right);
+      if (l === null || r === null) return null;
+      switch (e.op) {
+        case "+":
+          return l + r;
+        case "-":
+          return l - r;
+        case "*":
+          return l * r;
+        case "/":
+          return r === 0 ? null : l / r;
+        case "^":
+          return Math.pow(l, r);
+        default:
+          return null;
+      }
+    }
+    default:
+      return null;
+  }
 }
 
 /** Re-encode integer literals as hex — same value, different bytes. */
