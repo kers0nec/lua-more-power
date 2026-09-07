@@ -33,6 +33,11 @@ export interface ObfuscationOptions {
   encryptStrings?: boolean;
   injectJunk?: boolean;
   controlFlowFlattening?: boolean;
+  /**
+   * Reserved. Bytecode virtualization is NOT implemented — the option is kept so
+   * the API and stored presets stay stable, and requesting it adds a warning to
+   * the build output rather than silently pretending it happened.
+   */
   virtualize?: boolean;
   pack?: boolean;
   packLayers?: number;
@@ -133,7 +138,7 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       encryptStrings: true,
       injectJunk: true,
       controlFlowFlattening: true,
-      virtualize: true,
+      virtualize: false,
       pack: true,
       packLayers: 1,
     },
@@ -143,9 +148,10 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       encryptStrings: true,
       injectJunk: true,
       controlFlowFlattening: true,
-      virtualize: true,
+      virtualize: false,
       pack: true,
       packLayers: 2,
+      integrityCheck: true,
     },
   };
   const d = presetDefaults[preset] ?? presetDefaults["strong"];
@@ -243,6 +249,11 @@ export function obfuscateLuaDetailed(
   if (source.trim().length === 0) return finish(source, true);
 
   const resolved = resolveOptions(options, source);
+  if (resolved.virtualize) {
+    warnings.push(
+      "virtualize was requested but bytecode virtualization is not implemented yet — the build ran without it",
+    );
+  }
   const rng = createRng(resolved.seed);
 
   let chunk: Chunk;
