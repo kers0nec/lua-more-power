@@ -1,22 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageSquare } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LuaMore — Luau script hosting & HWID whitelist" },
+      { title: "LuaMore — Protect lua scripts" },
       {
         name: "description",
         content:
-          "Host Roblox Luau scripts and gate every loadstring behind a key that's locked to one device. Discord panel included.",
+          "Create, obfuscate and host Luau scripts with a single loadstring loader URL. You can also call it a free version of LuArmor.",
       },
-      { property: "og:title", content: "LuaMore — Luau script hosting & HWID whitelist" },
+      { property: "og:title", content: "LuaMore — Protect lua scripts" },
       {
         property: "og:description",
         content:
-          "Protected loadstring links, free 24h keys, paid keys issued by your mods, and a full Discord whitelist panel.",
+          "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -27,37 +27,20 @@ export const Route = createFileRoute("/")({
 
 const FEATURES = [
   {
-    title: "Script hosting",
-    body: "Paste or upload a .lua / .luau file. LuaMore stores it and serves it only through your protected endpoint.",
+    title: "Obfuscated",
+    body: "XOR-encoded payload with a runtime decoder.",
+    icon: "shield-check",
   },
   {
-    title: "Instant hosting",
-    body: "Paste or upload a Luau file of any size and get a protected loadstring link back immediately.",
+    title: "Instant URL",
+    body: "Each script gets a public loader endpoint.",
+    icon: "zap",
   },
   {
-    title: "HWID whitelist",
-    body: "The first execution binds a key to that device's client ID. Mismatched devices are rejected and logged with their IP.",
+    title: "One-line loader",
+    body: "Copy a loadstring(...) snippet and run.",
+    icon: "code-xml",
   },
-  {
-    title: "Discord panel",
-    body: "View Script, Get Key, Redeem Key, View Stats, Reset HWID and Get Buyer Role — all as buttons in your server.",
-  },
-  {
-    title: "Free & paid keys",
-    body: "Toggle a one-time 24-hour free key per script, or have your mods issue paid keys with /whitelist @user 10d.",
-  },
-  {
-    title: "Execution stats",
-    body: "Every load attempt is logged: key, HWID, IP, success or the exact rejection reason.",
-  },
-];
-
-const BOT_COMMANDS = [
-  ["/panel", "post the whitelist panel"],
-  ["/whitelist @user 10d", "issue a paid key"],
-  ["/link <api_key>", "link a hosted script to this server"],
-  ["/unlink <api_key>", "unlink it again"],
-  ["/freekeysettings", "enable or disable the free 24h key"],
 ];
 
 function HomePage() {
@@ -67,69 +50,53 @@ function HomePage() {
 
       <main className="flex-1">
         {/* HERO */}
-        <section className="grid-lines border-b border-border/60">
-          <div className="mx-auto max-w-3xl px-6 py-24 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-              Luau delivery infrastructure
-            </p>
-            <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
-              Ship your script.
-              <br />
-              Keep your source.
+        <section className="relative overflow-hidden border-b border-border/60">
+          <div className="absolute inset-0 bg-gradient-hero opacity-60" aria-hidden="true" />
+          <div className="relative mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5 text-[11px] font-medium text-muted-foreground backdrop-blur sm:px-4 sm:text-xs">
+              <span className="text-primary">●</span> Luau obfuscation, made effortless
+            </span>
+            <h1 className="mt-8 text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl">
+              Snap your Luau into a{" "}
+              <span className="text-gradient">loadstring</span>
             </h1>
-            <p className="mt-5 text-base text-muted-foreground">
-              LuaMore turns a Luau file into a key-gated, device-locked loadstring — and hands
-              your Discord server a whitelist panel to run it all.
+            <p className="mx-auto mt-6 max-w-lg text-base text-muted-foreground sm:mt-7 sm:text-lg">
+              Paste your script, name it, hit create. We obfuscate it and give you a one-line loader URL — ready to drop into any Roblox executor.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-10 flex justify-center gap-3 sm:mt-12">
               <Link
-                to="/auth"
-                className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                to="/login"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-gradient-hero text-primary-foreground shadow-glow px-8 text-sm font-extrabold transition-all hover:opacity-90"
               >
-                Host a script
+                Get started <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-              <Link
-                to="/dashboard"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              <a
+                href="https://discord.gg/YECBsBfJy5"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-extrabold shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                Open dashboard
-              </Link>
+                <MessageSquare className="mr-2 h-4 w-4" /> Join Discord
+              </a>
             </div>
           </div>
         </section>
 
-
         {/* FEATURES */}
         <section className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-2xl font-bold tracking-tight">Everything in one place</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50"
+                className="group rounded-2xl border border-border/60 bg-card/50 p-5 text-left shadow-card backdrop-blur-md transition-all duration-300 hover:border-primary/40 hover:shadow-glow sm:p-6"
               >
-                <h3 className="font-mono text-sm font-semibold text-primary">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.body}</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
+                  <span className="text-primary text-lg">◆</span>
+                </div>
+                <h3 className="mt-4 font-bold text-foreground">{f.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* BOT COMMANDS */}
-        <section className="border-t border-border/60 bg-card/40">
-          <div className="mx-auto max-w-6xl px-6 py-16">
-            <h2 className="text-2xl font-bold tracking-tight">Bot commands</h2>
-            <div className="mt-6 grid gap-3 font-mono text-sm sm:grid-cols-2">
-              {BOT_COMMANDS.map(([cmd, desc]) => (
-                <div
-                  key={cmd}
-                  className="flex flex-col gap-1 rounded-md border border-border bg-background p-4"
-                >
-                  <span className="font-semibold text-primary">{cmd}</span>
-                  <span className="font-sans text-xs text-muted-foreground">{desc}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
       </main>
