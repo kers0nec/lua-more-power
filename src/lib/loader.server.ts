@@ -111,11 +111,11 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
         const webhookUrl = panel?.webhook_url;
         if (webhookUrl && webhookUrl.startsWith("http")) {
           const embed = {
-            title: `🚀 Script Executed — ${script!.name}`,
+            title: ` Script Executed — ${script!.name}`,
             color: 0x00aaff,
             fields: [
               {
-                name: "🔑 License Key",
+                name: " License Key",
                 value: licenseKeyStr
                   ? `\`${licenseKeyStr}\``
                   : script!.ffa
@@ -124,12 +124,12 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
                 inline: true,
               },
               {
-                name: "💻 Hardware ID (HWID)",
+                name: "Hardware ID (HWID)",
                 value: hwid ? `\`${hwid.slice(0, 36)}\`` : "`Not Provided`",
                 inline: true,
               },
               {
-                name: "👤 Roblox User",
+                name: "Roblox User",
                 value:
                   rbxId !== "0" && rbxId !== "Unknown"
                     ? `**${rbxUser}** (ID: \`${rbxId}\`)`
@@ -137,7 +137,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
                 inline: false,
               },
               {
-                name: "📜 Script Name",
+                name: " Script Name",
                 value: `**${script!.name}** (\`${script!.public_id}\`)`,
                 inline: true,
               },

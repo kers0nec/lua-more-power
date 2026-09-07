@@ -105,6 +105,9 @@ for (let seed = 1; seed <= SEEDS; seed++) {
     encryptStrings: false,
     injectJunk: false,
     controlFlowFlattening: false,
+    antiTamper: false,
+    antiHook: false,
+    antiLogger: false,
     obfuscateNumbers: true,
     seed,
   });
@@ -178,6 +181,9 @@ for (let seed = 1; seed <= E2E_SEEDS; seed++) {
     encryptStrings: false,
     injectJunk: false,
     controlFlowFlattening: false,
+    antiTamper: false,
+    antiHook: false,
+    antiLogger: false,
     obfuscateNumbers: true,
     seed,
   });

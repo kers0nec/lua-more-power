@@ -155,8 +155,8 @@ export function LuaTerminalSandbox({
       <div
         className="mt-3 min-h-[120px] max-h-[260px] overflow-auto rounded-lg border p-3 font-mono text-xs leading-relaxed"
         style={{
-          background: "#030712",
-          borderColor: "rgba(59, 130, 246, 0.2)",
+          background: "#0c1204",
+          borderColor: "rgba(132, 204, 22, 0.25)",
         }}
       >
         {!result && (

@@ -125,23 +125,23 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
         },
       }),
     onSuccess: () => {
-      setStatus(autoProtect ? "✓ Source saved and protection rebuilt" : "✓ Source saved");
+      setStatus(autoProtect ? "OK Source saved and protection rebuilt" : "OK Source saved");
       queryClient.invalidateQueries({ queryKey: ["script", id] });
       queryClient.invalidateQueries({ queryKey: ["scripts"] });
     },
     onError: (error) =>
-      setStatus(`✗ ${error instanceof Error ? error.message : "Could not save source"}`),
+      setStatus(`ERR ${error instanceof Error ? error.message : "Could not save source"}`),
   });
   const protectMutation = useMutation({
     mutationFn: () => protect({ data: { id, code } }),
     onSuccess: (result) => {
-      setStatus(`✓ Protected output generated · ${result.size.toLocaleString()} characters`);
+      setStatus(`OK Protected output generated · ${result.size.toLocaleString()} characters`);
       setAutoProtect(true);
       queryClient.invalidateQueries({ queryKey: ["script", id] });
       queryClient.invalidateQueries({ queryKey: ["scripts"] });
     },
     onError: (error) =>
-      setStatus(`✗ ${error instanceof Error ? error.message : "Protection failed"}`),
+      setStatus(`ERR ${error instanceof Error ? error.message : "Protection failed"}`),
   });
 
   async function readFile(file?: File) {
@@ -149,9 +149,9 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
     try {
       const text = await file.text();
       setCode(text);
-      setStatus(`✓ Loaded ${file.name} · save to keep it`);
+      setStatus(`OK Loaded ${file.name} · save to keep it`);
     } catch {
-      setStatus("✗ Could not read that file");
+      setStatus("ERR Could not read that file");
     }
   }
   async function copyLoader() {
@@ -261,7 +261,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                   protectMutation.isPending ? "animate-spin text-primary" : "text-primary"
               }
             />
-            {protectMutation.isPending ? "Obfuscating…" : "⚡ Auto Obfuscate"}
+            {protectMutation.isPending ? "Obfuscating…" : "Auto Obfuscate"}
           </button>
           <button className="btn-outline" onClick={downloadSource}>
             <Download size={15} /> Export
@@ -332,7 +332,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                   type="button"
                   onClick={async () => {
                     await navigator.clipboard.writeText(script.obfuscated_code as string);
-                    setStatus("✓ Obfuscated bytecode VM copied to clipboard");
+                    setStatus("OK Obfuscated bytecode VM copied to clipboard");
                   }}
                   className="btn-ghost text-xs flex items-center gap-1"
                 >
@@ -392,7 +392,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                     className="btn-primary text-xs flex items-center gap-1.5"
                   >
                     <Zap size={14} />{" "}
-                    {protectMutation.isPending ? "Obfuscating…" : "⚡ Auto Obfuscate Now"}
+                    {protectMutation.isPending ? "Obfuscating…" : "Auto Obfuscate Now"}
                   </button>
                 </div>
               )}
@@ -550,7 +550,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
             {script?.obfuscated_code ? (
               <div className="mt-3 bg-lime-500/10 border border-lime-500/30 text-lime-300 p-3 rounded-lg text-xs space-y-1">
                 <div className="flex items-center justify-between font-semibold">
-                  <span>✓ Bytecode VM Active</span>
+                  <span>Protected build active</span>
                   <span className="font-mono">
                     {(script.obfuscator as string) || "LuaMore VM v7"}
                   </span>
@@ -586,11 +586,11 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
               {protectMutation.isPending ? (
                 <>
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />{" "}
-                  Compiling Bytecode VM…
+                  Compiling Protected loader…
                 </>
               ) : (
                 <>
-                  <Zap size={15} className="text-lime-300" /> ⚡ Auto-Obfuscate Source Code
+                  <Zap size={15} className="text-lime-300" />  Auto-Obfuscate Source Code
                 </>
               )}
             </button>
@@ -642,7 +642,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
 
       {status && (
         <div
-          className={`mt-5 border px-4 py-3 text-sm rounded ${status.startsWith("✓") ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}`}
+          className={`mt-5 border px-4 py-3 text-sm rounded ${status.startsWith("OK ") ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}`}
         >
           {status}
         </div>

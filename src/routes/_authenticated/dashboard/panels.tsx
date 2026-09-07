@@ -46,13 +46,13 @@ function Page() {
     onSuccess: (res) => {
       if (res.ok) {
         setStatus(
-          `✓ Auto-registered ${res.count ?? 5} slash commands with Discord (/help, /login, /setup, /whitelist, /resethwid)`,
+          `OK Auto-registered ${res.count ?? 5} slash commands with Discord (/help, /login, /setup, /whitelist, /resethwid)`,
         );
       } else {
-        setStatus(`✗ ${res.message}`);
+        setStatus(`ERR ${res.message}`);
       }
     },
-    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to sync commands"}`),
+    onError: (e) => setStatus(`ERR ${e instanceof Error ? e.message : "Failed to sync commands"}`),
   });
 
   const createMut = useMutation({
@@ -102,10 +102,10 @@ function Page() {
         },
       }),
     onSuccess: () => {
-      setStatus("✓ Panel settings saved");
+      setStatus("OK Panel settings saved");
       qc.invalidateQueries({ queryKey: ["panels"] });
     },
-    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to update panel"}`),
+    onError: (e) => setStatus(`ERR ${e instanceof Error ? e.message : "Failed to update panel"}`),
   });
 
   const delMut = useMutation({
@@ -117,11 +117,11 @@ function Page() {
     onSuccess: (res) => {
       setStatus(
         res.via === "bot"
-          ? "✓ Panel sent to Discord channel via Bot!"
-          : "✓ Panel sent to Discord channel via Webhook!",
+          ? "OK Panel sent to Discord channel via Bot!"
+          : "OK Panel sent to Discord channel via Webhook!",
       );
     },
-    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to send panel"}`),
+    onError: (e) => setStatus(`ERR ${e instanceof Error ? e.message : "Failed to send panel"}`),
   });
 
   return (
@@ -141,7 +141,7 @@ function Page() {
               disabled={syncMut.isPending}
               className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-lime-500/50 hover:border-lime-400"
             >
-              <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
+              <span>{syncMut.isPending ? "Syncing..." : "Sync Slash Commands (Owner)"}</span>
             </button>
           )}
         </div>
@@ -253,8 +253,8 @@ function Page() {
         <div
           className="mt-4 text-sm rounded-md px-3 py-2"
           style={{
-            background: status.startsWith("✓") ? "rgba(52,211,153,0.12)" : "rgba(244,63,94,0.12)",
-            color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
+            background: status.startsWith("OK ") ? "rgba(52,211,153,0.12)" : "rgba(244,63,94,0.12)",
+            color: status.startsWith("OK ") ? "var(--success)" : "var(--destructive)",
           }}
         >
           {status}
@@ -321,34 +321,34 @@ function Page() {
                 {/* Row 1: View Script & Get Key */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    📜 View Script
+                     View Script
                   </div>
                   <div className="text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    🔑 Get Key
+                     Get Key
                   </div>
                 </div>
 
                 {/* Row 2: Redeem Key */}
                 <div>
                   <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    ✅ Redeem Key
+                     Redeem Key
                   </div>
                 </div>
 
                 {/* Row 3: View Stats & Reset HWID */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    📊 View Stats
+                     View Stats
                   </div>
                   <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    ♻️ Reset HWID
+                     Reset HWID
                   </div>
                 </div>
 
                 {/* Row 4: Get Buyer Role */}
                 <div>
                   <div className="text-center rounded bg-[#23a55a] hover:bg-[#1a7f45] py-2 text-white cursor-pointer select-none transition-colors font-medium">
-                    🏅 Get Buyer Role
+                     Get Buyer Role
                   </div>
                 </div>
               </div>
@@ -415,7 +415,7 @@ function PanelSettingsConfig({
         className="w-full flex items-center justify-between text-xs font-semibold text-left"
         style={{ color: "var(--foreground)" }}
       >
-        <span>⚙️ Channel, Webhook & Role Settings</span>
+        <span> Channel, Webhook & Role Settings</span>
         <span className="text-[11px]" style={{ color: "var(--primary)" }}>
           {open ? "Hide ▲" : "Configure ▼"}
         </span>

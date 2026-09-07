@@ -107,7 +107,7 @@ async function handleCommand(body: any) {
             linkedAt: new Date().toISOString(),
           });
           return embedReply({
-            title: "✅ Logged in to LuaMore",
+            title: " Logged in to LuaMore",
             description: `Successfully linked Discord account to **${user.email}**.\n\nYou can now run \`/setup\` in your server to deploy panels!`,
             color: COLOR_SUCCESS,
           });
@@ -121,7 +121,7 @@ async function handleCommand(body: any) {
           );
         }
         return embedReply({
-          title: "✅ Logged in to LuaMore",
+          title: " Logged in to LuaMore",
           description: `Linked Discord account to **${result.username || "LuaMore account"}**.\n\nYou can now run \`/setup\` in your server's panel channel to deploy your scripts!`,
           color: COLOR_SUCCESS,
         });
@@ -289,7 +289,7 @@ async function handleCommand(body: any) {
             allowed_mentions: { users: [target] },
             embeds: [
               {
-                title: "✅ Whitelisted",
+                title: " Whitelisted",
                 description: `Duration: **${formatDuration(ms)}**\nKey: \`${key}\``,
                 color: COLOR_SUCCESS,
                 footer: { text: "LuaMore" },
@@ -337,7 +337,7 @@ async function handleCommand(body: any) {
         }
 
         return embedReply({
-          title: "🚫 User Blacklisted",
+          title: "User Blacklisted",
           description: `Access revoked for <@${target}>.\nReason: *${reason}*`,
           color: COLOR_ERROR,
         });
@@ -371,7 +371,7 @@ async function handleCommand(body: any) {
         });
 
         return embedReply({
-          title: "🔑 License Key Generated",
+          title: " License Key Generated",
           description: `Key: \`${key}\`\nDuration: **${formatDuration(ms)}**\nAssigned: ${targetUser ? `<@${targetUser}>` : "*Unclaimed*"}`,
           color: COLOR_SUCCESS,
         });
@@ -398,7 +398,7 @@ async function handleCommand(body: any) {
         await supabaseAdmin.from("panels").update({ webhook_url: url }).eq("id", panel.id);
 
         return embedReply({
-          title: "✅ Webhook Configured",
+          title: " Webhook Configured",
           description:
             "Script executions will now embed the **Key, HWID, and Roblox User** into your configured Discord channel via webhook!",
           color: COLOR_SUCCESS,
@@ -418,7 +418,7 @@ async function handleCommand(body: any) {
             .eq("user_id", panel.user_id)
             .eq("discord_id", userId);
           return embedReply({
-            title: "⚙️ HWID reset",
+            title: " HWID reset",
             description: "Run the script again to lock a new HWID.",
             color: COLOR_SUCCESS,
           });
@@ -433,7 +433,7 @@ async function handleCommand(body: any) {
           .update({ hwid: null })
           .eq("user_id", panel.user_id)
           .eq("discord_id", target);
-        return embedReply({ title: `⚙️ HWID reset for <@${target}>`, color: COLOR_SUCCESS });
+        return embedReply({ title: ` HWID reset for <@${target}>`, color: COLOR_SUCCESS });
       }
 
       default:
@@ -586,7 +586,7 @@ async function handleComponent(body: any) {
 
     if (existingLic && !existingLic.revoked) {
       return embedReply({
-        title: "🔑 Your License Key",
+        title: " Your License Key",
         description: `Your active key for **${panel.name}** is:\n\`\`\`text\n${existingLic.key}\n\`\`\`\nExpires: ${existingLic.expires_at ? new Date(existingLic.expires_at).toLocaleString() : "Lifetime"}`,
         color: COLOR_SUCCESS,
       });
@@ -594,8 +594,8 @@ async function handleComponent(body: any) {
 
     const freeKey = `LMK-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     return embedReply({
-      title: "🔑 Get Key",
-      description: `Here is your key for **${panel.name}**:\n\`\`\`text\n${freeKey}\n\`\`\`\nClick **✅ Redeem Key** in the panel to bind this key to your account.`,
+      title: "Get Key",
+      description: `Here is your key for **${panel.name}**:\n\`\`\`text\n${freeKey}\n\`\`\`\nClick ** Redeem Key** in the panel to bind this key to your account.`,
       color: COLOR_INFO,
     });
   }
@@ -636,7 +636,7 @@ async function handleComponent(body: any) {
         : `loadstring(game:HttpGet("${loaderUrl}"))()`;
 
     return embedReply({
-      title: `📜 ${script.name}`,
+      title: ` ${script.name}`,
       description: buildLoaderMessage(loaderCode),
       color: COLOR_INFO,
       footer: { text: "LuaMore · keep this loader private" },
@@ -657,7 +657,7 @@ async function handleComponent(body: any) {
     );
     if (!res.ok) return errorReply(`Could not grant the role (${res.status})`);
     return embedReply({
-      title: "👤 Role granted",
+      title: "Role granted",
       description: `<@&${panel.discord_role_id}> is yours.`,
       color: COLOR_SUCCESS,
     });
@@ -671,7 +671,7 @@ async function handleComponent(body: any) {
       .eq("user_id", panel.user_id);
     if (error) return errorReply(error.message);
     return embedReply({
-      title: "⚙️ HWID reset",
+      title: " HWID reset",
       description: "Run the script again to lock a new HWID.",
       color: COLOR_SUCCESS,
     });
@@ -696,7 +696,7 @@ async function handleComponent(body: any) {
           .maybeSingle()
       : { data: null };
     return embedReply({
-      title: "📊 Panel stats",
+      title: " Panel stats",
       color: COLOR_INFO,
       fields: [
         { name: "Script", value: script?.name ?? "—", inline: true },
@@ -764,7 +764,7 @@ async function handleModal(body: any) {
   }
 
   return embedReply({
-    title: "✅ Key redeemed",
+    title: " Key redeemed",
     description: buildWhitelistMessage(discordId, panel.whitelist_channel_id || panel.channel_id),
     color: COLOR_SUCCESS,
   });
@@ -775,7 +775,7 @@ function embedReply(embed: Record<string, unknown>) {
   return { type: 4, data: { embeds: [embed], flags: 64 } };
 }
 function errorReply(msg: string) {
-  return embedReply({ title: "❌ Error", description: msg, color: COLOR_ERROR });
+  return embedReply({ title: "Error", description: msg, color: COLOR_ERROR });
 }
 function json(v: unknown, status = 200) {
   return new Response(JSON.stringify(v), {

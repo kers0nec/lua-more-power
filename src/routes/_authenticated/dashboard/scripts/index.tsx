@@ -273,7 +273,7 @@ function Scripts() {
                   className="px-2.5 py-1 text-xs font-medium rounded border border-lime-500/40 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20 disabled:opacity-50 flex items-center gap-1 transition-colors"
                 >
                   <Zap size={12} className={obfDirectMut.isPending ? "animate-spin" : ""} />
-                  {obfDirectMut.isPending ? "Obfuscating…" : "⚡ Obfuscate Code Now"}
+                  {obfDirectMut.isPending ? "Obfuscating…" : "Obfuscate Code Now"}
                 </button>
               </div>
             </div>

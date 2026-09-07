@@ -56,14 +56,12 @@ export function buildPanelComponents(panelId: string) {
           type: 2,
           style: 1, // Primary (Blurple)
           label: "View Script",
-          emoji: { name: "📜" },
           custom_id: `lm:script:${panelId}`,
         },
         {
           type: 2,
           style: 1, // Primary (Blurple)
           label: "Get Key",
-          emoji: { name: "🔑" },
           custom_id: `lm:getkey:${panelId}`,
         },
       ],
@@ -75,7 +73,6 @@ export function buildPanelComponents(panelId: string) {
           type: 2,
           style: 2, // Secondary (Grey)
           label: "Redeem Key",
-          emoji: { name: "✅" },
           custom_id: `lm:redeem:${panelId}`,
         },
       ],
@@ -87,14 +84,12 @@ export function buildPanelComponents(panelId: string) {
           type: 2,
           style: 2, // Secondary (Grey)
           label: "View Stats",
-          emoji: { name: "📊" },
           custom_id: `lm:stats:${panelId}`,
         },
         {
           type: 2,
           style: 2, // Secondary (Grey)
           label: "Reset HWID",
-          emoji: { name: "♻️" },
           custom_id: `lm:hwid:${panelId}`,
         },
       ],
@@ -106,7 +101,6 @@ export function buildPanelComponents(panelId: string) {
           type: 2,
           style: 3, // Success (Green)
           label: "Get Buyer Role",
-          emoji: { name: "🏅" },
           custom_id: `lm:role:${panelId}`,
         },
       ],

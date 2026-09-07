@@ -54,29 +54,29 @@ function Page() {
         },
       }),
     onSuccess: () => {
-      setStatus("✓ Profile and Discord link updated successfully");
+      setStatus("OK Profile and Discord link updated successfully");
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
-    onError: (e) => setStatus(`✗ ${e instanceof Error ? e.message : "Failed to update profile"}`),
+    onError: (e) => setStatus(`ERR ${e instanceof Error ? e.message : "Failed to update profile"}`),
   });
 
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     setStatus("");
     if (newPassword.length < 6) {
-      setStatus("✗ Password must be at least 6 characters");
+      setStatus("ERR Password must be at least 6 characters");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setStatus("✗ Passwords do not match");
+      setStatus("ERR Passwords do not match");
       return;
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) setStatus(`✗ ${error.message}`);
+    if (error) setStatus(`ERR ${error.message}`);
     else {
       setNewPassword("");
       setConfirmPassword("");
-      setStatus("✓ Password updated securely");
+      setStatus("OK Password updated securely");
     }
   }
 
@@ -97,7 +97,7 @@ function Page() {
     a.download = `luamore-account-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setStatus("✓ Account backup downloaded");
+    setStatus("OK Account backup downloaded");
   }
 
   return (
@@ -152,9 +152,9 @@ function Page() {
         <div
           className="mt-6 rounded-lg border p-4 text-sm font-medium transition-all animate-in fade-in"
           style={{
-            borderColor: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
-            color: status.startsWith("✓") ? "var(--success)" : "var(--destructive)",
-            background: status.startsWith("✓")
+            borderColor: status.startsWith("OK ") ? "var(--success)" : "var(--destructive)",
+            color: status.startsWith("OK ") ? "var(--success)" : "var(--destructive)",
+            background: status.startsWith("OK ")
               ? "rgba(52, 211, 153, 0.08)"
               : "rgba(244, 63, 94, 0.08)",
           }}
