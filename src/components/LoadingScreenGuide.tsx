@@ -213,7 +213,7 @@ export function LoadingScreenGuide() {
                           ? "#22d3ee"
                           : id === "clean"
                             ? "#e2e8f0"
-                            : "#60a5fa",
+                            : "#a3e635",
                     animationDuration: "1.2s",
                     animationDelay: `${i * 0.2}s`,
                   }}
@@ -250,7 +250,7 @@ export function LoadingScreenGuide() {
                           ? "#22d3ee"
                           : id === "clean"
                             ? "#e2e8f0"
-                            : "#3b82f6",
+                            : "#84cc16",
                     boxShadow:
                       id === "gold"
                         ? "0 0 8px #f6c453"

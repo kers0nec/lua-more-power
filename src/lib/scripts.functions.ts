@@ -204,7 +204,7 @@ export const updateScript = createServerFn({ method: "POST" })
     if (shouldObfuscate && rest.code) {
       const { obfuscateLua } = await import("@/lib/obfuscator.server");
       patch.obfuscated_code = obfuscateLua(rest.code);
-      patch.obfuscator = "luamore-v12";
+      patch.obfuscator = "luamore-v13";
       patch.is_protected = true;
     }
 
@@ -270,7 +270,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
         .update({
           ...(data.code ? { code: data.code } : {}),
           obfuscated_code,
-          obfuscator: "luamore-v12",
+          obfuscator: "luamore-v13",
           is_protected: true,
         })
         .eq("id", data.id)
@@ -285,7 +285,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
       name: "Obfuscated Script",
       ...(data.code ? { code: data.code } : {}),
       obfuscated_code,
-      obfuscator: "luamore-v12",
+      obfuscator: "luamore-v13",
       is_protected: true,
     });
 

@@ -78,7 +78,7 @@ function Dashboard() {
       to: "/dashboard/scripts",
       icon: FileCode2,
       sub: "100% Protected",
-      color: "from-blue-500/20 to-blue-600/5",
+      color: "from-lime-500/20 to-lime-600/5",
     },
     {
       label: "License Keys",
@@ -86,7 +86,7 @@ function Dashboard() {
       to: "/dashboard/keys",
       icon: KeyRound,
       sub: "HWID Bound",
-      color: "from-amber-500/20 to-amber-600/5",
+      color: "from-lime-500/20 to-lime-600/5",
     },
     {
       label: "Discord Panels",
@@ -94,7 +94,7 @@ function Dashboard() {
       to: "/dashboard/panels",
       icon: PanelsTopLeft,
       sub: "Realtime Bot",
-      color: "from-indigo-500/20 to-indigo-600/5",
+      color: "from-green-500/20 to-green-600/5",
     },
     {
       label: "HWID Ban Filters",
@@ -102,7 +102,7 @@ function Dashboard() {
       to: "/dashboard/hwid",
       icon: Ban,
       sub: "Active Enforcer",
-      color: "from-rose-500/20 to-rose-600/5",
+      color: "from-teal-500/20 to-teal-600/5",
     },
   ];
 
@@ -146,10 +146,10 @@ function Dashboard() {
         <div>
           <div className="flex items-center gap-2">
             <span className="badge-blue text-[10px] tracking-wider font-semibold">
-              <Sparkles size={11} className="text-amber-400" /> SYSTEM ACTIVE
+              <Sparkles size={11} className="text-primary" /> SYSTEM ACTIVE
             </span>
             <span className="text-xs text-muted-foreground font-mono">
-              LuaMore v19 Polymorphic Engine
+              LuaMore
             </span>
           </div>
           <h1 className="mt-2.5 font-display text-3xl sm:text-4xl text-foreground font-bold tracking-tight">
@@ -246,7 +246,7 @@ function Dashboard() {
       <div className="mt-10">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <Activity size={16} className="text-emerald-400" />
+            <Activity size={16} className="text-primary" />
             <h2 className="font-display text-base sm:text-lg font-semibold text-foreground">
               Recent Hosted Scripts
             </h2>
@@ -283,11 +283,11 @@ function Dashboard() {
                             {s.name}
                           </span>
                           {s.ffa ? (
-                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-blue-950/80 text-blue-300 border border-blue-800">
+                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium                               bg-lime-950/80 text-lime-300 border border-lime-800">
                               Public FFA
                             </span>
                           ) : (
-                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-amber-950/80 text-amber-300 border border-amber-800">
+                            <span className="text-[10px] px-2 py-0.2 rounded-full font-medium                               bg-lime-950/80 text-lime-300 border border-lime-800">
                               Key Protected
                             </span>
                           )}
@@ -312,7 +312,7 @@ function Dashboard() {
                       >
                         {isCopied ? (
                           <>
-                            <Check size={12} className="text-emerald-400" /> Copied
+                            <Check size={12} className="text-primary" /> Copied
                           </>
                         ) : (
                           <>

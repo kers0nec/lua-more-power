@@ -72,19 +72,19 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
         <div className="relative max-w-md">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-mono text-primary mb-6">
             <Shield size={12} />
-            <span>LuaMore v19 Security Console</span>
+            <span>LuaMore Security Console</span>
           </div>
           <h2 className="font-display text-5xl leading-[1.04] tracking-tight">
             Script security &amp; instant delivery.
           </h2>
           <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-            Protect your scripts with polymorphic VM encryption, LuaMore Obfuscator anti-tamper
+            Protect your scripts with polymorphic VM encryption, LuaMore obfuscator anti-tamper
             shields, and hardware-bound license keys.
           </p>
 
           <div className="mt-8 space-y-3 font-mono text-xs">
             <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
-              <Check size={14} className="text-emerald-400" />
+              <Check size={14} className="text-primary" />
               <span>Anti-Tamper &amp; Anti-Dumper Traps Active</span>
             </div>
             <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
@@ -92,15 +92,15 @@ export function AuthForm({ initialMode }: { initialMode: "signin" | "signup" }) 
               <span>Zstd Base85 Buffer Transport</span>
             </div>
             <div className="flex items-center gap-2.5 rounded-lg border border-border/80 bg-card/60 p-2.5 text-muted-foreground">
-              <KeyRound size={14} className="text-indigo-400" />
+              <KeyRound size={14} className="text-primary" />
               <span>Hardware ID Lock &amp; Discord Bot Ready</span>
             </div>
           </div>
         </div>
         <div className="relative flex items-center justify-between font-mono text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} LuaMore</span>
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="flex items-center gap-1.5 text-primary">
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
             Systems Operational
           </span>
         </div>

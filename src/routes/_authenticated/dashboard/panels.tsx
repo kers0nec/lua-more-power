@@ -139,7 +139,7 @@ function Page() {
             <button
               onClick={() => syncMut.mutate()}
               disabled={syncMut.isPending}
-              className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-blue-500/50 hover:border-blue-400"
+              className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-lime-500/50 hover:border-lime-400"
             >
               <span>{syncMut.isPending ? "Syncing..." : "⚡ Sync Slash Commands (Owner)"}</span>
             </button>
@@ -151,10 +151,10 @@ function Page() {
       {isOwner && (
         <div
           className="card-blue p-4 mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
-          style={{ borderColor: "rgba(59, 130, 246, 0.3)", background: "rgba(6, 14, 29, 0.8)" }}
+          style={{ borderColor: "rgba(163, 230, 53, 0.3)", background: "rgba(6, 14, 10, 0.8)" }}
         >
           <div className="flex items-center gap-2.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="h-2.5 w-2.5 rounded-full bg-lime-400 animate-pulse" />
             <span className="font-semibold text-white">Slash Commands Auto-Registered:</span>
             <span className="font-mono" style={{ color: "var(--primary)" }}>
               /help, /login, /setup, /whitelist, /resethwid

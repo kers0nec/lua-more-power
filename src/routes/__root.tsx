@@ -82,26 +82,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LuaMore — Next-Gen Lua Obfuscation, Anti-Tamper & Protection" },
+      { title: "LuaMore — Protect lua scripts" },
       {
         name: "description",
         content:
-          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
+          "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
-      { name: "author", content: "LuaMore" },
-      { property: "og:title", content: "LuaMore — Next-Gen Lua Obfuscation & Delivery" },
+      { property: "og:title", content: "LuaMore — Protect lua scripts" },
       {
         property: "og:description",
         content:
-          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
+          "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "LuaMore — Next-Gen Lua Obfuscation & Delivery" },
+      { name: "twitter:title", content: "LuaMore — Protect lua scripts" },
       {
         name: "twitter:description",
         content:
-          "Next-generation Luau/Lua obfuscation, Polymorphic Register VM, Anti-Dumper shield, honeypot detection, and hardware license keys.",
+          "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
     ],
     links: [

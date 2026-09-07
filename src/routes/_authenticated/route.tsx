@@ -123,10 +123,10 @@ function Layout() {
         {/* Dynamic Auto-Domain & Status Indicator */}
         <div className="mx-3 mt-3.5 p-2.5 rounded-lg border border-border bg-gradient-to-br from-card/80 to-muted/40 shadow-sm">
           <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <span className="flex items-center gap-1.5 text-primary font-semibold">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-500"></span>
               </span>
               Engine Online
             </span>
@@ -181,8 +181,8 @@ function Layout() {
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
                             item.badge === "LIVE"
-                              ? "bg-emerald-950/80 text-emerald-400 border-emerald-800"
-                              : "bg-blue-950/80 text-blue-300 border-blue-800"
+                              ? "bg-lime-950/80 text-lime-400 border-lime-800"
+                              : "bg-lime-950/80 text-lime-300 border-lime-800"
                           }`}
                         >
                           {item.badge}
@@ -279,7 +279,7 @@ function Layout() {
               to="/features/key-system-gui"
               className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md border border-border hover:bg-card transition-colors"
             >
-              <Sparkles size={12} className="text-amber-400" /> Docs
+                <Sparkles size={12} className="text-primary" /> Docs
             </Link>
           </div>
         </header>

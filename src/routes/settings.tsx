@@ -211,7 +211,7 @@ function SettingsPage() {
                 style={{
                   background: "var(--primary)",
                   color: "var(--primary-foreground)",
-                  boxShadow: "0 0 24px rgba(59, 130, 246, 0.3)",
+                   boxShadow: "0 0 24px rgba(163, 230, 53, 0.3)",
                 }}
               >
                 {displayName.slice(0, 2).toUpperCase() || "LM"}

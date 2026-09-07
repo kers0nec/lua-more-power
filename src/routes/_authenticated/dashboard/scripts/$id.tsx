@@ -232,7 +232,7 @@ end`;
           <div className="flex items-center gap-3">
             <div className="eyebrow">Script workspace</div>
             {script.public_id && (
-              <span className="font-mono font-semibold tracking-widest text-blue-300 bg-[#161f38] border border-blue-500/30 px-3 py-0.5 rounded-full text-xs select-all shadow-inner">
+              <span className="font-mono font-semibold tracking-widest text-lime-300 bg-[#0f1a0f] border border-lime-500/30 px-3 py-0.5 rounded-full text-xs select-all shadow-inner">
                 {script.public_id}
               </span>
             )}
@@ -250,8 +250,8 @@ end`;
             onClick={toggleKeySystemMode}
             className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-md transition-all shadow-sm ${
               !ffa
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
-                : "bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30"
+                ? "bg-lime-500/20 text-lime-300 border border-lime-500/40 hover:bg-lime-500/30"
+                : "bg-lime-500/20 text-lime-300 border border-lime-500/40 hover:bg-lime-500/30"
             }`}
             title={!ffa ? "Key System is currently ACTIVE" : "Public FFA Mode active"}
           >
@@ -267,7 +267,7 @@ end`;
           </Link>
           <button
             type="button"
-            className="btn-outline border-blue-500/40 text-blue-300 hover:bg-blue-500/10 flex items-center gap-1.5"
+              className="btn-outline border-lime-500/40 text-lime-300 hover:bg-lime-500/10 flex items-center gap-1.5"
             onClick={() => protectMutation.mutate()}
             disabled={protectMutation.isPending || !code.trim()}
             title="Auto-obfuscate source code with multi-layer bytecode VM"
@@ -275,7 +275,7 @@ end`;
             <Zap
               size={14}
               className={
-                protectMutation.isPending ? "animate-spin text-amber-400" : "text-amber-400"
+                  protectMutation.isPending ? "animate-spin text-primary" : "text-primary"
               }
             />
             {protectMutation.isPending ? "Obfuscating…" : "⚡ Auto Obfuscate"}
@@ -329,14 +329,14 @@ end`;
                 onClick={() => setEditorView("obfuscated")}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   editorView === "obfuscated"
-                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold"
+                    ? "bg-lime-500/20 text-lime-300 border border-lime-500/30 font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <ShieldCheck size={13} className="text-emerald-400" />
+                  <ShieldCheck size={13} className="text-primary" />
                 <span>obfuscated.lua</span>
                 {script?.obfuscated_code && (
-                  <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
+                    <span className="text-[10px] px-1 py-0.2 rounded bg-lime-500/20 text-lime-300">
                     VM
                   </span>
                 )}
@@ -387,7 +387,7 @@ end`;
               }}
             />
           ) : (
-            <div className="min-h-[560px] w-full bg-black/80 p-5 font-mono text-xs leading-5 text-emerald-300/90 overflow-auto select-all border-b border-border/30">
+            <div className="min-h-[560px] w-full bg-black/80 p-5 font-mono text-xs leading-5 text-lime-300/90 overflow-auto select-all border-b border-border/30">
               {script?.obfuscated_code ? (
                 <pre className="whitespace-pre-wrap break-all">
                   {script.obfuscated_code as string}
@@ -446,7 +446,7 @@ end`;
                 <Code2 size={16} className="text-primary" />
                 <h2 className="font-display text-lg">Execution & Loader</h2>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono uppercase bg-lime-950 text-lime-300 border border-lime-800 px-2 py-0.5 rounded">
                 Roblox Ready
               </span>
             </div>
@@ -490,7 +490,7 @@ end`;
             </div>
 
             {loaderTab === "standalone" && (
-              <div className="mt-2.5 px-2.5 py-1.5 rounded text-[11px] border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 flex items-center gap-1.5">
+              <div className="mt-2.5 px-2.5 py-1.5 rounded text-[11px] border border-lime-500/30 bg-lime-500/10 text-lime-300 flex items-center gap-1.5">
                 <Check size={13} className="shrink-0" />
                 <span>100% Offline · Paste directly into Delta, Solara, Wave, Codex, Arceus X</span>
               </div>
@@ -511,7 +511,7 @@ end`;
               </div>
             )}
 
-            <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-emerald-400 select-all rounded">
+              <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-lime-400 select-all rounded">
               {loader}
             </pre>
 
@@ -552,10 +552,10 @@ end`;
           <section className="border border-border bg-card p-5 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-emerald-400" />
+                <ShieldCheck size={16} className="text-primary" />
                 <h2 className="font-display text-lg">Protection Engine</h2>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono uppercase bg-lime-950 text-lime-300 border border-lime-800 px-2 py-0.5 rounded">
                 LuaMore VM
               </span>
             </div>
@@ -565,16 +565,16 @@ end`;
             </p>
 
             {script?.obfuscated_code ? (
-              <div className="mt-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3 rounded-lg text-xs space-y-1">
+              <div className="mt-3 bg-lime-500/10 border border-lime-500/30 text-lime-300 p-3 rounded-lg text-xs space-y-1">
                 <div className="flex items-center justify-between font-semibold">
                   <span>✓ Bytecode VM Active</span>
                   <span className="font-mono">
-                    {(script.obfuscator as string) || "luamore-v12"}
+                    {(script.obfuscator as string) || "luamore-v13"}
                   </span>
                 </div>
-                <div className="text-[11px] text-emerald-200/80 font-mono">
+                <div className="text-[11px] text-lime-200/80 font-mono">
                   Payload: {(script.obfuscated_code as string).length.toLocaleString()} chars ·
-                  3-Layer RLE + Polymorphic XOR + Base85
+                   3-Layer RLE + XOR + Base85
                 </div>
               </div>
             ) : (
@@ -586,7 +586,7 @@ end`;
 
             <label className="mt-4 flex items-center justify-between gap-4 border-y border-border py-3 text-sm cursor-pointer">
               <span className="flex items-center gap-1.5">
-                <Zap size={14} className="text-amber-400" /> Auto-obfuscate on save
+                  <Zap size={14} className="text-primary" /> Auto-obfuscate on save
               </span>
               <input
                 type="checkbox"
@@ -607,7 +607,7 @@ end`;
                 </>
               ) : (
                 <>
-                  <Zap size={15} className="text-amber-300" /> ⚡ Auto-Obfuscate Source Code
+                  <Zap size={15} className="text-lime-300" /> ⚡ Auto-Obfuscate Source Code
                 </>
               )}
             </button>

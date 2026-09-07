@@ -117,7 +117,7 @@ function ObfuscatorsPage() {
   async function runLocal() {
     if (!source.trim() || running) return;
     setRunning(true);
-    setStatus("Building LuaMore v13 VM…");
+    setStatus("Building LuaMore VM…");
     try {
       let result = "";
       try {
@@ -230,7 +230,7 @@ function ObfuscatorsPage() {
               <div className="eyebrow">In-browser</div>
               <h2 className="mt-2 font-display text-2xl">LuaMore Obfuscator</h2>
             </div>
-            <span className="badge-blue">VM v13 Anti-Hook</span>
+            <span className="badge-blue">Anti-Hook Shield</span>
           </div>
           <p className="mt-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
             Layered virtual machine with Silent Entropy Poisoning anti-hook shield, rotating 4-key
@@ -276,7 +276,7 @@ function ObfuscatorsPage() {
             {running
               ? "Obfuscating with Anti-Hook…"
               : engineReady
-                ? "Obfuscate with LuaMore v13"
+                ? "Obfuscate with LuaMore"
                 : "Loading local VM…"}
           </button>
           {status ? (

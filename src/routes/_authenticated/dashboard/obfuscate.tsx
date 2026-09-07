@@ -183,13 +183,13 @@ function ObfuscatePage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
       <div>
-        <div className="eyebrow">Protection Engine v15</div>
+         <div className="eyebrow">Protection Engine</div>
         <h1 className="mt-3 font-display text-5xl md:text-6xl">
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore Advanced Luau Obfuscator — Multi-layered Polymorphic VM, OELD Anti-Tamper Shield
-          with 10-point runtime integrity checks, continuous Heartbeat security hooks, and Non-XOR
+          LuaMore Advanced Luau Obfuscator — Multi-layered VM, Anti-Tamper Shield
+          with runtime integrity checks, continuous Heartbeat security hooks, and Non-XOR
           Polynomial Chunked Encoding.
         </p>
       </div>
@@ -247,9 +247,9 @@ function ObfuscatePage() {
                 disabled={running}
                 className="input-blue text-xs py-1.5 px-3 rounded"
               >
-                <option value="hybrid">Dual Polymorphic VM + OELD Shield (Maximum)</option>
-                <option value="chunked">OELD Non-XOR Chunked Loader (No VM Bytecode)</option>
-                <option value="standard">Single Polymorphic VM + OELD Shield</option>
+                <option value="hybrid">Dual VM + Anti-Tamper Shield (Maximum)</option>
+                <option value="chunked">Non-XOR Chunked Loader (No VM Bytecode)</option>
+                <option value="standard">Single VM + Anti-Tamper Shield</option>
               </select>
             </div>
 

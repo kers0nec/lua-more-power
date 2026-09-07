@@ -268,14 +268,14 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
                     onChange={(e) => setAutoObfuscate(e.target.checked)}
                     className="rounded text-primary focus:ring-0"
                   />
-                  <ShieldCheck size={13} className="text-emerald-400" />
+                  <ShieldCheck size={13} className="text-primary" />
                   <span>Auto-Obfuscate Source</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => code.trim() && obfDirectMut.mutate(code)}
                   disabled={!code.trim() || obfDirectMut.isPending}
-                  className="px-2.5 py-1 text-xs font-medium rounded border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                  className="px-2.5 py-1 text-xs font-medium rounded border border-lime-500/40 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20 disabled:opacity-50 flex items-center gap-1 transition-colors"
                 >
                   <Zap size={12} className={obfDirectMut.isPending ? "animate-spin" : ""} />
                   {obfDirectMut.isPending ? "Obfuscating…" : "⚡ Obfuscate Code Now"}
@@ -293,7 +293,7 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
               spellCheck={false}
             />
             {obfStats && (
-              <div className="mt-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1.5 rounded-md flex items-center justify-between">
+                <div className="mt-2 text-xs bg-lime-500/10 border border-lime-500/30 text-lime-300 px-3 py-1.5 rounded-md flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck size={14} /> Multi-Layer Bytecode VM Compiled
                 </span>
@@ -386,11 +386,11 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
                         {s.name}
                       </h3>
                       {s.ffa ? (
-                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-blue-950/80 text-blue-300 border border-blue-800 shrink-0">
+                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-lime-950/80 text-lime-300 border border-lime-800 shrink-0">
                           FFA Public
                         </span>
                       ) : (
-                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-amber-950/80 text-amber-300 border border-amber-800 shrink-0">
+                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-lime-950/80 text-lime-300 border border-lime-800 shrink-0">
                           Key Protected
                         </span>
                       )}
@@ -447,7 +447,7 @@ if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loa
                 >
                   {isCopied ? (
                     <>
-                      <Check size={12} className="text-emerald-400" /> Copied!
+                      <Check size={12} className="text-primary" /> Copied!
                     </>
                   ) : (
                     <>

@@ -167,7 +167,7 @@ function KeysPage() {
                   className="btn-outline shrink-0 p-2.5"
                   title="Copy Key"
                 >
-                  {copiedKey ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+                  {copiedKey ? <Check size={16} className="text-lime-400" /> : <Copy size={16} />}
                 </button>
               </div>
             </div>
@@ -258,7 +258,7 @@ function KeysPage() {
                         <span>{validationResult.replace("error: ", "")}</span>
                       </div>
                     ) : (
-                      <div className="text-emerald-400 flex items-start gap-2">
+                      <div className="text-lime-400 flex items-start gap-2">
                         <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
                         <span>{validationResult.replace("valid: ", "")}</span>
                       </div>
@@ -275,7 +275,7 @@ function KeysPage() {
             <div className="mt-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between text-xs">
                 <span style={{ color: "var(--muted-foreground)" }}>Status</span>
-                <span className="font-mono text-emerald-400">200 OK (0.04s)</span>
+                <span className="font-mono text-lime-400">200 OK (0.04s)</span>
               </div>
               <div className="flex items-center justify-between text-xs mt-2">
                 <span style={{ color: "var(--muted-foreground)" }}>Protection Mode</span>

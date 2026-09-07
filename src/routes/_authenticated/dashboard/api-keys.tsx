@@ -104,21 +104,21 @@ function Page() {
       </div>
 
       {newKey && (
-        <div className="mt-4 card-blue p-5 border border-emerald-500/30 bg-emerald-500/10">
+        <div          className="mt-4 card-blue p-5 border border-lime-500/30 bg-lime-500/10">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-semibold text-emerald-400">
+             <div className="text-sm font-semibold text-lime-400">
               Copy your new API key now (use in Discord: <code>/login api_key:{newKey}</code>):
             </div>
             <button
               onClick={() => copyKey(newKey)}
-              className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-1.5 transition-colors"
+               className="px-3 py-1.5 rounded-lg bg-lime-500/20 hover:bg-lime-500/30 text-lime-300 text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
           <div className="mt-3 flex items-center gap-2">
-            <code className="flex-1 font-mono text-sm p-3 rounded-lg bg-black/40 border border-border/40 select-all overflow-x-auto text-emerald-300">
+             <code className="flex-1 font-mono text-sm p-3 rounded-lg bg-black/40 border border-border/40 select-all overflow-x-auto text-lime-300">
               {newKey}
             </code>
           </div>
