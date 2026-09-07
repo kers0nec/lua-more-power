@@ -629,7 +629,7 @@ async function handleComponent(body: any) {
       return errorReply("You are not whitelisted for this script — redeem a key first.");
     if (lic?.revoked) return errorReply("Your access has been revoked");
 
-    const loaderUrl = `https://luamore.app/files/loaders/${script.public_id}.lua`;
+    const loaderUrl = `https://luamore.app/scripts/hosted/${script.public_id}.lua`;
     const loaderCode =
       !script.ffa && lic?.key
         ? `script_key = "${lic.key}";\nloadstring(game:HttpGet("${loaderUrl}"))()`

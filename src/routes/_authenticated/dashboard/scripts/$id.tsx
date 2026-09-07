@@ -97,29 +97,12 @@ ${code}`;
     }
 
     if (loaderTab === "ffa") {
-      return `-- LuaMore Free-for-all Universal Loader
--- Compatible with Delta, Solara, Wave, Codex, Arceus X, Fluxus, Krnl
-local s, r = pcall(function()
-  return game:HttpGet("${origin}/files/loaders/${publicId}.lua")
-end)
-if s and r and not r:find("<html") then
-  loadstring(r)()
-else
-  warn("[LuaMore] Remote loader unreachable. For 100% offline reliability, use the Standalone Protected Script tab.")
-end`;
+      return `script_key = "trial"
+loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
     }
 
-    return `-- LuaMore Key-Protected Universal Loader
-script_key = "${sampleKey || "eggbm6ywzw7k3l1iht1lmeb5"}";
-
-local s, r = pcall(function()
-  return game:HttpGet("${origin}/files/loaders/${publicId}.lua")
-end)
-if s and r and not r:find("<html") then
-  loadstring(r)()
-else
-  warn("[LuaMore] Remote loader unreachable. For 100% offline reliability, use the Standalone Protected Script tab.")
-end`;
+    return `script_key = "${sampleKey || "YOUR_KEY"}";
+loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
   }, [script, loaderTab, sampleKey, code]);
 
   const canSave = Boolean(script && hydratedId === script.id && name.trim() && !query.isFetching);

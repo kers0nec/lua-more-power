@@ -119,13 +119,8 @@ function Scripts() {
         ? window.location.origin
         : "https://luamore.app";
     const loaderCode = s.ffa
-      ? `-- LuaMore Universal Loader (${s.name || "script"})
-local s, r = pcall(function() return game:HttpGet("${origin}/files/loaders/${s.public_id}.lua") end)
-if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loader unreachable. Check URL or use Standalone Script.") end`
-      : `-- LuaMore Key Protected Loader (${s.name || "script"})
-script_key = "YOUR_KEY";
-local s, r = pcall(function() return game:HttpGet("${origin}/files/loaders/${s.public_id}.lua") end)
-if s and r and not r:find("<html") then loadstring(r)() else warn("[LuaMore] Loader unreachable. Check URL or use Standalone Script.") end`;
+      ? `script_key = "trial"\nloadstring(game:HttpGet("${origin}/scripts/hosted/${s.public_id}.lua"))()`
+      : `script_key = "YOUR_KEY"\nloadstring(game:HttpGet("${origin}/scripts/hosted/${s.public_id}.lua"))()`;
 
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(loaderCode);

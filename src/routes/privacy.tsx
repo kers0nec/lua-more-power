@@ -90,7 +90,7 @@ function PrivacyPage() {
           <li>Comply with legal obligations</li>
         </ul>
         <p>
-          We do not sell your scripts or use them to train third-party AI models. We do not sell
+          We do not sell your scripts or use them to train third-party models. We do not sell
           personal information to advertisers.
         </p>
 
