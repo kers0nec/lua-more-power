@@ -6,7 +6,7 @@ import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
   { to: "/vault", label: "Source Vault" },
-  { to: "/obfuscators", label: "LuaMore Obfuscator" },
+  { to: "/obfuscators", label: "Obfuscator" },
   { to: "/docs", label: "Docs" },
 ];
 
@@ -38,10 +38,10 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-3 py-1.5 text-xs font-mono transition-colors hover:bg-muted"
+                className="rounded-md px-3 py-1.5 text-xs font-bold transition-colors hover:bg-muted"
                 style={{
                   color: active ? "var(--primary)" : "var(--muted-foreground)",
-                  fontWeight: active ? 600 : 400,
+                  fontWeight: active ? 800 : 700,
                 }}
               >
                 {l.label}
@@ -55,19 +55,19 @@ export function SiteNav() {
             href={DISCORD_INVITE}
             target="_blank"
             rel="noreferrer"
-            className="text-xs font-mono transition-colors hover:text-foreground"
+            className="text-xs font-bold transition-colors hover:text-foreground"
             style={{ color: "var(--muted-foreground)" }}
           >
             Discord
           </a>
           <Link
             to="/auth"
-            className="text-xs font-mono transition-colors hover:text-foreground"
+            className="text-xs font-bold transition-colors hover:text-foreground"
             style={{ color: "var(--muted-foreground)" }}
           >
             Sign in
           </Link>
-          <Link to="/auth" className="btn-primary py-1.5 px-3.5 text-xs font-semibold">
+          <Link to="/auth" className="btn-primary py-1.5 px-3.5 text-xs font-extrabold">
             Start hosting
           </Link>
         </div>
@@ -92,7 +92,7 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)]"
+                className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)] font-bold"
               >
                 {l.label}
               </Link>
@@ -101,7 +101,7 @@ export function SiteNav() {
               href={DISCORD_INVITE}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)]"
+              className="rounded-md px-3 py-2.5 text-sm hover:bg-[color:var(--muted)] font-bold"
             >
               Discord
             </a>
