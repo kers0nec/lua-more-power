@@ -5,10 +5,9 @@ import { Logo } from "./Logo";
 import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
-  { to: "/features", label: "Features" },
-  { to: "/how", label: "How" },
+  { to: "/vault", label: "Source Vault" },
+  { to: "/obfuscators", label: "LuaMore Obfuscator" },
   { to: "/docs", label: "Docs" },
-  { to: "/pricing", label: "Pricing" },
 ];
 
 export function SiteNav() {
@@ -39,10 +38,10 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-md px-3 py-2 text-[13px] transition-colors hover:bg-muted"
+                className="rounded-md px-3 py-1.5 text-xs font-mono transition-colors hover:bg-muted"
                 style={{
-                  color: active ? "var(--foreground)" : "var(--muted-foreground)",
-                  fontWeight: active ? 500 : 400,
+                  color: active ? "var(--primary)" : "var(--muted-foreground)",
+                  fontWeight: active ? 600 : 400,
                 }}
               >
                 {l.label}
@@ -56,20 +55,20 @@ export function SiteNav() {
             href={DISCORD_INVITE}
             target="_blank"
             rel="noreferrer"
-            className="text-[13px] transition-colors hover:text-[color:var(--foreground)]"
+            className="text-xs font-mono transition-colors hover:text-foreground"
             style={{ color: "var(--muted-foreground)" }}
           >
             Discord
           </a>
           <Link
-            to="/login"
-            className="text-[13px] transition-colors hover:text-[color:var(--foreground)]"
+            to="/auth"
+            className="text-xs font-mono transition-colors hover:text-foreground"
             style={{ color: "var(--muted-foreground)" }}
           >
             Sign in
           </Link>
-          <Link to="/register" className="btn-primary py-1.5 px-4 text-[13px]">
-            Get started
+          <Link to="/auth" className="btn-primary py-1.5 px-3.5 text-xs font-semibold">
+            Start hosting
           </Link>
         </div>
 

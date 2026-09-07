@@ -690,7 +690,7 @@ function rleCompress(src: Uint8Array | number[]): number[] {
     while (run < 129 && i + run < len && src[i + run] === src[i]) run++;
     if (run >= 3) {
       out.push(128 | (run - 2));
-      out.push(src[i]);
+      out.push(src[i] & 255);
       i += run;
     } else {
       const anchor = i;
@@ -698,12 +698,18 @@ function rleCompress(src: Uint8Array | number[]): number[] {
       while (i < len && lit < 128) {
         let check = 1;
         while (check < 3 && i + check < len && src[i + check] === src[i]) check++;
-        if (check >= 3) break;
+        if (check >= 3 && lit > 0) break;
         i++;
         lit++;
       }
-      out.push(lit - 1);
-      for (let s = 0; s < lit; s++) out.push(src[anchor + s]);
+      if (lit > 0) {
+        out.push((lit - 1) & 255);
+        for (let s = 0; s < lit; s++) out.push(src[anchor + s] & 255);
+      } else {
+        out.push(0);
+        out.push(src[i] & 255);
+        i++;
+      }
     }
   }
   return out;
@@ -805,7 +811,8 @@ function toOctalEscapes(bytes: number[]): string {
     let s = "";
     const end = Math.min(i + 4096, bytes.length);
     for (let j = i; j < end; j++) {
-      s += "\\" + String(bytes[j]).padStart(3, "0");
+      const b = ((bytes[j] % 256) + 256) % 256;
+      s += "\\" + String(b).padStart(3, "0");
     }
     out.push(s);
   }
@@ -1042,15 +1049,26 @@ while ${STATE}~=${HALT} do
     local _fn = nil
     local _err = nil
     if type(loadstring) == "function" then
-      pcall(function() _fn, _err = loadstring(${SRC}) end)
+      local _ok, _res = pcall(loadstring, ${SRC})
+      if _ok and type(_res) == "function" then _fn = _res else _err = _res end
     end
     if not _fn and type(load) == "function" then
-      pcall(function() _fn, _err = load(${SRC}) end)
+      local _ok, _res = pcall(load, ${SRC})
+      if _ok and type(_res) == "function" then _fn = _res else _err = _err or _res end
+    end
+    if not _fn and getgenv and type(getgenv) == "function" and type(getgenv().loadstring) == "function" then
+      local _ok, _res = pcall(getgenv().loadstring, ${SRC})
+      if _ok and type(_res) == "function" then _fn = _res else _err = _err or _res end
+    end
+    if not _fn and _G and type(_G.loadstring) == "function" then
+      local _ok, _res = pcall(_G.loadstring, ${SRC})
+      if _ok and type(_res) == "function" then _fn = _res else _err = _err or _res end
     end
     if not _fn and type(${LOAD}) == "function" then
-      pcall(function() _fn, _err = ${LOAD}(${SRC}) end)
+      local _ok, _res = pcall(${LOAD}, ${SRC})
+      if _ok and type(_res) == "function" then _fn = _res else _err = _err or _res end
     end
-    if not _fn then return error("[LuaMore Execution Error] "..tostring(_err or "loadstring unavailable"), 0) end
+    if not _fn then return error("[LuaMore Execution Error]: "..tostring(_err or "loadstring unavailable in environment"), 0) end
     local _res = _fn(...)
     ${STATE}=${HALT}
     return _res
@@ -1257,7 +1275,7 @@ export function buildOELDChunkedLoader(
     chunkTables.push("{" + encChunk.join(",") + "}");
   }
 
-  return `--[[ This file was protected using LuaMore Obfuscator & Polymorphic VM Engine ]]
+  return `-- This file was protected by LuaMore [https://luamore.app]
 do
   local _timeStart = (os and os.clock) and os.clock() or 0
 
@@ -1279,9 +1297,6 @@ do
 
   local _canary = 88
   if _canary ~= _canary or _canary * 0 ~= 0 or _canary < 0 then while true do end end
-
-  local _errCaught = pcall(error, "\\0", 0)
-  if _errCaught then while true do end end
 
   -- 3. Comprehensive Roblox Sandbox & Honeypot Detection (Active in real Roblox client)
   local isRoblox = (typeof and typeof(game) == "Instance") or (type(game) == "userdata") or (type(game) == "table" and game.GetService ~= nil)
@@ -1408,17 +1423,25 @@ do
   local original_source = table.concat(decrypted_parts)
 
   -- 5. Universal Execution Resolver
-  local loadfunc = (function()
-    if type(loadstring) == "function" then return loadstring end
-    if type(load) == "function" then return load end
-    if getgenv and type(getgenv) == "function" and type(getgenv().loadstring) == "function" then return getgenv().loadstring end
-    if _G and type(_G.loadstring) == "function" then return _G.loadstring end
-    return nil
-  end)()
+  local chunk, err
+  if type(loadstring) == "function" then
+    local _ok, _res = pcall(loadstring, original_source)
+    if _ok and type(_res) == "function" then chunk = _res else err = _res end
+  end
+  if not chunk and type(load) == "function" then
+    local _ok, _res = pcall(load, original_source)
+    if _ok and type(_res) == "function" then chunk = _res else err = err or _res end
+  end
+  if not chunk and getgenv and type(getgenv) == "function" and type(getgenv().loadstring) == "function" then
+    local _ok, _res = pcall(getgenv().loadstring, original_source)
+    if _ok and type(_res) == "function" then chunk = _res else err = err or _res end
+  end
+  if not chunk and _G and type(_G.loadstring) == "function" then
+    local _ok, _res = pcall(_G.loadstring, original_source)
+    if _ok and type(_res) == "function" then chunk = _res else err = err or _res end
+  end
 
-  if not loadfunc then error("[LuaMore Obfuscator] No loading function available in executor environment", 0) end
-  local chunk, err = loadfunc(original_source, "=LuaMoreObfuscator")
-  if not chunk then error("[LuaMore Obfuscator Execution Error]: " .. tostring(err or "Failed to load chunk"), 0) end
+  if not chunk then error("[LuaMore Execution Error]: " .. tostring(err or "No loading function available in executor environment"), 0) end
   return chunk(...)
 end
 `;
@@ -1459,7 +1482,7 @@ export function calculateEntropy(str: string): number {
 // -------------------------------------------------------------
 export function obfuscateLua(source: string): string {
   return obfuscateLuaWithOptions(source, {
-    dualVm: true,
+    dualVm: false,
     antiTamper: true,
     antiHook: true,
     encryptStrings: true,
@@ -1477,7 +1500,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
 
   const enc = new TextEncoder();
   const antiTamper = options.antiTamper ?? true;
-  const dualVm = options.dualVm ?? true;
+  const dualVm = options.dualVm ?? false;
   const layers = options.vmDepth ? Math.min(options.vmDepth, 3) : dualVm ? 2 : 1;
 
   // Step 1: Compile source into Custom Register Virtual Machine
@@ -1530,7 +1553,7 @@ export function obfuscateLuaWithOptions(source: string, options: ObfuscationOpti
   const base85Payload = encodeBase85(minified);
 
   return (
-    "-- This file was protected using LuaMore Obfuscator\n" +
+    "-- This file was protected by LuaMore [https://luamore.app]\n" +
     'local function _b85d(s)local t="' +
     B85_ALPHABET +
     '";local m={};for i=1,85 do m[t:sub(i,i)]=i-1 end;local r={};local i=1;while i<=#s do local c=s:sub(i,i+4);local nb=#c-1;local cp=c..string.rep("~",5-#c);local v=0;for j=1,5 do v=v*85+m[cp:sub(j,j)]end;for k=3,4-nb,-1 do r[#r+1]=string.char(math.floor(v/256^k)%256)end;i=i+5 end;return table.concat(r)end;local _p=_b85d([==[' +

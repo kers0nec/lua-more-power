@@ -11,7 +11,7 @@ export type PanelEmbedInput = {
   scriptName?: string | null;
 };
 
-export const PANEL_ACCENT = 0x5865f2;
+export const PANEL_ACCENT = 0x84cc16;
 
 export function buildPanelEmbed({
   id,
@@ -22,11 +22,11 @@ export function buildPanelEmbed({
   scriptName,
 }: PanelEmbedInput) {
   void id;
-  const projectName = scriptName || name || "daf";
-  const title = name || `${projectName} Control Panel`;
+  const projectName = scriptName || name || "j";
+  const title = `LuaMore — ${projectName}`;
   const body =
     description?.trim() ||
-    `This control panel is for the project: **${projectName}**\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role`;
+    `Whitelist panel. Use the buttons below to get a key, view the loader, check your stats, or reset your device lock.\n\nFree key: disabled`;
 
   return {
     title,
@@ -47,17 +47,17 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 3, // Success (Green)
-          label: "Redeem Key",
-          emoji: { name: "🔑" },
-          custom_id: `lm:redeem:${panelId}`,
+          style: 1, // Primary (Blurple)
+          label: "View Script",
+          emoji: { name: "📜" },
+          custom_id: `lm:script:${panelId}`,
         },
         {
           type: 2,
           style: 1, // Primary (Blurple)
-          label: "Get Script",
-          emoji: { name: "📜" },
-          custom_id: `lm:script:${panelId}`,
+          label: "Get Key",
+          emoji: { name: "🔑" },
+          custom_id: `lm:getkey:${panelId}`,
         },
       ],
     },
@@ -66,16 +66,28 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 1, // Primary (Blurple)
-          label: "Get Role",
-          emoji: { name: "👤" },
-          custom_id: `lm:role:${panelId}`,
+          style: 2, // Secondary (Grey)
+          label: "Redeem Key",
+          emoji: { name: "✅" },
+          custom_id: `lm:redeem:${panelId}`,
+        },
+      ],
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          style: 2, // Secondary (Grey)
+          label: "View Stats",
+          emoji: { name: "📊" },
+          custom_id: `lm:stats:${panelId}`,
         },
         {
           type: 2,
           style: 2, // Secondary (Grey)
           label: "Reset HWID",
-          emoji: { name: "⚙️" },
+          emoji: { name: "♻️" },
           custom_id: `lm:hwid:${panelId}`,
         },
       ],
@@ -85,10 +97,10 @@ export function buildPanelComponents(panelId: string) {
       components: [
         {
           type: 2,
-          style: 2, // Secondary (Grey)
-          label: "Get Stats",
-          emoji: { name: "📊" },
-          custom_id: `lm:stats:${panelId}`,
+          style: 3, // Success (Green)
+          label: "Get Buyer Role",
+          emoji: { name: "🏅" },
+          custom_id: `lm:role:${panelId}`,
         },
       ],
     },

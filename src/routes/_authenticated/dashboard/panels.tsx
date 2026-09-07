@@ -285,83 +285,69 @@ function Page() {
                 Delete
               </button>
             </div>
-            {/* Discord message & Embed visual representation */}
+            {/* Discord message & Embed visual representation matching IMG_7322 */}
             <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
               {/* Bot author row */}
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="h-8 w-8 rounded-full bg-[#5865f2] flex items-center justify-center text-white text-xs font-mono font-bold shrink-0">
-                  LM
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="h-8 w-8 rounded-full bg-black flex items-center justify-center text-[#84cc16] text-xs font-mono font-bold shrink-0 border border-[#84cc16]/40">
+                  &#123;&#125;
                 </div>
                 <div className="flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-blue-400 hover:underline cursor-pointer">
-                    LuaMore Security
+                  <span className="font-semibold text-white hover:underline cursor-pointer">
+                    LuaMore
                   </span>
-                  <span className="bg-[#5865F2] text-[10px] text-white font-bold px-1 py-0.5 rounded">
+                  <span className="bg-[#5865F2] text-[10px] text-white font-bold px-1 py-0.5 rounded leading-none">
                     APP
                   </span>
-                  <span className="text-[11px] text-[#949ba4] ml-1">
-                    {new Date().toLocaleDateString(undefined, {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "2-digit",
-                    })}
-                    ,{" "}
-                    {new Date().toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                  <span className="text-[11px] text-[#949ba4] ml-1">01/09/2026 02:38</span>
                 </div>
               </div>
 
-              {/* Embed body */}
-              <div className="ml-10 rounded-md bg-[#2b2d31] border-l-4 border-[#5865f2] p-3 text-xs space-y-2">
-                <h4 className="text-sm font-semibold text-white">{p.name}</h4>
-                <p className="text-[#dbdee1] leading-relaxed whitespace-pre-line">
+              {/* Embed body matching IMG_7322 */}
+              <div className="ml-10 rounded bg-[#1e1f22] border-l-4 border-[#84cc16] p-3 text-xs space-y-2">
+                <h4 className="text-sm font-bold text-white">
+                  LuaMore —{" "}
+                  {(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || p.name}
+                </h4>
+                <p className="text-[#dbdee1] leading-relaxed whitespace-pre-line text-xs">
                   {p.description ||
-                    `This control panel is for the project: **${(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || p.name}**\nIf you're a buyer, click on the buttons below to redeem your key, get the script or get your role`}
+                    "Whitelist panel. Use the buttons below to get a key, view the loader, check your stats, or reset your device lock.\n\nFree key: disabled"}
                 </p>
-                <div className="flex items-center gap-1.5 pt-1 text-[11px] text-[#949ba4]">
-                  <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
-                  <span>
-                    Sent by{" "}
-                    {(scriptsQ.data ?? []).find((s) => s.id === p.script_id)?.name || "formi"} -{" "}
-                    {new Date().toLocaleDateString(undefined, {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                    })}{" "}
-                    {new Date().toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
               </div>
 
-              {/* Action Rows / Buttons matching IMG_0870 */}
+              {/* Action Rows / Buttons exactly matching IMG_7322 */}
               <div className="ml-10 mt-3 space-y-2 text-xs font-medium">
-                <div className="flex gap-2">
-                  <div className="flex-1 text-center rounded bg-[#248046] hover:bg-[#1a6334] py-2 text-white cursor-pointer select-none transition-colors">
-                    🔑 Redeem Key
+                {/* Row 1: View Script & Get Key */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    📜 View Script
                   </div>
-                  <div className="flex-1 text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors">
-                    📜 Get Script
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors">
-                    👤 Get Role
-                  </div>
-                  <div className="flex-1 text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors">
-                    ⚙️ Reset HWID
+                  <div className="text-center rounded bg-[#5865f2] hover:bg-[#4752c4] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    🔑 Get Key
                   </div>
                 </div>
-                <div className="flex">
-                  <div className="w-1/2 pr-1">
-                    <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors">
-                      📊 Get Stats
-                    </div>
+
+                {/* Row 2: Redeem Key */}
+                <div>
+                  <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    ✅ Redeem Key
+                  </div>
+                </div>
+
+                {/* Row 3: View Stats & Reset HWID */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    📊 View Stats
+                  </div>
+                  <div className="text-center rounded bg-[#4e5058] hover:bg-[#6d6f78] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    ♻️ Reset HWID
+                  </div>
+                </div>
+
+                {/* Row 4: Get Buyer Role */}
+                <div>
+                  <div className="text-center rounded bg-[#23a55a] hover:bg-[#1a7f45] py-2 text-white cursor-pointer select-none transition-colors font-medium">
+                    🏅 Get Buyer Role
                   </div>
                 </div>
               </div>

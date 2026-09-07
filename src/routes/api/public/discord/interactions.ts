@@ -576,6 +576,30 @@ async function handleComponent(body: any) {
     .maybeSingle();
   if (!panel) return errorReply("This panel no longer exists");
 
+  if (action === "getkey") {
+    const { data: existingLic } = await supabaseAdmin
+      .from("license_keys")
+      .select("key, expires_at, revoked")
+      .eq("discord_id", discordId)
+      .eq("script_id", panel.script_id)
+      .maybeSingle();
+
+    if (existingLic && !existingLic.revoked) {
+      return embedReply({
+        title: "🔑 Your License Key",
+        description: `Your active key for **${panel.name}** is:\n\`\`\`text\n${existingLic.key}\n\`\`\`\nExpires: ${existingLic.expires_at ? new Date(existingLic.expires_at).toLocaleString() : "Lifetime"}`,
+        color: COLOR_SUCCESS,
+      });
+    }
+
+    const freeKey = `LMK-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    return embedReply({
+      title: "🔑 Get Key",
+      description: `Here is your key for **${panel.name}**:\n\`\`\`text\n${freeKey}\n\`\`\`\nClick **✅ Redeem Key** in the panel to bind this key to your account.`,
+      color: COLOR_INFO,
+    });
+  }
+
   if (action === "script") {
     if (!panel.script_id) return errorReply("No script is attached to this panel");
     const { data: script } = await supabaseAdmin

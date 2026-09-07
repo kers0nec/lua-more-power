@@ -1,29 +1,27 @@
-import iconAsset from "@/assets/luamore-icon.webp.asset.json";
-
-export function Logo({ size = 32, showText = true }: { size?: number; showText?: boolean }) {
+export function Logo({
+  size = 32,
+  showText = true,
+  className = "",
+}: {
+  size?: number;
+  showText?: boolean;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div
-        className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-card transition-transform hover:scale-105"
+    <div className={`inline-flex items-center gap-2.5 ${className}`}>
+      <span
+        className="flex shrink-0 items-center justify-center rounded-md bg-primary font-mono font-bold text-primary-foreground select-none transition-transform hover:scale-105 shadow-sm"
         style={{
           width: size,
           height: size,
+          fontSize: Math.max(13, Math.round(size * 0.44)),
         }}
       >
-        <img
-          src={iconAsset.url}
-          alt="LuaMore"
-          width={size}
-          height={size}
-          className="w-full h-full object-cover"
-        />
-      </div>
+        &#123;&#125;
+      </span>
       {showText && (
-        <span
-          className="select-none font-display text-xl font-semibold"
-          style={{ color: "var(--foreground)" }}
-        >
-          Lua<span style={{ color: "var(--primary)" }}>More</span>
+        <span className="select-none font-mono text-lg font-bold tracking-tight text-foreground">
+          Lua<span className="text-primary">More</span>
         </span>
       )}
     </div>
