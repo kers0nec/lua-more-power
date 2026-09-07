@@ -333,6 +333,7 @@ export const obfuscateCode = createServerFn({ method: "POST" })
   .inputValidator(
     (input: {
       code: string;
+      engine?: "luamore" | "moonveil";
       dualVm?: boolean;
       mode?: "hybrid" | "chunked" | "standard" | "basic";
       oeldAntiTamper?: boolean;
@@ -341,6 +342,7 @@ export const obfuscateCode = createServerFn({ method: "POST" })
       z
         .object({
           code: z.string().min(1).max(1_000_000_000),
+          engine: z.enum(["luamore", "moonveil"]).optional(),
           dualVm: z.boolean().optional(),
           mode: z.enum(["hybrid", "chunked", "standard", "basic"]).optional(),
           oeldAntiTamper: z.boolean().optional(),
@@ -349,6 +351,28 @@ export const obfuscateCode = createServerFn({ method: "POST" })
         .parse(input),
   )
   .handler(async ({ data }) => {
+    const engine = data.engine || "luamore";
+
+    if (engine === "moonveil") {
+      const { obfuscateWithMoonVeil, isMoonVeilConfigured } =
+        await import("@/integrations/moonveil/client.server");
+      if (!isMoonVeilConfigured()) {
+        throw new Error("MoonVeil engine is not configured on the server");
+      }
+      const rawSettings: Record<string, unknown> = {};
+      if (data.dualVm !== undefined) rawSettings["dualVm"] = data.dualVm;
+      if (data.mode !== undefined) rawSettings["mode"] = data.mode;
+      if (data.oeldAntiTamper !== undefined) rawSettings["oeldAntiTamper"] = data.oeldAntiTamper;
+      if (data.chunkedLoader !== undefined) rawSettings["chunkedLoader"] = data.chunkedLoader;
+      const out = await obfuscateWithMoonVeil(data.code, rawSettings);
+      return {
+        obfuscated: out,
+        size: out.length,
+        sourceSize: data.code.length,
+        engine: "MoonVeil",
+      };
+    }
+
     const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
     const dualVm = data.dualVm ?? true;
     const mode = data.mode || (dualVm ? "hybrid" : "standard");
@@ -366,6 +390,7 @@ export const obfuscateCode = createServerFn({ method: "POST" })
       layers: analysis.layers,
       mode: analysis.mode,
       dualVm,
+      engine: "LuaMore VM v13",
     };
   });
 
@@ -374,6 +399,7 @@ export const obfuscatePublicCode = createServerFn({ method: "POST" })
   .inputValidator(
     (input: {
       code: string;
+      engine?: "luamore" | "moonveil";
       dualVm?: boolean;
       mode?: "hybrid" | "chunked" | "standard" | "basic";
       oeldAntiTamper?: boolean;
@@ -382,6 +408,7 @@ export const obfuscatePublicCode = createServerFn({ method: "POST" })
       z
         .object({
           code: z.string().min(1).max(500_000),
+          engine: z.enum(["luamore", "moonveil"]).optional(),
           dualVm: z.boolean().optional(),
           mode: z.enum(["hybrid", "chunked", "standard", "basic"]).optional(),
           oeldAntiTamper: z.boolean().optional(),
@@ -390,6 +417,28 @@ export const obfuscatePublicCode = createServerFn({ method: "POST" })
         .parse(input),
   )
   .handler(async ({ data }) => {
+    const engine = data.engine || "luamore";
+
+    if (engine === "moonveil") {
+      const { obfuscateWithMoonVeil, isMoonVeilConfigured } =
+        await import("@/integrations/moonveil/client.server");
+      if (!isMoonVeilConfigured()) {
+        throw new Error("MoonVeil engine is not configured on the server");
+      }
+      const rawSettings: Record<string, unknown> = {};
+      if (data.dualVm !== undefined) rawSettings["dualVm"] = data.dualVm;
+      if (data.mode !== undefined) rawSettings["mode"] = data.mode;
+      if (data.oeldAntiTamper !== undefined) rawSettings["oeldAntiTamper"] = data.oeldAntiTamper;
+      if (data.chunkedLoader !== undefined) rawSettings["chunkedLoader"] = data.chunkedLoader;
+      const out = await obfuscateWithMoonVeil(data.code, rawSettings);
+      return {
+        obfuscated: out,
+        size: out.length,
+        sourceSize: data.code.length,
+        engine: "MoonVeil",
+      };
+    }
+
     const { analyzeObfuscation } = await import("@/lib/obfuscator.server");
     const dualVm = data.dualVm ?? true;
     const mode = data.mode || (dualVm ? "hybrid" : "standard");

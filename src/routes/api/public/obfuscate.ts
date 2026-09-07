@@ -35,6 +35,23 @@ function extractKey(request: Request, body: Record<string, unknown> | null): str
   return null;
 }
 
+function mapSettingsToMoonVeilOptions(raw: Record<string, unknown>) {
+  const b = (k: string) => (typeof raw[k] === "boolean" ? (raw[k] as boolean) : undefined);
+  const s = (k: string, fallback: string) =>
+    typeof raw[k] === "string" ? (raw[k] as string) : fallback;
+
+  return {
+    compileType: (b("compileType") ? "vm" : "cff") as "cff" | "vm",
+    vmType: s("vmType", "skid") as "fox" | "skid",
+    safeEnvLock: s("safeEnvLock", "luau") as "luau" | "rbx",
+    cffDecompose: b("controlFlowFlattening") ?? false,
+    cffMangleNext: false,
+    cffMangleStrings: false,
+    cffMangleGlobals: false,
+    cffMangleCfPercent: 0,
+  };
+}
+
 export const Route = createFileRoute("/api/public/obfuscate")({
   server: {
     handlers: {
@@ -70,6 +87,53 @@ export const Route = createFileRoute("/api/public/obfuscate")({
         if (!source || source.trim().length === 0) {
           return json({ error: "missing 'source' string in body" }, 400);
         }
+
+        const engine =
+          typeof body?.["engine"] === "string" ? (body!["engine"] as string) : "luamore";
+
+        if (engine === "moonveil") {
+          if (source.length > 10_000_000) {
+            return json(
+              { error: "source too large — MoonVeil accepts up to 10,000,000 characters" },
+              413,
+            );
+          }
+
+          try {
+            const { obfuscateWithMoonVeil, isMoonVeilConfigured } =
+              await import("@/integrations/moonveil/client.server");
+            if (!isMoonVeilConfigured()) {
+              return json({ error: "MoonVeil engine is not configured on the server" }, 500);
+            }
+
+            const rawSettings =
+              body && typeof body["settings"] === "object" && body["settings"] !== null
+                ? (body["settings"] as Record<string, unknown>)
+                : {};
+            const mvOptions = mapSettingsToMoonVeilOptions(rawSettings);
+            const out = await obfuscateWithMoonVeil(source, mvOptions);
+
+            return json({
+              status: "success",
+              ok: true,
+              result: out,
+              obfuscated: out,
+              bytes_in: source.length,
+              bytes_out: out.length,
+              engine: "MoonVeil",
+              settings: mvOptions,
+            });
+          } catch (e) {
+            return json(
+              {
+                status: "error",
+                error: e instanceof Error ? e.message : "MoonVeil obfuscation failed",
+              },
+              502,
+            );
+          }
+        }
+
         if (source.length > 2_000_000) {
           return json(
             { error: "source too large — the LuaMore VM accepts up to 2 MB per build" },
