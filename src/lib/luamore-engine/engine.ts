@@ -1,7 +1,7 @@
 /**
- * LuaMore engine façade over the vendored Clyde protection engine.
+ * LuaMore engine façade over the LuaMore VM engine.
  *
- * This wires the Clyde lexer → parser → AST obfuscator (identifier renaming +
+ * This wires the LuaMore lexer → parser → AST obfuscator (identifier renaming +
  * string encoding) → register-VM compiler → polymorphic VM generator into the
  * same `obfuscateLua / obfuscateLuaWithOptions / analyzeObfuscation` surface
  * the rest of LuaMore already calls, so every existing call site (dashboard
@@ -24,9 +24,9 @@ import { regCompile } from "./vm/RegCompiler.ts";
 import { generateRegVM, type RegVMLevel } from "./vm/reg-vm-gen.ts";
 import { buildAntiTamperPrelude } from "./antitamper.ts";
 
-export const ENGINE_NAME = "LuaLamp v2 (Clyde VM)";
+export const ENGINE_NAME = "LuaMore Obfuscator";
 
-export interface ClydeObfuscationOptions {
+export interface LuaMoreObfuscationOptions {
   /** Protection level of the register VM. Defaults to "max". */
   level?: RegVMLevel;
   /** Emit the fail-closed anti-tamper shield. Defaults to true. */
@@ -44,7 +44,7 @@ export interface ClydeObfuscationOptions {
 }
 
 /** Back-compat alias matching the historical option bag. */
-export type ObfuscationOptions = ClydeObfuscationOptions & {
+export type ObfuscationOptions = LuaMoreObfuscationOptions & {
   dualVm?: boolean;
   antiHook?: boolean;
   antiLogger?: boolean;
@@ -74,7 +74,7 @@ function randomSeed(): number {
   return Math.floor(Math.random() * 0x7fffffff) >>> 0;
 }
 
-/** Map the historical/preset option bag onto a Clyde level. */
+/** Map the historical/preset option bag onto a VM protection level. */
 function resolveLevel(options: ObfuscationOptions): RegVMLevel {
   if (options.level === "debug" || options.level === "normal" || options.level === "max") {
     return options.level;
@@ -95,7 +95,7 @@ function resolveLevel(options: ObfuscationOptions): RegVMLevel {
 }
 
 /**
- * Obfuscate Lua/Luau source through the Clyde register VM.
+ * Obfuscate Lua/Luau source through the LuaMore register VM.
  * Throws on lex/parse errors with a readable message.
  */
 export function obfuscateLuaWithOptions(

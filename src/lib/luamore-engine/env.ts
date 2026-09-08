@@ -1,5 +1,5 @@
 /**
- * Cross-platform environment shim for the vendored Clyde VM generator.
+ * Cross-platform environment shim for the LuaMore VM generator.
  *
  * The engine is otherwise pure TypeScript, but a few build-time paths reach
  * for Node globals (process.env debug flags, crypto randomness, fs dumps,

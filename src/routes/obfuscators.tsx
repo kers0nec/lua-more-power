@@ -45,7 +45,7 @@ function loadLocalEngine(): Promise<LocalObfuscator> {
 
   // The engine is pure TypeScript, so the browser imports the exact same module
   // the server uses as its own code-split chunk — no second hand-built copy.
-  return import("@/lib/clyde/engine.ts").then((mod) => {
+  return import("@/lib/luamore-engine/engine.ts").then((mod) => {
     cachedEngine = {
       obfuscateLua: (source: string) => mod.obfuscateLua(source),
       obfuscateLuaWithOptions: (source: string, options?: Record<string, unknown>) => {

@@ -1,7 +1,7 @@
 /**
  * Public façade over the LuaMore obfuscation engine.
  *
- * LuaMore protects scripts with the vendored Clyde protection engine — a full
+ * LuaMore protects scripts with the LuaMore VM engine — a full
  * Luau/Lua front end (lexer → parser → AST transforms → register-bytecode
  * compiler → polymorphic VM generator) wrapped with the LuaMore anti-tamper
  * integrity shield and branded "Protected By LuaMore Obfuscator".
@@ -21,13 +21,13 @@ export {
   obfuscateLuaWithOptions,
   analyzeObfuscation,
   calculateEntropy,
-} from "./clyde/engine.ts";
+} from "./luamore-engine/engine.ts";
 
 export type {
   ObfuscationOptions,
   ObfuscationResult,
-  ClydeObfuscationOptions,
-} from "./clyde/engine.ts";
+  LuaMoreObfuscationOptions,
+} from "./luamore-engine/engine.ts";
 
 // Re-export the analysis shape under the historical name for compatibility.
-export type { ObfuscationResult as AnalysisResult } from "./clyde/engine.ts";
+export type { ObfuscationResult as AnalysisResult } from "./luamore-engine/engine.ts";

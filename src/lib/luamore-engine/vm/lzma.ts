@@ -104,7 +104,7 @@ function invertSBox(sbox: number[]): number[] {
   return inv;
 }
 
-export interface ClydeBlob {
+export interface LuaMoreBlob {
   blob: string;
   xorKey: number[];
   invSbox: number[];
@@ -112,7 +112,7 @@ export interface ClydeBlob {
   origLen: number;
 }
 
-export function encryptAndEncode(input: string, rng: () => number): ClydeBlob {
+export function encryptAndEncode(input: string, rng: () => number): LuaMoreBlob {
   const encoder = new TextEncoder();
   const raw = encoder.encode(input);
   const origLen = raw.length;
