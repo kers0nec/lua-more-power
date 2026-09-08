@@ -10,6 +10,7 @@ type LocalObfuscator = {
   obfuscateLuaWithOptions: (
     source: string,
     options?: {
+      level?: "debug" | "normal" | "max";
       vmDepth?: number;
       antiTamper?: boolean;
       antiHook?: boolean;
@@ -18,11 +19,7 @@ type LocalObfuscator = {
   ) => string;
 };
 
-declare global {
-  interface Window {
-    LMObfuscator?: LocalObfuscator;
-  }
-}
+let cachedEngine: LocalObfuscator | null = null;
 
 export const Route = createFileRoute("/obfuscators")({
   head: () => ({
@@ -44,29 +41,25 @@ print("LuaMore protected script for " .. player.Name)`;
 
 function loadLocalEngine(): Promise<LocalObfuscator> {
   if (typeof window === "undefined") return Promise.reject(new Error("Browser engine unavailable"));
-  if (window.LMObfuscator) return Promise.resolve(window.LMObfuscator);
+  if (cachedEngine) return Promise.resolve(cachedEngine);
 
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-luamore-obfuscator]");
-    if (existing) {
-      existing.addEventListener("load", () =>
-        window.LMObfuscator
-          ? resolve(window.LMObfuscator)
-          : reject(new Error("Engine failed to load")),
-      );
-      existing.addEventListener("error", () => reject(new Error("Engine failed to load")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "/lua-more/assets/luamore-obfuscator.js";
-    script.async = true;
-    script.dataset.luamoreObfuscator = "true";
-    script.onload = () =>
-      window.LMObfuscator
-        ? resolve(window.LMObfuscator)
-        : reject(new Error("Engine failed to load"));
-    script.onerror = () => reject(new Error("Could not load the local LuaLamp VM"));
-    document.head.appendChild(script);
+  // The engine is pure TypeScript, so the browser imports the exact same module
+  // the server uses as its own code-split chunk — no second hand-built copy.
+  return import("@/lib/clyde/engine.ts").then((mod) => {
+    cachedEngine = {
+      obfuscateLua: (source: string) => mod.obfuscateLua(source),
+      obfuscateLuaWithOptions: (source: string, options?: Record<string, unknown>) => {
+        const level =
+          (options?.level as "debug" | "normal" | "max") ??
+          (options?.dualVm === false ? "normal" : "max");
+        return mod.obfuscateLuaWithOptions(source, {
+          level,
+          antiTamper: options?.antiTamper as boolean | undefined,
+          antiHook: options?.antiHook as boolean | undefined,
+        });
+      },
+    };
+    return cachedEngine;
   });
 }
 
