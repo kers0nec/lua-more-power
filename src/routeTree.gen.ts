@@ -35,6 +35,7 @@ import { Route as DocsLoadingRouteImport } from './routes/docs.loading'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
 import { Route as FeaturesKeySystemGuiRouteImport } from './routes/features.key-system-gui'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardAccessRouteImport } from './routes/_authenticated/dashboard/access'
 import { Route as AuthenticatedDashboardApiKeysRouteImport } from './routes/_authenticated/dashboard/api-keys'
 import { Route as AuthenticatedDashboardBatchesRouteImport } from './routes/_authenticated/dashboard/batches'
 import { Route as AuthenticatedDashboardHwidRouteImport } from './routes/_authenticated/dashboard/hwid'
@@ -186,6 +187,12 @@ const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/dashboard/',
     path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardAccessRoute =
+  AuthenticatedDashboardAccessRouteImport.update({
+    id: '/dashboard/access',
+    path: '/dashboard/access',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardApiKeysRoute =
@@ -342,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/features/': typeof FeaturesIndexRoute
+  '/dashboard/access': typeof AuthenticatedDashboardAccessRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -390,6 +398,7 @@ export interface FileRoutesByTo {
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/features': typeof FeaturesIndexRoute
+  '/dashboard/access': typeof AuthenticatedDashboardAccessRoute
   '/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -441,6 +450,7 @@ export interface FileRoutesById {
   '/docs/loading': typeof DocsLoadingRoute
   '/features/key-system-gui': typeof FeaturesKeySystemGuiRoute
   '/features/': typeof FeaturesIndexRoute
+  '/_authenticated/dashboard/access': typeof AuthenticatedDashboardAccessRoute
   '/_authenticated/dashboard/api-keys': typeof AuthenticatedDashboardApiKeysRoute
   '/_authenticated/dashboard/batches': typeof AuthenticatedDashboardBatchesRoute
   '/_authenticated/dashboard/hwid': typeof AuthenticatedDashboardHwidRoute
@@ -492,6 +502,7 @@ export interface FileRouteTypes {
     | '/docs/loading'
     | '/features/key-system-gui'
     | '/features/'
+    | '/dashboard/access'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -540,6 +551,7 @@ export interface FileRouteTypes {
     | '/docs/loading'
     | '/features/key-system-gui'
     | '/features'
+    | '/dashboard/access'
     | '/dashboard/api-keys'
     | '/dashboard/batches'
     | '/dashboard/hwid'
@@ -590,6 +602,7 @@ export interface FileRouteTypes {
     | '/docs/loading'
     | '/features/key-system-gui'
     | '/features/'
+    | '/_authenticated/dashboard/access'
     | '/_authenticated/dashboard/api-keys'
     | '/_authenticated/dashboard/batches'
     | '/_authenticated/dashboard/hwid'
@@ -836,6 +849,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/access': {
+      id: '/_authenticated/dashboard/access'
+      path: '/dashboard/access'
+      fullPath: '/dashboard/access'
+      preLoaderRoute: typeof AuthenticatedDashboardAccessRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/api-keys': {
       id: '/_authenticated/dashboard/api-keys'
       path: '/dashboard/api-keys'
@@ -994,6 +1014,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardAccessRoute: typeof AuthenticatedDashboardAccessRoute
   AuthenticatedDashboardApiKeysRoute: typeof AuthenticatedDashboardApiKeysRoute
   AuthenticatedDashboardBatchesRoute: typeof AuthenticatedDashboardBatchesRoute
   AuthenticatedDashboardHwidRoute: typeof AuthenticatedDashboardHwidRoute
@@ -1008,6 +1029,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardAccessRoute: AuthenticatedDashboardAccessRoute,
   AuthenticatedDashboardApiKeysRoute: AuthenticatedDashboardApiKeysRoute,
   AuthenticatedDashboardBatchesRoute: AuthenticatedDashboardBatchesRoute,
   AuthenticatedDashboardHwidRoute: AuthenticatedDashboardHwidRoute,

@@ -68,56 +68,21 @@ async function handleCommand(body: any) {
         });
 
       case "login": {
-        const key = String(opts.get("api_key") ?? opts.get("key") ?? "");
-        const email = String(opts.get("email") ?? "");
-        const password = String(opts.get("password") ?? "");
+        const key = String(opts.get("api_key") ?? opts.get("key") ?? "").trim();
 
-        if (!key && !(email && password)) {
+        if (!key) {
           return errorReply(
             "Missing credentials.\n\n" +
-              "**Option 1:** Use `/login api_key:<your_key>` with a key from **Dashboard → API Keys** (https://luamore.app/dashboard/api-keys).\n" +
-              "**Option 2:** Use `/login email:<your_email> password:<your_password>` to log in directly with your account credentials.",
+              "Use `/login api_key:<your_key>` with a key from **Dashboard — API Keys** (https://luamore.app/dashboard/api-keys).\n\n" +
+              "LuaMore sign-in is Discord-only — link your Discord by pasting a key from the dashboard.",
           );
-        }
-
-        if (email && password) {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { setDiscordSession } = await import("@/lib/discord-auth-store.server");
-          const authRes = await supabaseAdmin.auth.signInWithPassword({ email, password });
-          if (authRes.error || !authRes.data.user) {
-            return errorReply(
-              `Login failed: ${authRes.error?.message || "Invalid email or password"}`,
-            );
-          }
-          const user = authRes.data.user;
-          const sessionData = authRes.data.session;
-          try {
-            await supabaseAdmin.from("profiles").update({ discord_id: userId }).eq("id", user.id);
-          } catch {
-            /* ignore */
-          }
-          setDiscordSession(userId, {
-            userId: user.id,
-            discordId: userId,
-            email: user.email,
-            username:
-              (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "User",
-            accessToken: sessionData?.access_token,
-            refreshToken: sessionData?.refresh_token,
-            linkedAt: new Date().toISOString(),
-          });
-          return embedReply({
-            title: " Logged in to LuaMore",
-            description: `Successfully linked Discord account to **${user.email}**.\n\nYou can now run \`/setup\` in your server to deploy panels!`,
-            color: COLOR_SUCCESS,
-          });
         }
 
         const result = await linkDiscord(userId, key);
         if (!result.success) {
           return errorReply(
             result.error ||
-              "Invalid API key.\n\nTo get a valid key:\n1. Sign in to https://luamore.app/login\n2. Open **Dashboard → API Keys** (https://luamore.app/dashboard/api-keys)\n3. Click **Generate Key**\n4. Copy the new key and run `/login <your_key>` in Discord.",
+              "Invalid API key.\n\nTo get a valid key:\n1. Sign in to https://luamore.app/login\n2. Open **Dashboard — API Keys** (https://luamore.app/dashboard/api-keys)\n3. Click **Generate Key**\n4. Copy the new key and run `/login <your_key>` in Discord.",
           );
         }
         return embedReply({
@@ -126,7 +91,6 @@ async function handleCommand(body: any) {
           color: COLOR_SUCCESS,
         });
       }
-
       case "setup": {
         const profile = await getProfileByDiscord(userId);
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -168,7 +132,7 @@ async function handleCommand(body: any) {
 
         if (!profile)
           return errorReply(
-            "Account not linked. Use `/login api_key:<your_key>` first with your key from **Dashboard → API Keys** (https://luamore.app/dashboard/api-keys).",
+            "Account not linked. Use `/login api_key:<your_key>` first with your key from **Dashboard — API Keys** (https://luamore.app/dashboard/api-keys).",
           );
 
         let scripts: any[] = [];
@@ -576,6 +540,28 @@ async function handleComponent(body: any) {
     .maybeSingle();
   if (!panel) return errorReply("This panel no longer exists");
 
+  if (action === "login") {
+    const linked = await getProfileByDiscord(discordId);
+    if (linked) {
+      return embedReply({
+        title: " Already Linked",
+        description: `You are already linked to LuaMore as **${linked.display_name || linked.email || "your account"}**.\n\nRun \`/setup\` in a channel to deploy a panel, or use \`/whitelist\` to grant access.`,
+        color: COLOR_SUCCESS,
+      });
+    }
+    return embedReply({
+      title: " Login / Link Discord",
+      description:
+        `Link your Discord to LuaMore to manage **${panel.name}** and your scripts.\n\n` +
+        `**1.** Sign in at https://luamore.app/login\n` +
+        `**2.** Open **Dashboard — API Keys**\n` +
+        `**3.** Click **Generate Key** and copy it\n` +
+        `**4.** Run \`/login api_key:<your_key>\` in this server\n\n` +
+        `Then click this button again to confirm you're linked.`,
+      color: COLOR_INFO,
+    });
+  }
+
   if (action === "getkey") {
     const { data: existingLic } = await supabaseAdmin
       .from("license_keys")
@@ -912,8 +898,7 @@ async function linkDiscord(
       success: false,
       error:
         "Invalid or unrecorded API key.\n\n" +
-        "Please visit **https://luamore.app/dashboard/api-keys**, click **Generate Key**, copy the new key, and run `/login api_key:<key>` in Discord.\n\n" +
-        "Alternatively, you can run `/login email:<your_email> password:<your_password>`.",
+        "Please visit **https://luamore.app/dashboard/api-keys**, click **Generate Key**, copy the new key, and run `/login api_key:<key>` in Discord.",
     };
   }
 

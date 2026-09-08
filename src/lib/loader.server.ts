@@ -9,7 +9,7 @@
 // Every served script is passed through the LuaMore VM obfuscator so the
 // response body never contains plaintext source.
 import { obfuscateLua } from "@/lib/obfuscator.server";
-import { getScriptByPublicId, bumpScriptRuns } from "@/lib/scripts-store.server";
+import { getScriptByPublicId, bumpScriptRuns, saveScript } from "@/lib/scripts-store.server";
 
 interface ScriptRecord {
   id: string;
@@ -99,7 +99,9 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
 
     const sendExecutionWebhook = async (licenseKeyStr: string | null) => {
       try {
-        // Look up webhook URL on associated panel or user profile
+        // Look up the webhook URL on the panel associated with this script so
+        // the execution embed is attributed to the owner's panel (not a generic
+        // bot username).
         const { data: panel } = await supabaseAdmin
           .from("panels")
           .select("webhook_url, name")
@@ -110,10 +112,16 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
 
         const webhookUrl = panel?.webhook_url;
         if (webhookUrl && webhookUrl.startsWith("http")) {
+          const panelName = panel?.name?.trim() || script!.name || "LuaMore Panel";
           const embed = {
-            title: ` Script Executed — ${script!.name}`,
-            color: 0x00aaff,
+            title: ` Script Executed — ${panelName}`,
+            color: 0x84cc16,
             fields: [
+              {
+                name: " Panel",
+                value: `**${panelName}**`,
+                inline: true,
+              },
               {
                 name: " License Key",
                 value: licenseKeyStr
@@ -134,7 +142,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
                   rbxId !== "0" && rbxId !== "Unknown"
                     ? `**${rbxUser}** (ID: \`${rbxId}\`)`
                     : `**${rbxUser}**`,
-                inline: false,
+                inline: true,
               },
               {
                 name: " Script Name",
@@ -148,7 +156,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
               },
             ],
             footer: {
-              text: "LuaMore Execution Logger • Verified",
+              text: `${panelName} • LuaMore Execution Logger`,
             },
             timestamp: new Date().toISOString(),
           };
@@ -157,9 +165,8 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              username: "LuaMore Logger",
-              avatar_url:
-                "https://ais-pre-wjegb7zmws6zwg54su3x6o-944319576513.europe-west2.run.app/favicon.ico",
+              username: panelName,
+              avatar_url: "https://luamore.app/luamore-logo.webp",
               embeds: [embed],
             }),
           }).catch((err) => console.warn("[Webhook Log Error]", err));
