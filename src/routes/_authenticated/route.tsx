@@ -24,6 +24,7 @@ import {
   Globe,
   Sparkles,
   ExternalLink,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +59,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/dashboard/keys", label: "Keys", icon: KeyRound },
       { to: "/dashboard/batches", label: "Key Batches", icon: Layers },
+      { to: "/dashboard/access", label: "My Access", icon: Users },
       { to: "/dashboard/hwid", label: "HWID Bans", icon: Ban },
       { to: "/dashboard/logs", label: "Execution Logs", icon: Activity, badge: "LIVE" },
     ],
@@ -200,7 +202,7 @@ function Layout() {
       {/* User Card & Logout */}
       <div className="border-t border-border/80 p-3 bg-card/40">
         <div className="flex items-center gap-2.5 p-2 rounded-lg bg-input/80 border border-border">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-700 text-white font-bold text-xs shadow-sm">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-lime-300 text-black font-bold text-xs shadow-sm">
             {userInitial}
           </div>
           <div className="min-w-0 flex-1">
@@ -279,7 +281,7 @@ function Layout() {
               to="/features/key-system-gui"
               className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md border border-border hover:bg-card transition-colors"
             >
-                <Sparkles size={12} className="text-primary" /> Docs
+              <Sparkles size={12} className="text-primary" /> Docs
             </Link>
           </div>
         </header>

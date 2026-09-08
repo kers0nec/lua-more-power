@@ -74,6 +74,12 @@ export function buildPanelComponents(panelId: string) {
           label: "Redeem Key",
           custom_id: `lm:redeem:${panelId}`,
         },
+        {
+          type: 2,
+          style: 2, // Secondary (Grey)
+          label: "Login / Link",
+          custom_id: `lm:login:${panelId}`,
+        },
       ],
     },
     {

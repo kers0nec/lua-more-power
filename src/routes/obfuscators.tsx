@@ -45,17 +45,18 @@ function loadLocalEngine(): Promise<LocalObfuscator> {
 
   // The engine is pure TypeScript, so the browser imports the exact same module
   // the server uses as its own code-split chunk — no second hand-built copy.
-  return import("@/lib/luamore-engine/engine.ts").then((mod) => {
+  return import("@/lib/lua/obfuscate.ts").then((mod) => {
     cachedEngine = {
       obfuscateLua: (source: string) => mod.obfuscateLua(source),
       obfuscateLuaWithOptions: (source: string, options?: Record<string, unknown>) => {
-        const level =
-          (options?.level as "debug" | "normal" | "max") ??
-          (options?.dualVm === false ? "normal" : "max");
+        const level = (options?.level as "debug" | "normal" | "max") ?? "max";
+        const preset = level === "debug" ? "fast" : level === "normal" ? "strong" : "paranoid";
+        const vmDepth = Number(options?.vmDepth ?? 0) || (options?.dualVm === false ? 1 : 2);
         return mod.obfuscateLuaWithOptions(source, {
-          level,
+          preset,
           antiTamper: options?.antiTamper as boolean | undefined,
           antiHook: options?.antiHook as boolean | undefined,
+          loaderVMDepth: vmDepth,
         });
       },
     };

@@ -44,42 +44,42 @@
 
 :root {
   --radius: 0.5rem;
-  /* Bright lime theme: light pages, lime-green accents, lime buttons with white text. */
-  --background: #f7fee7;
-  --foreground: #1a2e05;
-  --card: #ffffff;
-  --card-foreground: #1a2e05;
-  --popover: #ffffff;
-  --popover-foreground: #1a2e05;
-  --primary: #65a30d;
-  --primary-foreground: #ffffff;
-  --primary-dark: #4d7c0f;
-  --secondary: #ecfccb;
-  --secondary-foreground: #365314;
-  --muted: #ecfccb;
-  --muted-foreground: #4d6b1f;
-  --accent: #d9f99d;
-  --accent-foreground: #365314;
-  --accent-light: #ecfccb;
-  --destructive: #dc2626;
+  /* Black + lime theme: near-black pages, lime light-green accents, lime buttons with black text. */
+  --background: #070a04;
+  --foreground: #ecfccb;
+  --card: #0c1207;
+  --card-foreground: #ecfccb;
+  --popover: #0c1207;
+  --popover-foreground: #ecfccb;
+  --primary: #84cc16;
+  --primary-foreground: #060a02;
+  --primary-dark: #a3e635;
+  --secondary: #12180a;
+  --secondary-foreground: #d9f99d;
+  --muted: #10160a;
+  --muted-foreground: #9aa88b;
+  --accent: #1a240d;
+  --accent-foreground: #bef264;
+  --accent-light: #16200b;
+  --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --success: #15803d;
-  --warning: #ca8a04;
-  --border: #d9e8b8;
-  --border-strong: #65a30d;
-  --input: #ffffff;
+  --success: #4ade80;
+  --warning: #facc15;
+  --border: #1f2a12;
+  --border-strong: #84cc16;
+  --input: #0c1207;
   --ring: #84cc16;
-  --shadow-card: 0 16px 40px -14px rgba(54, 83, 20, 0.22), 0 0 0 1px rgba(132, 204, 22, 0.12);
-  --shadow-hover: 0 22px 55px -14px rgba(101, 163, 13, 0.4);
-  --gradient-primary: linear-gradient(135deg, #84cc16 0%, #4d7c0f 100%);
-  --gradient-hero: radial-gradient(120% 120% at 50% 0%, #d9f99d 0%, #ecfccb 40%, #f7fee7 72%, #ffffff 100%);
-  --sidebar: #f4fce4;
-  --sidebar-foreground: #1a2e05;
-  --sidebar-primary: #65a30d;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ecfccb;
-  --sidebar-accent-foreground: #1a2e05;
-  --sidebar-border: #d9e8b8;
+  --shadow-card: 0 16px 40px -14px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(132, 204, 22, 0.16);
+  --shadow-hover: 0 22px 55px -14px rgba(0, 0, 0, 0.8), 0 0 30px -6px rgba(132, 204, 22, 0.35);
+  --gradient-primary: linear-gradient(135deg, #a3e635 0%, #65a30d 100%);
+  --gradient-hero: radial-gradient(120% 120% at 50% 0%, #18250b 0%, #10160a 40%, #070a04 78%, #050703 100%);
+  --sidebar: #080c05;
+  --sidebar-foreground: #ecfccb;
+  --sidebar-primary: #84cc16;
+  --sidebar-primary-foreground: #060a02;
+  --sidebar-accent: #16200b;
+  --sidebar-accent-foreground: #ecfccb;
+  --sidebar-border: #1f2a12;
   --sidebar-ring: #84cc16;
 }
 
@@ -88,7 +88,7 @@
     border-color: var(--color-border);
   }
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
   html,
   body {
@@ -192,7 +192,7 @@
 }
 
 @utility text-gradient {
-  background: linear-gradient(135deg, #4d7c0f 0%, #65a30d 55%, #84cc16 100%);
+  background: linear-gradient(135deg, #a3e635 0%, #84cc16 50%, #d9f99d 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -216,9 +216,9 @@
 }
 
 @utility glass-panel {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(12, 18, 7, 0.72);
   border: 1px solid var(--border);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(18px);
 }
 
@@ -363,10 +363,10 @@
   overflow: hidden;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(10, 15, 5, 0.9);
   box-shadow:
-    0 35px 100px rgba(0, 0, 0, 0.08),
-    0 0 80px rgba(132, 204, 22, 0.08);
+    0 35px 100px rgba(0, 0, 0, 0.6),
+    0 0 80px rgba(132, 204, 22, 0.1);
 }
 
 @utility instrument-topbar {
@@ -542,7 +542,7 @@
     box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.15);
   }
   &::placeholder {
-    color: rgba(77, 107, 31, 0.55);
+    color: rgba(154, 168, 139, 0.6);
   }
 }
 
@@ -598,7 +598,7 @@
     box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.18);
   }
   &::placeholder {
-    color: rgba(77, 107, 31, 0.55);
+    color: rgba(154, 168, 139, 0.6);
   }
 }
 

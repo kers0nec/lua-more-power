@@ -1,15 +1,14 @@
 // LuaMore obfuscation regression tests.
-// For each option combo: obfuscate, execute in `lua` (5.1), assert the payload's
-// sentinel print reaches stdout, and report bytes + Shannon entropy.
+// For each option combo: obfuscate via the public façade, execute the result in
+// an in-process Lua VM (fengari), and assert the payload's sentinel print reaches
+// stdout. Reports output bytes + Shannon entropy.
 //
-// Usage: node scripts/obfuscation-regression.mjs
-// Requires: a working `lua` (5.1) on PATH.
+// Usage: node --experimental-strip-types --no-warnings scripts/obfuscation-regression.mjs
+// No external `lua` binary required — runs the same Lua 5.3 VM the engine's
+// differential suite uses.
 
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { obfuscateLuaWithOptions } from "../src/lib/obfuscator.server.ts";
+import { runLua } from "../test/luarun.mjs";
 
 const SENTINEL = "LUAMORE_TEST_PASS_" + Math.random().toString(36).slice(2, 10);
 const SOURCE = `
@@ -30,33 +29,18 @@ function entropy(str) {
   return h;
 }
 
-function runLua(code) {
-  const dir = mkdtempSync(join(tmpdir(), "lm-regression-"));
-  const file = join(dir, "case.lua");
-  writeFileSync(file, code);
-  const r = spawnSync("lua", [file], { encoding: "utf8", timeout: 60_000 });
-  rmSync(dir, { recursive: true, force: true });
-  return r;
-}
-
 const CASES = [
   {
-    name: "baseline (single VM)",
-    opts: { dualVm: false, antiTamper: false, polymorphicVM: false },
+    name: "baseline (fast preset)",
+    opts: { preset: "fast", antiTamper: false },
   },
-  { name: "antiTamper", opts: { dualVm: false, antiTamper: true, polymorphicVM: false } },
-  { name: "dualVm", opts: { dualVm: true, antiTamper: true, polymorphicVM: false } },
-  { name: "depth 3", opts: { loaderVMDepth: 3, antiTamper: true, polymorphicVM: false } },
-  { name: "polymorphicVM only", opts: { dualVm: false, antiTamper: false, polymorphicVM: true } },
-  { name: "dualVm + polymorphicVM", opts: { dualVm: true, antiTamper: true, polymorphicVM: true } },
+  { name: "antiTamper", opts: { antiTamper: true, loaderVMDepth: 1 } },
+  { name: "dualVm (depth 2)", opts: { dualVm: true, antiTamper: true } },
+  { name: "depth 3", opts: { loaderVMDepth: 3, antiTamper: true } },
+  { name: "paranoid preset", opts: { preset: "paranoid" } },
   {
-    name: "polymorphicVM + context",
-    opts: {
-      dualVm: false,
-      antiTamper: false,
-      polymorphicVM: true,
-      context: { publicId: "LM-ABCD-EFGH-1234", mode: "advanced" },
-    },
+    name: "CFF + strings + numbers",
+    opts: { controlFlowFlattening: true, encryptStrings: true, obfuscateNumbers: true },
   },
 ];
 
@@ -74,7 +58,7 @@ for (const c of CASES) {
   }
   const buildMs = Date.now() - t0;
   const r = runLua(out);
-  const ok = r.status === 0 && (r.stdout ?? "").includes(SENTINEL);
+  const ok = r.ok && r.stdout.includes(SENTINEL);
   const bytes = out.length;
   const H = entropy(out).toFixed(3);
   const status = ok ? "PASS" : "FAIL";
@@ -83,8 +67,8 @@ for (const c of CASES) {
   );
   if (!ok) {
     failed++;
-    console.log("  stdout:", (r.stdout ?? "").trim().slice(0, 200));
-    console.log("  stderr:", (r.stderr ?? "").trim().slice(0, 400));
+    console.log("  stdout:", r.stdout.trim().slice(0, 200));
+    console.log("  errorText:", r.errorText.slice(0, 400));
   }
 }
 console.log("=".repeat(60));
