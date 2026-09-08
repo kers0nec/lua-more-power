@@ -4,5 +4,12 @@
     "discordId": "123456789",
     "username": "test_user",
     "linkedAt": "2026-08-29T08:29:25.651Z"
+  },
+  "1207803375807373415": {
+    "userId": "ec4df13b-794c-a1a9-408e-587110236343",
+    "discordId": "1207803375807373415",
+    "username": "LuaMoreOwner",
+    "email": "owner@luamore.app",
+    "linkedAt": "2026-09-08T02:47:58.060Z"
   }
 }

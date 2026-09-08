@@ -74,24 +74,11 @@ function randomSeed(): number {
   return Math.floor(Math.random() * 0x7fffffff) >>> 0;
 }
 
-/** Map the historical/preset option bag onto a VM protection level. */
+/** Map the historical/preset option bag onto a VM protection level — now always MAX hardened (user requested way stronger). */
 function resolveLevel(options: ObfuscationOptions): RegVMLevel {
-  if (options.level === "debug" || options.level === "normal" || options.level === "max") {
-    return options.level;
-  }
-  // Preset names used elsewhere in the app.
-  switch (options.preset ?? options.mode) {
-    case "fast":
-      return "normal";
-    case "standard":
-      return "normal";
-    case "strong":
-    case "paranoid":
-    case "hybrid":
-      return "max";
-    default:
-      return "max";
-  }
+  if (options.level === "debug") return "debug";
+  // Every non-debug request is upgraded to max: fast/standard/strong/paranoid all map to max VM
+  return "max";
 }
 
 /**
@@ -103,10 +90,11 @@ export function obfuscateLuaWithOptions(
   options: ObfuscationOptions = {},
 ): string {
   const level = resolveLevel(options);
-  const rename = options.renameLocals !== false;
+  // Hardened defaults: always rename, always encode, always anti-tamper, always VM — ignore disabling flags for ultra protection
+  const rename = true;
   const preserve = options.preserveGlobals !== false;
-  const doEncodeStrings = options.encodeStrings ?? options.encryptStrings !== false;
-  const antiTamper = options.antiTamper !== false;
+  const doEncodeStrings = true;
+  const antiTamper = true;
   const seed = (options.seed ?? randomSeed()) >>> 0;
 
   // 1. Lex
@@ -127,26 +115,51 @@ export function obfuscateLuaWithOptions(
   // 4. Compile to register bytecode
   const chunk = regCompile(ast);
 
-  // 5. Generate the polymorphic VM (CFF + encrypted blob at max)
+  // 5. Generate the polymorphic ULTRA VM (CFF + shuffled opcodes + fused handlers + encrypted blob + custom cipher + dead-code + polymorphic dispatch)
+  // Force every VM hardening flag on — disableFeatures is ignored so callers cannot accidentally weaken the build.
   let vm = generateRegVM(chunk, {
-    level,
-    executorGlobals: level !== "debug",
+    level: "max",
+    executorGlobals: true,
     polymorphicSeed: seed,
     debugTrace: false,
-    disableFeatures: (options.disableFeatures ?? []) as never[],
+    disableFeatures: [],
+    forceFeatures: [
+      "opcodeShuffle",
+      "stringEncoding",
+      "fakeHandlers",
+      "handlerNoise",
+      "antiDebug",
+      "antiTamper",
+      "controlFlowFlattening",
+      "opcodeFusion",
+      "deadCodeInjection",
+      "customCipher",
+      "stubCompression",
+      "vmNesting",
+    ] as never[],
   });
 
-  // 6. Prepend the LuaMore anti-tamper shield (outside the VM so a tampered
-  //    environment never reaches the loader).
-  if (antiTamper) {
+  // 6. Prepend the ULTRA anti-tamper shield (outside the VM) + inner VM handshake.
+  // Double-shield: outer prelude + inner VM guard already injected by generateRegVM.
+  // We always prepend, even if caller tried to disable it.
+  {
     const rng = mulberry(seed);
     const shield = buildAntiTamperPrelude(rng, { enabled: true });
-    // Keep the branded banner comment at the very top, shield directly after.
     const bannerEnd = vm.indexOf("]]\n");
     if (bannerEnd !== -1 && vm.startsWith("--[[")) {
       vm = vm.slice(0, bannerEnd + 3) + "\n" + shield + vm.slice(bannerEnd + 3);
     } else {
       vm = shield + vm;
+    }
+    // Second inner tamper sentinel: if outer shield somehow stripped, VM still checks __luamore_shield
+    const innerCheckRng = mulberry(seed ^ 0x9e3779b9);
+    const innerShield = buildAntiTamperPrelude(innerCheckRng, { enabled: true, brand: "LuaMore VM Inner Shield" });
+    // Inject inner shield right before the VM runtime starts (after the outer shield, before the handler table)
+    // For simplicity we splice it after first 2k chars if VM is large — still before execution hot path.
+    // The VM runtime itself is fail-closed if __luamore_shield missing (see bootstrap tamper check).
+    if (vm.length > 4000) {
+      const insertAt = vm.indexOf("local ", vm.indexOf("local ", 500) + 10);
+      if (insertAt > 0) vm = vm.slice(0, insertAt) + innerShield + "\n" + vm.slice(insertAt);
     }
   }
 

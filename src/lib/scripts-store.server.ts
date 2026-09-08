@@ -39,7 +39,7 @@ function ensureDataDir() {
 const DEFAULT_SEEDS: Record<string, StoredScript> = {
   "87b653a7b59a722de8": {
     id: "87b653a7-b59a-722d-e800-000000000001",
-    user_id: "demo-user",
+    user_id: "ec4df13b-794c-a1a9-408e-587110236343",
     public_id: "87b653a7b59a722de8",
     name: "Universal Roblox Script",
     code: `-- LuaMore High-Security Roblox Script
@@ -70,7 +70,7 @@ print("[LuaMore] Successfully initialized and verified!")
   },
   "1349b82b8502467a97b9c7c516d84697": {
     id: "1349b82b-8502-467a-97b9-c7c516d84697",
-    user_id: "demo-user",
+    user_id: "ec4df13b-794c-a1a9-408e-587110236343",
     public_id: "1349b82b8502467a97b9c7c516d84697",
     name: "Delta Universal Hub",
     code: `-- LuaMore Delta Universal Hub
@@ -88,13 +88,28 @@ print("[LuaMore] Player: " .. (lp and lp.Name or "Unknown"))
   },
 };
 
+const OWNER_UUID = "ec4df13b-794c-a1a9-408e-587110236343";
+const LEGACY_ALIASES = new Set(["demo-user", "a1b2c3d4-e5f6-7890-abcd-ef1234567890"]);
+
 function loadScripts(): Record<string, StoredScript> {
   try {
     ensureDataDir();
     if (fs.existsSync(SCRIPTS_FILE)) {
       const raw = fs.readFileSync(SCRIPTS_FILE, "utf-8");
       const parsed = JSON.parse(raw);
-      return { ...DEFAULT_SEEDS, ...parsed };
+      const merged = { ...DEFAULT_SEEDS, ...parsed } as Record<string, StoredScript>;
+      // Auto-migrate any legacy user_id to OWNER_UUID so Discord ID 1207803375807373415 owns them
+      let migrated = false;
+      for (const k of Object.keys(merged)) {
+        if (LEGACY_ALIASES.has(merged[k].user_id) || merged[k].user_id === "demo-user") {
+          merged[k].user_id = OWNER_UUID;
+          migrated = true;
+        }
+      }
+      if (migrated) {
+        try { saveScripts(merged); } catch {}
+      }
+      return merged;
     }
   } catch (err) {
     console.error("Failed to read scripts store:", err);
@@ -120,8 +135,14 @@ export function getAllScripts(userId?: string): StoredScript[] {
   const map = loadScripts();
   const list = Object.values(map);
   if (userId) {
+    const wantsOwner = userId === OWNER_UUID || LEGACY_ALIASES.has(userId) || userId === "demo-user";
     return list
-      .filter((s) => s.user_id === userId)
+      .filter((s) => {
+        if (s.user_id === userId) return true;
+        // Alias: owner queries also get legacy, and legacy queries also get owner scripts
+        if (wantsOwner && (s.user_id === OWNER_UUID || LEGACY_ALIASES.has(s.user_id) || s.user_id === "demo-user")) return true;
+        return false;
+      })
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   }
   return list.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
@@ -131,7 +152,12 @@ export function getScriptById(id: string, userId?: string): StoredScript | null 
   const map = loadScripts();
   const script = map[id];
   if (!script) return null;
-  if (userId && script.user_id !== userId) return null;
+  if (userId) {
+    const same = script.user_id === userId;
+    const aliasMatch = (userId === OWNER_UUID || LEGACY_ALIASES.has(userId) || userId === "demo-user") &&
+                       (script.user_id === OWNER_UUID || LEGACY_ALIASES.has(script.user_id) || script.user_id === "demo-user");
+    if (!same && !aliasMatch) return null;
+  }
   return script;
 }
 
