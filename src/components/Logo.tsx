@@ -10,13 +10,10 @@ export function Logo({
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
       <img
-        src="/luamore-logo.webp"
+        src="/luamore-glow.webp"
         alt="LuaMore"
-        className="shrink-0 rounded-lg shadow-sm transition-transform hover:scale-105"
-        style={{
-          width: size,
-          height: size,
-        }}
+        className="shrink-0 transition-transform hover:scale-105"
+        style={{ width: size, height: size }}
       />
       {showText && (
         <span className="select-none font-mono text-lg font-bold tracking-tight text-foreground">
