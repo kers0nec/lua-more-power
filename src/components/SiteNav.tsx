@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
-import { DISCORD_INVITE } from "@/lib/site";
 
 const LINKS = [
   { to: "/features", label: "Features" },
@@ -43,9 +42,13 @@ export function SiteNav() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
+        <nav
+          className="hidden items-center gap-1 md:flex"
+          aria-label="Primary navigation"
+        >
           {LINKS.map((l) => {
-            const active = loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
+            const active =
+              loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
             return (
               <Link
                 key={l.to}
@@ -71,7 +74,10 @@ export function SiteNav() {
           >
             Sign in
           </Link>
-          <Link to="/register" className="btn-primary py-1.5 px-3.5 text-xs font-extrabold">
+          <Link
+            to="/register"
+            className="btn-primary py-1.5 px-3.5 text-xs font-extrabold"
+          >
             Get started
           </Link>
         </div>
@@ -92,11 +98,15 @@ export function SiteNav() {
         <div
           id="mobile-navigation"
           className="border-t px-6 py-4 md:hidden"
-          style={{ borderColor: "var(--border)", background: "var(--background)" }}
+          style={{
+            borderColor: "var(--border)",
+            background: "var(--background)",
+          }}
         >
           <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
             {LINKS.map((l) => {
-              const active = loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
+              const active =
+                loc.pathname === l.to || loc.pathname.startsWith(`${l.to}/`);
               return (
                 <Link
                   key={l.to}

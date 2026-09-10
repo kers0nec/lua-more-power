@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  MessageSquare,
   CodeXml,
   KeyRound,
   Bot,
@@ -49,7 +48,10 @@ export const Route = createFileRoute("/")({
         content:
           "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
       },
-      { property: "og:title", content: "LuaMore — Control who can run your Lua scripts" },
+      {
+        property: "og:title",
+        content: "LuaMore — Control who can run your Lua scripts",
+      },
       {
         property: "og:description",
         content:
@@ -85,12 +87,18 @@ function HomePage() {
       <main className="flex-1">
         {/* HERO — copied from uploaded index.html, now lime-themed */}
         <section className="relative overflow-hidden border-b border-border/60">
-          <div className="absolute inset-0 bg-gradient-hero" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-gradient-hero"
+            aria-hidden="true"
+          />
           <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20">
             <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div className="text-left">
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-3 py-1.5 text-[11px] font-bold text-primary backdrop-blur">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                    aria-hidden="true"
+                  />
                   Free forever · no card required
                 </span>
                 <h1 className="mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
@@ -98,9 +106,9 @@ function HomePage() {
                   <span className="text-gradient">Lua scripts.</span>
                 </h1>
                 <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-base">
-                  Add a script, choose how access works — keys, Discord, ad links, or
-                  keyless — then copy the loader. Everything is free, everything lives in
-                  one dashboard.
+                  Add a script, choose how access works — keys, Discord, ad
+                  links, or keyless — then copy the loader. Everything is free,
+                  everything lives in one dashboard.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
@@ -117,7 +125,8 @@ function HomePage() {
                   </a>
                 </div>
                 <p className="mt-4 text-xs font-mono text-muted-foreground">
-                  Unlimited projects · scripts · keys · obfuscations · loading screens
+                  Unlimited projects · scripts · keys · obfuscations · loading
+                  screens
                 </p>
               </div>
 
@@ -141,13 +150,21 @@ function HomePage() {
                     title={copied ? "Copied" : "Copy loader"}
                     className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-bold hover:border-primary/40 hover:text-primary transition-colors"
                   >
-                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copied ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/20 px-4 py-3">
-                  <div role="tablist" aria-label="Loader access mode" className="flex flex-wrap gap-1.5">
+                  <div
+                    role="tablist"
+                    aria-label="Loader access mode"
+                    className="flex flex-wrap gap-1.5"
+                  >
                     {ACCESS_MODES.map((mode) => {
                       const active = mode.id === accessModeId;
                       return (
@@ -184,7 +201,10 @@ function HomePage() {
                 </pre>
                 <div className="flex flex-wrap gap-2 border-t border-border bg-muted/30 px-4 py-3">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                      aria-hidden="true"
+                    />
                     {selectedAccessMode.badge}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
@@ -254,8 +274,12 @@ function HomePage() {
         {/* Four tools — from html #what */}
         <section id="what" className="mx-auto max-w-6xl px-6 py-12">
           <div className="text-center">
-            <div className="eyebrow text-primary font-bold tracking-widest text-xs">The parts you actually use</div>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Four tools. One free dashboard.</h2>
+            <div className="eyebrow text-primary font-bold tracking-widest text-xs">
+              The parts you actually use
+            </div>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Four tools. One free dashboard.
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -290,7 +314,9 @@ function HomePage() {
                     <I className="h-5 w-5 text-primary" />
                   </div>
                   <h3 className="mt-4 font-extrabold">{c.t}</h3>
-                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{c.d}</p>
+                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+                    {c.d}
+                  </p>
                 </div>
               );
             })}
@@ -300,17 +326,40 @@ function HomePage() {
         {/* Setup steps — from html #how */}
         <section id="how" className="mx-auto max-w-6xl px-6 py-8">
           <div className="text-center">
-            <div className="eyebrow text-primary font-bold tracking-widest text-xs">Setup</div>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight">Four steps, then you are done</h2>
+            <div className="eyebrow text-primary font-bold tracking-widest text-xs">
+              Setup
+            </div>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight">
+              Four steps, then you are done
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { n: "01", t: "Create a project", d: "Add the script you want to deliver." },
-              { n: "02", t: "Choose access", d: "Use keys, Discord, an ad link, or keyless mode." },
-              { n: "03", t: "Copy the loader", d: "Paste the loader where your users can find it." },
-              { n: "04", t: "Check activity", d: "See runs, errors, and active devices." },
+              {
+                n: "01",
+                t: "Create a project",
+                d: "Add the script you want to deliver.",
+              },
+              {
+                n: "02",
+                t: "Choose access",
+                d: "Use keys, Discord, an ad link, or keyless mode.",
+              },
+              {
+                n: "03",
+                t: "Copy the loader",
+                d: "Paste the loader where your users can find it.",
+              },
+              {
+                n: "04",
+                t: "Check activity",
+                d: "See runs, errors, and active devices.",
+              },
             ].map((s) => (
-              <div key={s.n} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <div
+                key={s.n}
+                className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-black text-sm">
                   {s.n}
                 </div>
@@ -333,9 +382,9 @@ function HomePage() {
                   There is no pricing. Everything is free.
                 </h2>
                 <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
-                  No tiers, no card on file, no “trial ends soon”. Unlimited projects,
-                  scripts, keys, obfuscations, and every loading preset — for everyone,
-                  forever.
+                  No tiers, no card on file, no “trial ends soon”. Unlimited
+                  projects, scripts, keys, obfuscations, and every loading
+                  preset — for everyone, forever.
                 </p>
                 <Link
                   to="/register"
@@ -346,7 +395,10 @@ function HomePage() {
               </div>
               <div className="rounded-2xl border border-border bg-card p-6">
                 <div className="text-5xl font-black tracking-tight">
-                  $0 <small className="text-sm font-bold text-muted-foreground">/mo · forever</small>
+                  $0{" "}
+                  <small className="text-sm font-bold text-muted-foreground">
+                    /mo · forever
+                  </small>
                 </div>
                 <ul className="mt-4 space-y-2 text-sm">
                   {[
@@ -357,7 +409,8 @@ function HomePage() {
                     "Every loading-screen preset",
                   ].map((li) => (
                     <li key={li} className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-primary shrink-0" /> {li}
+                      <ShieldCheck className="h-4 w-4 text-primary shrink-0" />{" "}
+                      {li}
                     </li>
                   ))}
                 </ul>
@@ -370,7 +423,9 @@ function HomePage() {
         <section className="mx-auto max-w-6xl px-6 py-8">
           <div className="rounded-3xl border border-border bg-card p-10 text-center shadow-card">
             <h2 className="text-3xl font-extrabold">Start with one project.</h2>
-            <p className="mt-2 text-muted-foreground">It costs nothing, and it takes two minutes.</p>
+            <p className="mt-2 text-muted-foreground">
+              It costs nothing, and it takes two minutes.
+            </p>
             <div className="mt-6 flex justify-center gap-3">
               <Link
                 to="/register"
@@ -393,8 +448,8 @@ function HomePage() {
           © 2026 LuaMore · More Power, More Security, More Lua —{" "}
           <span className="font-mono text-primary">lime green</span> edition ·{" "}
           <span className="inline-flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" /> Protected By LuaMore
-            Obfuscator
+            <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" />{" "}
+            Protected By LuaMore Obfuscator
           </span>
         </div>
       </main>
