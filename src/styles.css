@@ -89,6 +89,7 @@
   }
   html {
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
   html,
   body {
@@ -98,6 +99,10 @@
     font-weight: 600;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
   }
   h1,
   h2,
@@ -197,6 +202,10 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+@utility text-balance {
+  text-wrap: balance;
 }
 
 @utility dot-bg {
