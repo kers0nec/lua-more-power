@@ -79,7 +79,7 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
   const method = request.method.toUpperCase();
 
   const auth = await authenticate(request);
-  if ("error" in auth) return auth.error;
+  if ("error" in auth && auth.error) return auth.error;
   const { userId, supabase } = auth;
 
   let body: any = null;
@@ -96,7 +96,7 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
   if (segs[0] === "me" && segs.length === 1 && method === "GET") {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, discord_id, avatar_url")
+      .select("id, email, display_name, discord_id, plan, max_scripts, max_panels, is_banned")
       .eq("id", userId)
       .maybeSingle();
     return json({ ok: true, user: data });
@@ -384,13 +384,141 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
   }
 
   // /panels
-  if (segs[0] === "panels" && segs.length === 1 && method === "GET") {
-    const { data } = await supabase
-      .from("panels")
-      .select("id, name, description, script_id, channel_id, webhook_url, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    return json({ ok: true, panels: data ?? [] });
+  const PANEL_COLS =
+    "id, name, description, script_id, channel_id, whitelist_channel_id, webhook_url, discord_role_id, admin_role_ids, created_at";
+
+  if (segs[0] === "panels") {
+    if (segs.length === 1 && method === "GET") {
+      const { data } = await supabase
+        .from("panels")
+        .select(PANEL_COLS)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      return json({ ok: true, panels: data ?? [] });
+    }
+
+    if (segs.length === 1 && method === "POST") {
+      if (!body?.name) return json({ ok: false, error: "name is required" }, 400);
+      const insert: Record<string, unknown> = {
+        user_id: userId,
+        name: String(body.name),
+        description: body.description ?? null,
+        script_id: body.script_id ?? null,
+        channel_id: body.channel_id ?? null,
+        whitelist_channel_id: body.whitelist_channel_id ?? null,
+        webhook_url: body.webhook_url ?? null,
+        discord_role_id: body.discord_role_id ?? null,
+      };
+      const { data, error } = await supabase
+        .from("panels")
+        .insert(insert as never)
+        .select(PANEL_COLS)
+        .single();
+      if (error) return json({ ok: false, error: error.message }, 400);
+      return json({ ok: true, panel: data }, 201);
+    }
+
+    if (segs.length === 2 && method === "GET") {
+      const { data } = await supabase
+        .from("panels")
+        .select(PANEL_COLS)
+        .eq("user_id", userId)
+        .eq("id", segs[1])
+        .maybeSingle();
+      if (!data) return json({ ok: false, error: "not found" }, 404);
+      return json({ ok: true, panel: data });
+    }
+
+    if (segs.length === 2 && method === "PATCH") {
+      const patch: Record<string, unknown> = {};
+      for (const k of [
+        "name",
+        "description",
+        "script_id",
+        "channel_id",
+        "whitelist_channel_id",
+        "webhook_url",
+        "discord_role_id",
+        "admin_role_ids",
+      ]) {
+        if (k in (body || {})) patch[k] = body[k];
+      }
+      const { data, error } = await supabase
+        .from("panels")
+        .update(patch as never)
+        .eq("user_id", userId)
+        .eq("id", segs[1])
+        .select(PANEL_COLS)
+        .maybeSingle();
+      if (error) return json({ ok: false, error: error.message }, 400);
+      if (!data) return json({ ok: false, error: "not found" }, 404);
+      return json({ ok: true, panel: data });
+    }
+
+    if (segs.length === 2 && method === "DELETE") {
+      const { error } = await supabase
+        .from("panels")
+        .delete()
+        .eq("user_id", userId)
+        .eq("id", segs[1]);
+      if (error) return json({ ok: false, error: error.message }, 400);
+      return json({ ok: true, deleted: true });
+    }
+
+    // POST /panels/{id}/send  -> posts the panel message into a Discord channel
+    if (segs.length === 3 && segs[2] === "send" && method === "POST") {
+      const { data: panel } = await supabase
+        .from("panels")
+        .select("id, name, description, script_id, channel_id")
+        .eq("user_id", userId)
+        .eq("id", segs[1])
+        .maybeSingle();
+      if (!panel) return json({ ok: false, error: "panel not found" }, 404);
+
+      const channelId = String(body?.channel_id || panel.channel_id || "");
+      if (!channelId) return json({ ok: false, error: "channel_id is required" }, 400);
+
+      const token = (process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN || "").trim();
+      if (!token) return json({ ok: false, error: "bot token not configured" }, 500);
+
+      let scriptName: string | null = null;
+      if (panel.script_id) {
+        const { data: sc } = await supabase
+          .from("scripts")
+          .select("name")
+          .eq("id", panel.script_id)
+          .maybeSingle();
+        scriptName = sc?.name ?? null;
+      }
+
+      const { buildPanelEmbed, buildPanelComponents } = await import("@/lib/discord-panel");
+      const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          embeds: [
+            buildPanelEmbed({
+              id: panel.id,
+              name: panel.name,
+              description: panel.description,
+              scriptName,
+            }),
+          ],
+          components: buildPanelComponents(panel.id),
+        }),
+      });
+      const text = await res.text();
+      if (!res.ok) return json({ ok: false, error: `discord ${res.status}: ${text}` }, 400);
+
+      if (channelId !== panel.channel_id) {
+        await supabase
+          .from("panels")
+          .update({ channel_id: channelId } as never)
+          .eq("user_id", userId)
+          .eq("id", panel.id);
+      }
+      return json({ ok: true, sent: true, channel_id: channelId, message: JSON.parse(text) });
+    }
   }
 
   return json({ ok: false, error: `no route for ${method} /${path}` }, 404);
