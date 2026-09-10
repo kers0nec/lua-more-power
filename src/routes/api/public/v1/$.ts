@@ -96,7 +96,7 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
   if (segs[0] === "me" && segs.length === 1 && method === "GET") {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, discord_id, avatar_url")
+      .select("id, email, display_name, discord_id, plan, max_scripts, max_panels, is_banned")
       .eq("id", userId)
       .maybeSingle();
     return json({ ok: true, user: data });
