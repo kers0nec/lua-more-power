@@ -43,7 +43,13 @@ function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [discordId, setDiscordId] = useState("");
   const [status, setStatus] = useState("");
-  const [accentColor, setAccentColor] = useState("blue");
+  const [accentColor, setAccentColor] = useState(() => {
+    try {
+      return localStorage.getItem("lm_accent") || "lime";
+    } catch {
+      return "lime";
+    }
+  });
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -421,7 +427,8 @@ function SettingsPage() {
               <div>
                 <h2 className="font-display text-2xl">Theme & Accent</h2>
                 <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  LuaMore uses a dark blue and black theme. Choose your accent color.
+                  LuaMore is built on a high-contrast obsidian dark theme featuring our signature
+                  electric Lime Green palette.
                 </p>
               </div>
             </div>
@@ -431,17 +438,22 @@ function SettingsPage() {
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {[
                   {
-                    id: "midnight",
-                    label: "Midnight",
-                    desc: "Deep navy and black",
-                    color: "#01040a",
+                    id: "obsidian",
+                    label: "Obsidian Lime",
+                    desc: "Deep pitch dark with lime green highlights",
+                    color: "#0a0e08",
                   },
-                  { id: "ocean", label: "Ocean", desc: "Dark blue tones", color: "#040e20" },
                   {
-                    id: "void",
-                    label: "Void",
-                    desc: "Pure black with blue accents",
+                    id: "matrix",
+                    label: "Matrix Void",
+                    desc: "Pure OLED black with electric accents",
                     color: "#000000",
+                  },
+                  {
+                    id: "forest",
+                    label: "Forest Stealth",
+                    desc: "Deep olive and dark camo tones",
+                    color: "#0f160c",
                   },
                 ].map((t) => (
                   <button
@@ -454,9 +466,11 @@ function SettingsPage() {
                     }}
                   >
                     <div
-                      className="h-8 w-8 rounded-lg mb-3"
+                      className="h-8 w-8 rounded-lg mb-3 flex items-center justify-center"
                       style={{ background: t.color, border: "1px solid var(--border)" }}
-                    />
+                    >
+                      <span className="h-2 w-2 rounded-full bg-[#84cc16]" />
+                    </div>
                     <div className="font-medium text-sm">{t.label}</div>
                     <div className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                       {t.desc}
@@ -470,16 +484,16 @@ function SettingsPage() {
               <label className="eyebrow">Accent Color</label>
               <div className="mt-3 flex flex-wrap gap-3">
                 {[
-                  { id: "blue", color: "#3b82f6", label: "Blue" },
+                  { id: "lime", color: "#84cc16", label: "Lime Green (Default)" },
+                  { id: "emerald", color: "#10b981", label: "Emerald" },
                   { id: "cyan", color: "#22d3ee", label: "Cyan" },
                   { id: "violet", color: "#8b5cf6", label: "Violet" },
-                  { id: "emerald", color: "#10b981", label: "Emerald" },
                   { id: "gold", color: "#eab308", label: "Gold" },
                 ].map((a) => (
                   <button
                     key={a.id}
                     onClick={() => saveAccent(a.id)}
-                    className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors"
+                    className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors font-medium"
                     style={{
                       borderColor: accentColor === a.id ? "var(--primary)" : "var(--border)",
                       background: accentColor === a.id ? "var(--accent)" : "transparent",
@@ -499,11 +513,16 @@ function SettingsPage() {
                 style={{ background: "var(--card)", borderColor: "var(--border)" }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg" style={{ background: "var(--primary)" }} />
+                  <div
+                    className="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-black"
+                    style={{ background: "var(--primary)" }}
+                  >
+                    LM
+                  </div>
                   <div>
                     <div className="font-display text-lg">LuaMore</div>
                     <div className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      Dark blue and black theme with your selected accent
+                      Lime Green signature theme active
                     </div>
                   </div>
                 </div>

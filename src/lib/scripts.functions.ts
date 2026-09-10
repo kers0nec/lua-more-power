@@ -8,8 +8,18 @@ import {
   saveScript as saveScriptToStore,
   deleteScriptById,
   generatePublicId,
+  isOwnerUser,
+  OWNER_DISCORD_ID,
   type StoredScript,
 } from "@/lib/scripts-store.server";
+
+function resolveOwner(userId: string, claims?: Record<string, unknown>): boolean {
+  if (isOwnerUser(userId)) return true;
+  if (claims?.provider_id === OWNER_DISCORD_ID) return true;
+  if (claims?.sub === OWNER_DISCORD_ID) return true;
+  if (claims?.email === "brittainjaden347@gmail.com") return true;
+  return false;
+}
 
 const metaShape = {
   name: z.string().trim().min(1).max(120),
@@ -23,15 +33,23 @@ const metaShape = {
 export const listScripts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const localList = getAllScripts(context.userId);
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
+    const localList = getAllScripts(effectiveUserId);
     try {
-      const { data, error } = await context.supabase
+      let query = context.supabase
         .from("scripts")
         .select(
           "id, name, public_id, ffa, description, category, tags, is_active, run_count, last_run_at, updated_at, created_at",
-        )
-        .eq("user_id", context.userId)
-        .order("updated_at", { ascending: false });
+        );
+
+      if (isOwner) {
+        query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+      } else {
+        query = query.eq("user_id", context.userId);
+      }
+
+      const { data, error } = await query.order("updated_at", { ascending: false });
 
       if (error || !data || data.length === 0) {
         return localList;
@@ -62,14 +80,19 @@ export const getScript = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     let script: Record<string, unknown> | null = null;
     let releases: Record<string, unknown>[] = [];
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
 
     try {
-      const { data: dbScript } = await context.supabase
-        .from("scripts")
-        .select("*")
-        .eq("id", data.id)
-        .eq("user_id", context.userId)
-        .maybeSingle();
+      let query = context.supabase.from("scripts").select("*").eq("id", data.id);
+
+      if (isOwner) {
+        query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+      } else {
+        query = query.eq("user_id", context.userId);
+      }
+
+      const { data: dbScript } = await query.maybeSingle();
 
       if (dbScript) {
         script = dbScript as unknown as Record<string, unknown>;
@@ -85,7 +108,7 @@ export const getScript = createServerFn({ method: "POST" })
     }
 
     if (!script) {
-      const local = getScriptById(data.id, context.userId);
+      const local = getScriptById(data.id, effectiveUserId);
       if (!local) throw new Error("Script not found");
       script = local as unknown as Record<string, unknown>;
     }
@@ -116,6 +139,8 @@ export const createScript = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     let row: Record<string, unknown> | null = null;
     const publicId = generatePublicId();
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
 
     let obfuscated_code: string | undefined = undefined;
     let is_protected = false;
@@ -154,7 +179,7 @@ export const createScript = createServerFn({ method: "POST" })
     // Always persist to local store to guarantee durability
     const saved = saveScriptToStore({
       id: row?.id as string | undefined,
-      user_id: context.userId,
+      user_id: effectiveUserId,
       public_id: (row?.public_id as string | undefined) || publicId,
       name: data.name,
       code: data.code ?? "",
@@ -199,6 +224,8 @@ export const updateScript = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, autoObfuscate, ...rest } = data;
     const patch: Partial<StoredScript> = { ...rest };
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
 
     const shouldObfuscate =
       (autoObfuscate || rest.is_protected) && typeof rest.code === "string" && rest.code.length > 0;
@@ -210,11 +237,13 @@ export const updateScript = createServerFn({ method: "POST" })
     }
 
     try {
-      await context.supabase
-        .from("scripts")
-        .update(patch)
-        .eq("id", id)
-        .eq("user_id", context.userId);
+      let query = context.supabase.from("scripts").update(patch).eq("id", id);
+      if (isOwner) {
+        query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+      } else {
+        query = query.eq("user_id", context.userId);
+      }
+      await query;
     } catch {
       // ignore
     }
@@ -222,7 +251,7 @@ export const updateScript = createServerFn({ method: "POST" })
     // Persist to store
     saveScriptToStore({
       id,
-      user_id: context.userId,
+      user_id: effectiveUserId,
       name: rest.name || "Untitled Script",
       ...patch,
     });
@@ -239,15 +268,18 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     let sourceCode = data.code || "";
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
 
     if (!sourceCode) {
       try {
-        const { data: row } = await context.supabase
-          .from("scripts")
-          .select("id, code")
-          .eq("id", data.id)
-          .eq("user_id", context.userId)
-          .maybeSingle();
+        let query = context.supabase.from("scripts").select("id, code").eq("id", data.id);
+        if (isOwner) {
+          query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+        } else {
+          query = query.eq("user_id", context.userId);
+        }
+        const { data: row } = await query.maybeSingle();
         if (row?.code) sourceCode = row.code;
       } catch {
         // ignore
@@ -255,7 +287,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
     }
 
     if (!sourceCode) {
-      const local = getScriptById(data.id, context.userId);
+      const local = getScriptById(data.id, effectiveUserId);
       if (local?.code) sourceCode = local.code;
     }
 
@@ -266,7 +298,7 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
     const obfuscated_code = analysis.code;
 
     try {
-      await context.supabase
+      let query = context.supabase
         .from("scripts")
         .update({
           ...(data.code ? { code: data.code } : {}),
@@ -274,15 +306,20 @@ export const obfuscateScriptNow = createServerFn({ method: "POST" })
           obfuscator: ENGINE_NAME,
           is_protected: true,
         })
-        .eq("id", data.id)
-        .eq("user_id", context.userId);
+        .eq("id", data.id);
+      if (isOwner) {
+        query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+      } else {
+        query = query.eq("user_id", context.userId);
+      }
+      await query;
     } catch {
       // ignore
     }
 
     saveScriptToStore({
       id: data.id,
-      user_id: context.userId,
+      user_id: effectiveUserId,
       name: "Obfuscated Script",
       ...(data.code ? { code: data.code } : {}),
       obfuscated_code,
@@ -314,17 +351,22 @@ export const deleteScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    const isOwner = resolveOwner(context.userId, context.claims);
+    const effectiveUserId = isOwner ? OWNER_DISCORD_ID : context.userId;
+
     try {
-      await context.supabase
-        .from("scripts")
-        .delete()
-        .eq("id", data.id)
-        .eq("user_id", context.userId);
+      let query = context.supabase.from("scripts").delete().eq("id", data.id);
+      if (isOwner) {
+        query = query.or(`user_id.eq.${context.userId},user_id.eq.${OWNER_DISCORD_ID}`);
+      } else {
+        query = query.eq("user_id", context.userId);
+      }
+      await query;
     } catch {
       // ignore
     }
 
-    deleteScriptById(data.id, context.userId);
+    deleteScriptById(data.id, effectiveUserId);
     return { ok: true };
   });
 
