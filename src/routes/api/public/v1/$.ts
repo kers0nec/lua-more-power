@@ -74,8 +74,8 @@ function genPublicId() {
 async function handle(request: Request, params: { _splat?: string }): Promise<Response> {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
-  const path = (params._splat || "").replace(/^\/+|\/+$/g, "");
-  const segs = path.split("/").filter(Boolean);
+  const path = (params._splat ?? "").replace(/^\/+|\/+$/g, "");
+  const segs: string[] = path.length ? path.split("/").filter(Boolean) : [];
   const method = request.method.toUpperCase();
 
   const auth = await authenticate(request);
