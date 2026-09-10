@@ -55,6 +55,7 @@ import { Route as ApiPublicDiscordInteractionsRouteImport } from './routes/api/p
 import { Route as ApiPublicDiscordRegisterCommandsRouteImport } from './routes/api/public/discord/register-commands'
 import { Route as ApiPublicLoaderPublicIdRouteImport } from './routes/api/public/loader/$publicId'
 import { Route as ApiPublicRPublicIdRouteImport } from './routes/api/public/r/$publicId'
+import { Route as ApiPublicV1SplatRouteImport } from './routes/api/public/v1/$'
 import { Route as ScriptsHostedPublicIdLuaRouteImport } from './routes/scripts.hosted.$publicId.lua'
 import { Route as ApiPublicDiscordOauthCallbackRouteImport } from './routes/api/public/discord/oauth/callback'
 import { Route as ApiPublicDiscordOauthStartRouteImport } from './routes/api/public/discord/oauth/start'
@@ -305,6 +306,11 @@ const ApiPublicRPublicIdRoute = ApiPublicRPublicIdRouteImport.update({
   path: '/api/public/r/$publicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1SplatRoute = ApiPublicV1SplatRouteImport.update({
+  id: '/api/public/v1/$',
+  path: '/api/public/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScriptsHostedPublicIdLuaRoute =
   ScriptsHostedPublicIdLuaRouteImport.update({
     id: '/scripts/hosted/$publicId/lua',
@@ -369,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
+  '/api/public/v1/$': typeof ApiPublicV1SplatRoute
   '/scripts/hosted/$publicId/lua': typeof ScriptsHostedPublicIdLuaRoute
   '/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
@@ -418,6 +425,7 @@ export interface FileRoutesByTo {
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
+  '/api/public/v1/$': typeof ApiPublicV1SplatRoute
   '/scripts/hosted/$publicId/lua': typeof ScriptsHostedPublicIdLuaRoute
   '/dashboard/scripts': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
@@ -470,6 +478,7 @@ export interface FileRoutesById {
   '/api/public/discord/register-commands': typeof ApiPublicDiscordRegisterCommandsRoute
   '/api/public/loader/$publicId': typeof ApiPublicLoaderPublicIdRoute
   '/api/public/r/$publicId': typeof ApiPublicRPublicIdRoute
+  '/api/public/v1/$': typeof ApiPublicV1SplatRoute
   '/scripts/hosted/$publicId/lua': typeof ScriptsHostedPublicIdLuaRoute
   '/_authenticated/dashboard/scripts/': typeof AuthenticatedDashboardScriptsIndexRoute
   '/api/public/discord/oauth/callback': typeof ApiPublicDiscordOauthCallbackRoute
@@ -522,6 +531,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
     | '/api/public/r/$publicId'
+    | '/api/public/v1/$'
     | '/scripts/hosted/$publicId/lua'
     | '/dashboard/scripts/'
     | '/api/public/discord/oauth/callback'
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
     | '/api/public/r/$publicId'
+    | '/api/public/v1/$'
     | '/scripts/hosted/$publicId/lua'
     | '/dashboard/scripts'
     | '/api/public/discord/oauth/callback'
@@ -622,6 +633,7 @@ export interface FileRouteTypes {
     | '/api/public/discord/register-commands'
     | '/api/public/loader/$publicId'
     | '/api/public/r/$publicId'
+    | '/api/public/v1/$'
     | '/scripts/hosted/$publicId/lua'
     | '/_authenticated/dashboard/scripts/'
     | '/api/public/discord/oauth/callback'
@@ -660,6 +672,7 @@ export interface RootRouteChildren {
   ApiPublicDiscordRegisterCommandsRoute: typeof ApiPublicDiscordRegisterCommandsRoute
   ApiPublicLoaderPublicIdRoute: typeof ApiPublicLoaderPublicIdRoute
   ApiPublicRPublicIdRoute: typeof ApiPublicRPublicIdRoute
+  ApiPublicV1SplatRoute: typeof ApiPublicV1SplatRoute
   ScriptsHostedPublicIdLuaRoute: typeof ScriptsHostedPublicIdLuaRoute
   ApiPublicDiscordOauthCallbackRoute: typeof ApiPublicDiscordOauthCallbackRoute
   ApiPublicDiscordOauthStartRoute: typeof ApiPublicDiscordOauthStartRoute
@@ -989,6 +1002,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRPublicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/$': {
+      id: '/api/public/v1/$'
+      path: '/api/public/v1/$'
+      fullPath: '/api/public/v1/$'
+      preLoaderRoute: typeof ApiPublicV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scripts/hosted/$publicId/lua': {
       id: '/scripts/hosted/$publicId/lua'
       path: '/scripts/hosted/$publicId/lua'
@@ -1103,6 +1123,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDiscordRegisterCommandsRoute: ApiPublicDiscordRegisterCommandsRoute,
   ApiPublicLoaderPublicIdRoute: ApiPublicLoaderPublicIdRoute,
   ApiPublicRPublicIdRoute: ApiPublicRPublicIdRoute,
+  ApiPublicV1SplatRoute: ApiPublicV1SplatRoute,
   ScriptsHostedPublicIdLuaRoute: ScriptsHostedPublicIdLuaRoute,
   ApiPublicDiscordOauthCallbackRoute: ApiPublicDiscordOauthCallbackRoute,
   ApiPublicDiscordOauthStartRoute: ApiPublicDiscordOauthStartRoute,
