@@ -147,7 +147,7 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
       }
       const { data, error } = await supabase
         .from("scripts")
-        .update(patch)
+        .update(patch as never)
         .eq("user_id", userId)
         .or(`id.eq.${segs[1]},public_id.eq.${segs[1]}`)
         .select("id, public_id, name")
