@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -7,10 +8,37 @@ import {
   Bot,
   Link2,
   Copy,
+  Check,
   ShieldCheck,
 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
+
+const ACCESS_MODES = [
+  {
+    id: "keys",
+    label: "Keys",
+    description: "Require a timed or permanent key before loading.",
+    code: `_G.script_key = "LM-A7X2-9KQM-4RPL"\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
+    badge: "key checked · 42 ms",
+  },
+  {
+    id: "discord",
+    label: "Discord",
+    description: "Gate delivery through your Discord panel and commands.",
+    code: `-- access: Discord panel\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
+    badge: "discord gate · 38 ms",
+  },
+  {
+    id: "keyless",
+    label: "Keyless",
+    description: "Ship a signed loader when you do not need a gate.",
+    code: `-- access: keyless delivery\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
+    badge: "signed route · 31 ms",
+  },
+] as const;
+
+type AccessModeId = (typeof ACCESS_MODES)[number]["id"];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,6 +63,21 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const [accessModeId, setAccessModeId] = useState<AccessModeId>("keys");
+  const [copied, setCopied] = useState(false);
+  const selectedAccessMode =
+    ACCESS_MODES.find((mode) => mode.id === accessModeId) ?? ACCESS_MODES[0];
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedAccessMode.code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground">
       <SiteNav />
@@ -50,7 +93,7 @@ function HomePage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
                   Free forever · no card required
                 </span>
-                <h1 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+                <h1 className="mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
                   Control who can run your{" "}
                   <span className="text-gradient">Lua scripts.</span>
                 </h1>
@@ -78,11 +121,11 @@ function HomePage() {
                 </p>
               </div>
 
-              {/* Code window — loader.lua from html */}
+              {/* Interactive loader preview */}
               <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
                 <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex gap-1.5">
+                    <span className="flex gap-1.5" aria-hidden="true">
                       <i className="h-2.5 w-2.5 rounded-full bg-red-400 block" />
                       <i className="h-2.5 w-2.5 rounded-full bg-yellow-400 block" />
                       <i className="h-2.5 w-2.5 rounded-full bg-green-400 block" />
@@ -92,38 +135,65 @@ function HomePage() {
                     </span>
                   </div>
                   <button
-                    onClick={() =>
-                      navigator.clipboard.writeText(
-                        `_G.script_key = "LM-A7X2-9KQM-4RPL"\nlocal loader = game:HttpGet("https://luamore.win/v1/load/demo")\nloadstring(loader)()`,
-                      )
-                    }
+                    type="button"
+                    onClick={handleCopy}
+                    aria-label={copied ? "Loader copied" : "Copy loader"}
+                    title={copied ? "Copied" : "Copy loader"}
                     className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-bold hover:border-primary/40 hover:text-primary transition-colors"
                   >
-                    <Copy className="h-3 w-3" /> Copy
+                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <pre className="overflow-x-auto bg-[#0a0f00] p-5 font-mono text-[13px] leading-6 text-lime-200">
-                  <code>
-                    <span className="text-lime-400">_G.script_key</span> ={" "}
-                    <span className="text-yellow-300">"LM-A7X2-9KQM-4RPL"</span>
-                    {"\n"}
-                    <span className="text-muted-foreground">local loader = game:HttpGet(</span>
-                    {"\n"}
-                    &nbsp;&nbsp;<span className="text-yellow-300">"https://luamore.win/v1/load/demo"</span>
-                    {"\n"}
-                    <span className="text-muted-foreground">)</span>
-                    {"\n"}
-                    <span className="text-lime-400">loadstring</span>(loader)()
-                  </code>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/20 px-4 py-3">
+                  <div role="tablist" aria-label="Loader access mode" className="flex flex-wrap gap-1.5">
+                    {ACCESS_MODES.map((mode) => {
+                      const active = mode.id === accessModeId;
+                      return (
+                        <button
+                          key={mode.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          onClick={() => {
+                            setAccessModeId(mode.id);
+                            setCopied(false);
+                          }}
+                          className={`rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
+                            active
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }`}
+                        >
+                          {mode.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    try an access mode
+                  </span>
+                </div>
+
+                <pre
+                  className="min-h-[164px] overflow-x-auto bg-[#0a0f00] p-5 font-mono text-[13px] leading-6 text-lime-200"
+                  aria-label={`${selectedAccessMode.label} loader example`}
+                >
+                  <code>{selectedAccessMode.code}</code>
                 </pre>
                 <div className="flex flex-wrap gap-2 border-t border-border bg-muted/30 px-4 py-3">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> encrypted route · 42 ms
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                    {selectedAccessMode.badge}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
                     signed load marker
                   </span>
                 </div>
+                <p className="border-t border-border/70 bg-muted/20 px-4 py-2.5 text-[11px] leading-5 text-muted-foreground">
+                  {selectedAccessMode.description}
+                </p>
               </div>
             </div>
           </div>
@@ -134,7 +204,7 @@ function HomePage() {
           <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="flex gap-1.5">
+                <span className="flex gap-1.5" aria-hidden="true">
                   <i className="h-2.5 w-2.5 rounded-full bg-red-400 block" />
                   <i className="h-2.5 w-2.5 rounded-full bg-yellow-400 block" />
                   <i className="h-2.5 w-2.5 rounded-full bg-green-400 block" />
