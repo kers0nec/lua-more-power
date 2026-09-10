@@ -79,7 +79,7 @@ async function handle(request: Request, params: { _splat?: string }): Promise<Re
   const method = request.method.toUpperCase();
 
   const auth = await authenticate(request);
-  if ("error" in auth) return auth.error;
+  if ("error" in auth && auth.error) return auth.error;
   const { userId, supabase } = auth;
 
   let body: any = null;
