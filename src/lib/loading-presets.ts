@@ -199,10 +199,10 @@ local function buildLoadingGui()
 end
 local loading=buildLoadingGui()
 loading.show("Loading script","Please be patient")
--- Pasteable loader from dashboard (the URL carries your script id)
-_G.script_key="YOUR_KEY"
+-- Paste the loader URL copied from Dashboard → Scripts
+_G.script_key="<license-key>"
 local ok,err=pcall(function()
-	loadstring(game:HttpGet("https://luamore.app/api/public/r/YOUR_PUBLIC_ID",true))()
+	loadstring(game:HttpGet("/scripts/hosted/<public-id>.lua"))()
 end)
 loading.dismiss()
 if not ok then warn("[LuaMore] load failed: ",err) end
@@ -272,6 +272,6 @@ export const LOADING_PRESETS: LoadingPreset[] = [
   },
 ];
 
-export const LOADER_USAGE = `-- Pasteable loader from dashboard (use the dashboard-generated URL)
-_G.script_key="YOUR_KEY"
-loadstring(game:HttpGet("https://luamore.app/api/public/r/YOUR_PUBLIC_ID",true))()`;
+export const LOADER_USAGE = `-- Paste the loader URL copied from Dashboard → Scripts
+_G.script_key="<license-key>"
+loadstring(game:HttpGet("/scripts/hosted/<public-id>.lua"))()`;
