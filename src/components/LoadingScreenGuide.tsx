@@ -1,437 +1,89 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Sparkles,
-  Download,
-  Check,
-  Play,
-  RotateCcw,
-  Monitor,
-  Smartphone,
-  Eye,
-  Layers,
-} from "lucide-react";
+import { Check, Download, Monitor, Smartphone, Sparkles } from "lucide-react";
 import { CopyCode } from "@/components/CopyCode";
 import { PageShell } from "@/components/PageShell";
 import { LOADING_PRESETS, LOADER_USAGE } from "@/lib/loading-presets";
 import { DISCORD_SUPPORT } from "@/lib/site";
 
 export function LoadingScreenGuide() {
-  const [id, setId] = useState(LOADING_PRESETS[0].id);
-  const [pos, setPos] = useState<"bottom-left" | "bottom-center" | "bottom-right" | "top">(
-    "bottom-left",
-  );
+  const [presetId, setPresetId] = useState(LOADING_PRESETS[0].id);
+  const [isMobile, setIsMobile] = useState(false);
+  const [position, setPosition] = useState("bottom-left");
   const [progress, setProgress] = useState(65);
-  const [isMobileView, setIsMobileView] = useState(false);
-  const [customTitle, setCustomTitle] = useState("Loading script");
-  const [customSub, setCustomSub] = useState("Please be patient");
-  const [animating, setAnimating] = useState(false);
+  const [title, setTitle] = useState("Loading script");
+  const [subtitle, setSubtitle] = useState("Your loader status text");
+  const preset = LOADING_PRESETS.find((item) => item.id === presetId) ?? LOADING_PRESETS[0];
 
-  const preset = LOADING_PRESETS.find((item) => item.id === id) ?? LOADING_PRESETS[0];
-
-  function runSimulateProgress() {
-    setAnimating(true);
-    setProgress(15);
-    setCustomSub("Contacting LuaMore dispatch...");
-    setTimeout(() => {
-      setProgress(50);
-      setCustomSub("Checking HWID device bind...");
-    }, 600);
-    setTimeout(() => {
-      setProgress(85);
-      setCustomSub("Decrypting VM bytecode...");
-    }, 1200);
-    setTimeout(() => {
-      setProgress(100);
-      setCustomSub("Script Authenticated & Delivered!");
-      setTimeout(() => {
-        setAnimating(false);
-        setCustomSub("Please be patient");
-        setProgress(65);
-      }, 1500);
-    }, 1800);
-  }
-
-  function downloadPresetLua() {
-    const blob = new Blob([preset.source], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `loading-${preset.id}-bar.lua`;
-    a.click();
+  const downloadPreset = () => {
+    const url = URL.createObjectURL(new Blob([preset.source], { type: "text/plain" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `loading-${preset.id}-bar.lua`;
+    anchor.click();
     URL.revokeObjectURL(url);
-  }
+  };
 
   return (
     <PageShell
       eyebrow="Creator Documentation & Tools"
       title="In-Game Loading Screen System"
-      subtitle="Wide in-game loading bars that appear seamlessly while LuaMore authenticates and delivers your script. Pick a preset, paste the Luau, and set your loader URL."
+      subtitle="Choose a loading-screen source, copy it, and connect it to a real loader from your dashboard. The browser preview below only renders the UI; it does not authenticate players or fetch scripts."
     >
-      {/* Workflow Steps */}
-      <div
-        className="grid gap-4 rounded-xl border p-6 text-sm sm:grid-cols-2 lg:grid-cols-4"
-        style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-      >
+      <div className="grid gap-4 rounded-xl border p-6 text-sm sm:grid-cols-2 lg:grid-cols-4" style={{ borderColor: "var(--border)", background: "var(--secondary)" }}>
         {[
-          ["01", "Create a Script", "Add it in the dashboard and pick a preset (or keyless)."],
-          ["02", "Copy the Luau", "Choose from the 4 matching presets below."],
-          ["03", "Set the Loader URL", "Paste the signed dashboard URL into LOADER_URL."],
-          ["04", "Run & Execute", "Insert as a LocalScript while LuaMore loads in-game."],
-        ].map(([number, title, description]) => (
-          <div
-            key={number}
-            className="border-t pt-3"
-            style={{ borderColor: "var(--border-strong)" }}
-          >
-            <span className="font-mono text-xs font-bold" style={{ color: "var(--primary)" }}>
-              {number}
-            </span>
-            <h2 className="mt-2 font-display text-lg font-bold">{title}</h2>
-            <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
-              {description}
-            </p>
+          ["01", "Create a script", "Add it in the dashboard and choose a preset."],
+          ["02", "Copy the Luau", "Inspect the source and copy or download it."],
+          ["03", "Set the loader URL", "Use the loader generated for your real script."],
+          ["04", "Run it", "Insert the source as a LocalScript in your experience."],
+        ].map(([number, stepTitle, description]) => (
+          <div key={number} className="border-t pt-3" style={{ borderColor: "var(--border-strong)" }}>
+            <span className="font-mono text-xs font-bold" style={{ color: "var(--primary)" }}>{number}</span>
+            <h2 className="mt-2 font-display text-lg font-bold">{stepTitle}</h2>
+            <p className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>{description}</p>
           </div>
         ))}
       </div>
 
-      {/* Live Visualizer Stage */}
       <section className="mt-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="eyebrow flex items-center gap-1.5">
-              <Sparkles size={12} /> Interactive Simulator
-            </div>
-            <h2 className="mt-1 font-display text-3xl md:text-4xl">
-              Live In-Game Viewport Preview
-            </h2>
+            <div className="eyebrow flex items-center gap-1.5"><Sparkles size={12} /> Local UI preview</div>
+            <h2 className="mt-1 font-display text-3xl md:text-4xl">Preview the selected loading UI</h2>
             <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              Test how the loading bar renders across different positions and device viewports.
+              This preview has no network requests and reports no fake authentication, latency, or delivery state.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsMobileView(false)}
-              className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition-colors ${
-                !isMobileView ? "btn-primary" : "btn-outline"
-              }`}
-            >
-              <Monitor size={14} /> Desktop
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsMobileView(true)}
-              className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition-colors ${
-                isMobileView ? "btn-primary" : "btn-outline"
-              }`}
-            >
-              <Smartphone size={14} /> Mobile
-            </button>
+            <button type="button" onClick={() => setIsMobile(false)} className={!isMobile ? "btn-primary" : "btn-outline"}><Monitor size={14} /> Desktop</button>
+            <button type="button" onClick={() => setIsMobile(true)} className={isMobile ? "btn-primary" : "btn-outline"}><Smartphone size={14} /> Mobile</button>
           </div>
         </div>
 
-        {/* Viewport Canvas */}
-        <div
-          className="mt-6 relative w-full rounded-2xl border overflow-hidden flex items-center justify-center transition-all shadow-2xl"
-          style={{
-            height: isMobileView ? "300px" : "380px",
-            maxWidth: isMobileView ? "420px" : "100%",
-            margin: isMobileView ? "24px auto 0" : "24px 0 0",
-            background: "radial-gradient(circle at 50% 30%, #152238 0%, #060911 100%)",
-            borderColor: "var(--border-strong)",
-          }}
-        >
-          {/* Grid lines simulating Roblox viewport */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-20"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
-
-          <div className="absolute top-3 left-4 flex gap-3 text-[11px] font-mono opacity-50 text-white select-none">
-            <span>CoreGui: Validated</span>
-            <span>·</span>
-            <span>FPS: 60</span>
-            <span>·</span>
-            <span>Ping: 28ms</span>
-          </div>
-
-          {/* Rendered Live Loading Bar */}
-          <div
-            className={`absolute flex flex-col justify-center rounded-xl p-3 pl-12 shadow-2xl transition-all duration-300 ${
-              pos === "bottom-left"
-                ? "bottom-4 left-4"
-                : pos === "bottom-center"
-                  ? "bottom-4 left-1/2 -translate-x-1/2"
-                  : pos === "bottom-right"
-                    ? "bottom-4 right-4"
-                    : "top-4 left-1/2 -translate-x-1/2"
-            }`}
-            style={{
-              width: isMobileView ? "85%" : "300px",
-              height: "58px",
-              background:
-                id === "gold"
-                  ? "#0d0c07"
-                  : id === "neon"
-                    ? "#040e14"
-                    : id === "clean"
-                      ? "#0e131d"
-                      : "#080e1a",
-              border: `1px solid ${
-                id === "gold"
-                  ? "#f6c453"
-                  : id === "neon"
-                    ? "#22d3ee"
-                    : id === "clean"
-                      ? "#94a3b8"
-                      : "#3b82f6"
-              }`,
-              boxShadow:
-                id === "gold"
-                  ? "0 0 25px rgba(246,196,83,0.3)"
-                  : id === "neon"
-                    ? "0 0 25px rgba(34,211,238,0.3)"
-                    : "0 10px 30px rgba(0,0,0,0.7)",
-            }}
-          >
-            {/* Dot Spinner */}
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex gap-1">
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className="h-1.5 w-1.5 rounded-full animate-ping"
-                  style={{
-                    background:
-                      id === "gold"
-                        ? "#f6c453"
-                        : id === "neon"
-                          ? "#22d3ee"
-                          : id === "clean"
-                            ? "#e2e8f0"
-                            : "#a3e635",
-                    animationDuration: "1.2s",
-                    animationDelay: `${i * 0.2}s`,
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="flex flex-col">
-              <span
-                className="font-medium text-xs tracking-tight"
-                style={{
-                  color: id === "gold" ? "#fef3c7" : id === "neon" ? "#cffafe" : "#ffffff",
-                }}
-              >
-                {customTitle}
-              </span>
-              <span className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                {customSub}
-              </span>
-              <div
-                className="h-1 w-full rounded-full mt-1.5 overflow-hidden"
-                style={{
-                  background: id === "gold" ? "#231c0a" : id === "neon" ? "#082f38" : "#1e293b",
-                }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${progress}%`,
-                    background:
-                      id === "gold"
-                        ? "#f6c453"
-                        : id === "neon"
-                          ? "#22d3ee"
-                          : id === "clean"
-                            ? "#e2e8f0"
-                            : "#84cc16",
-                    boxShadow:
-                      id === "gold"
-                        ? "0 0 8px #f6c453"
-                        : id === "neon"
-                          ? "0 0 8px #22d3ee"
-                          : "none",
-                  }}
-                />
-              </div>
-            </div>
+        <div className="relative mt-6 flex w-full items-center justify-center overflow-hidden rounded-2xl border shadow-2xl" style={{ height: isMobile ? "300px" : "380px", maxWidth: isMobile ? "420px" : "100%", margin: isMobile ? "24px auto 0" : "24px 0 0", background: "radial-gradient(circle at 50% 30%, #152238 0%, #060911 100%)", borderColor: "var(--border-strong)" }}>
+          <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+          <div className="absolute left-4 top-3 select-none font-mono text-[11px] text-white opacity-50">Local preview · network inactive</div>
+          <div className={`absolute flex flex-col justify-center rounded-xl p-3 pl-12 shadow-2xl ${position === "bottom-left" ? "bottom-4 left-4" : position === "bottom-center" ? "bottom-4 left-1/2 -translate-x-1/2" : position === "bottom-right" ? "bottom-4 right-4" : "top-4 left-1/2 -translate-x-1/2"}`} style={{ width: isMobile ? "85%" : "300px", height: "58px", background: preset.id === "gold" ? "#0d0c07" : preset.id === "neon" ? "#040e14" : preset.id === "clean" ? "#0e131d" : "#080e1a", border: `1px solid ${preset.id === "gold" ? "#f6c453" : preset.id === "neon" ? "#22d3ee" : preset.id === "clean" ? "#94a3b8" : "#3b82f6"}` }}>
+            <div className="absolute left-3.5 top-1/2 flex -translate-y-1/2 gap-1">{[0, 1, 2].map((item) => <span key={item} className="h-1.5 w-1.5 animate-ping rounded-full" style={{ background: preset.id === "gold" ? "#f6c453" : preset.id === "neon" ? "#22d3ee" : preset.id === "clean" ? "#e2e8f0" : "#a3e635", animationDelay: `${item * 0.2}s` }} />)}</div>
+            <div className="flex flex-col"><span className="text-xs font-medium text-white">{title}</span><span className="mt-0.5 text-[10px] text-slate-400">{subtitle}</span><div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: preset.id === "gold" ? "#f6c453" : preset.id === "neon" ? "#22d3ee" : preset.id === "clean" ? "#e2e8f0" : "#84cc16" }} /></div></div>
           </div>
         </div>
 
-        {/* Viewport Control Strip */}
         <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-          <div className="card-blue p-3">
-            <span className="eyebrow">Position</span>
-            <select
-              value={pos}
-              onChange={(e) => setPos(e.target.value as typeof pos)}
-              className="input-blue mt-1.5 text-xs"
-            >
-              <option value="bottom-left">Bottom-Left (Recommended)</option>
-              <option value="bottom-center">Bottom-Center</option>
-              <option value="bottom-right">Bottom-Right</option>
-              <option value="top">Top Bar</option>
-            </select>
-          </div>
-
-          <div className="card-blue p-3">
-            <span className="eyebrow">Title Text</span>
-            <input
-              value={customTitle}
-              onChange={(e) => setCustomTitle(e.target.value)}
-              className="input-blue mt-1.5 text-xs"
-              placeholder="Title"
-            />
-          </div>
-
-          <div className="card-blue p-3">
-            <span className="eyebrow">Subtitle Text</span>
-            <input
-              value={customSub}
-              onChange={(e) => setCustomSub(e.target.value)}
-              className="input-blue mt-1.5 text-xs"
-              placeholder="Subtitle"
-            />
-          </div>
-
-          <div className="card-blue p-3 flex flex-col justify-between">
-            <span className="eyebrow">Test Cycle</span>
-            <button
-              type="button"
-              onClick={runSimulateProgress}
-              disabled={animating}
-              className="btn-primary text-xs py-2 flex items-center justify-center gap-1.5 w-full mt-1"
-            >
-              {animating ? <RotateCcw size={13} className="animate-spin" /> : <Play size={13} />}
-              {animating ? "Simulating..." : "Test 100% Load"}
-            </button>
-          </div>
+          <label className="card-blue p-3"><span className="eyebrow">Position</span><select value={position} onChange={(event) => setPosition(event.target.value)} className="input-blue mt-1.5 text-xs"><option value="bottom-left">Bottom-left</option><option value="bottom-center">Bottom-center</option><option value="bottom-right">Bottom-right</option><option value="top">Top</option></select></label>
+          <label className="card-blue p-3"><span className="eyebrow">Title text</span><input value={title} onChange={(event) => setTitle(event.target.value)} className="input-blue mt-1.5 text-xs" /></label>
+          <label className="card-blue p-3"><span className="eyebrow">Subtitle text</span><input value={subtitle} onChange={(event) => setSubtitle(event.target.value)} className="input-blue mt-1.5 text-xs" /></label>
+          <label className="card-blue p-3"><div className="flex justify-between"><span className="eyebrow">Preview progress</span><span className="font-mono text-xs text-primary">{progress}%</span></div><input type="range" min="0" max="100" value={progress} onChange={(event) => setProgress(Number(event.target.value))} className="mt-3 w-full accent-lime-400" aria-label="Preview progress" /></label>
         </div>
       </section>
 
-      {/* Preset Pickers */}
-      <section className="mt-14">
-        <div className="eyebrow">Presets</div>
-        <h2 className="mt-2 font-display text-3xl">Four Wide Loading Bars</h2>
-        <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          Each bar is optimized for minimal memory footprint and zero execution latency. Pick your
-          preset below to inspect the source code and copy or download.
-        </p>
+      <section className="mt-14"><div className="eyebrow">Presets</div><h2 className="mt-2 font-display text-3xl">Four loading bars</h2><p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--muted-foreground)" }}>The browser preview is local only. The downloaded Luau is a template that must use the real loader URL from your workspace.</p><div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{LOADING_PRESETS.map((item) => <button key={item.id} type="button" onClick={() => setPresetId(item.id)} className="card-blue p-4 text-left" style={presetId === item.id ? { borderColor: "var(--primary)", background: "var(--accent)" } : undefined}><div className="flex items-center justify-between gap-2"><span className="font-display text-lg font-bold">{item.name}</span><span className="badge-blue">{item.id}</span></div><p className="mt-2 text-xs" style={{ color: "var(--muted-foreground)" }}>{item.blurb}</p></button>)}</div><div className="mt-6 flex items-center justify-between"><span className="badge-solid">Selected source: {preset.name}</span><button type="button" onClick={downloadPreset} className="btn-outline flex items-center gap-1.5 text-xs"><Download size={13} /> Download .lua</button></div><div className="mt-3"><CopyCode label={`loading-${preset.id}-bar.lua`} code={preset.source} /></div></section>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {LOADING_PRESETS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setId(item.id)}
-              className="card-blue p-4 text-left transition-all"
-              style={
-                id === item.id
-                  ? {
-                      borderColor: "var(--primary)",
-                      boxShadow: "var(--shadow-hover)",
-                      background: "var(--accent)",
-                    }
-                  : undefined
-              }
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-display text-lg font-bold">{item.name}</span>
-                <span className="badge-blue">{item.id}</span>
-              </div>
-              <p className="mt-2 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                {item.blurb}
-              </p>
-            </button>
-          ))}
-        </div>
+      <section className="mt-14"><div className="eyebrow">Loader URL</div><h2 className="mt-2 font-display text-3xl">Connect the bar to your loader</h2><p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--muted-foreground)" }}>Copy the loader URL generated by Dashboard → Scripts. Replace the explicit placeholders in this documentation template with your account’s real values.</p><div className="mt-5"><CopyCode label="loader-usage.lua" code={LOADER_USAGE} /></div></section>
 
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="badge-solid">Active Source: {preset.name}</span>
-          </div>
-          <button
-            type="button"
-            onClick={downloadPresetLua}
-            className="btn-outline text-xs flex items-center gap-1.5"
-          >
-            <Download size={13} /> Download .lua File
-          </button>
-        </div>
+      <section className="mt-14 grid gap-6 md:grid-cols-2"><div className="card-blue space-y-4 p-6 md:p-8"><div className="eyebrow">Security guidelines</div><h2 className="font-display text-2xl">Keep access out of public files</h2><ul className="list-disc space-y-2.5 pl-5 text-sm" style={{ color: "var(--muted-foreground)" }}><li>Never hardcode secret license keys into public game files.</li><li>Use the real dashboard loader for protected delivery.</li><li>Do not point the loader URL to another project.</li></ul></div><div className="card-blue flex flex-col justify-between space-y-4 p-6 md:p-8"><div><div className="eyebrow">Support & Custom UI</div><h2 className="font-display text-2xl">Tailored to your experience</h2><p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Customize the local loading UI and ask the support community about integrating it with your real loader.</p></div><a href={DISCORD_SUPPORT} target="_blank" rel="noreferrer" className="btn-outline self-start">Join Discord Support</a></div></section>
 
-        <div className="mt-3">
-          <CopyCode label={`loading-${preset.id}-bar.lua`} code={preset.source} />
-        </div>
-      </section>
-
-      {/* Loader URL Section */}
-      <section className="mt-14">
-        <div className="eyebrow">Loader URL</div>
-        <h2 className="mt-2 font-display text-3xl">Connect the Bar to your Loader</h2>
-        <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          Open Dashboard → Scripts → your project and copy the loader URL for that script. Keyed
-          scripts keep the key in the signed URL; keyless projects use the same overlay without a
-          key parameter.
-        </p>
-        <div className="mt-5">
-          <CopyCode label="loader-usage.lua" code={LOADER_USAGE} />
-        </div>
-      </section>
-
-      {/* Best Practices & Guidelines */}
-      <section className="mt-14 grid gap-6 md:grid-cols-2">
-        <div className="card-blue p-6 md:p-8 space-y-4">
-          <div className="eyebrow">Security Guidelines</div>
-          <h2 className="font-display text-2xl">Keep Access Out of Game Files</h2>
-          <ul
-            className="list-disc space-y-2.5 pl-5 text-sm"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            <li>
-              Never hardcode secret license keys into public game files. Use the dashboard loader.
-            </li>
-            <li>Never bypass the loader and attempt to fetch the raw script directly.</li>
-            <li>
-              Do not point <code>LOADER_URL</code> to another project; the cryptographically signed
-              marker will reject the execution.
-            </li>
-          </ul>
-        </div>
-
-        <div className="card-blue p-6 md:p-8 space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="eyebrow">Support & Custom UI</div>
-            <h2 className="font-display text-2xl">Tailored to Your Experience</h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-              LuaMore loading screens are lightweight and easy to modify. Need custom themes,
-              animations, or Discord bots? Join our support community.
-            </p>
-          </div>
-          <a
-            href={DISCORD_SUPPORT}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-outline self-start flex items-center gap-2"
-          >
-            <Sparkles size={14} /> Join Discord Support
-          </a>
-        </div>
-      </section>
-
-      <div className="mt-10 flex items-center gap-4">
-        <Link to="/features" className="btn-primary">
-          Explore All Features
-        </Link>
-        <Link to="/keys" className="btn-outline">
-          Key System Simulator
-        </Link>
-      </div>
+      <div className="mt-10 flex items-center gap-4"><Link to="/features" className="btn-primary">Explore All Features</Link><Link to="/keys" className="btn-outline"><Check size={14} /> Key system docs</Link></div>
     </PageShell>
   );
 }

@@ -1,44 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  MessageSquare,
-  CodeXml,
-  KeyRound,
-  Bot,
-  Link2,
-  Copy,
-  Check,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowRight, CodeXml, KeyRound, Bot, Link2, Copy, Check, ShieldCheck } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-
-const ACCESS_MODES = [
-  {
-    id: "keys",
-    label: "Keys",
-    description: "Require a timed or permanent key before loading.",
-    code: `_G.script_key = "LM-A7X2-9KQM-4RPL"\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
-    badge: "key checked · 42 ms",
-  },
-  {
-    id: "discord",
-    label: "Discord",
-    description: "Gate delivery through your Discord panel and commands.",
-    code: `-- access: Discord panel\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
-    badge: "discord gate · 38 ms",
-  },
-  {
-    id: "keyless",
-    label: "Keyless",
-    description: "Ship a signed loader when you do not need a gate.",
-    code: `-- access: keyless delivery\nlocal loader = game:HttpGet("https://lua-more-power.vercel.app/scripts/hosted/demo")\nloadstring(loader)()`,
-    badge: "signed route · 31 ms",
-  },
-] as const;
-
-type AccessModeId = (typeof ACCESS_MODES)[number]["id"];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,7 +13,10 @@ export const Route = createFileRoute("/")({
         content:
           "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
       },
-      { property: "og:title", content: "LuaMore — Control who can run your Lua scripts" },
+      {
+        property: "og:title",
+        content: "LuaMore — Control who can run your Lua scripts",
+      },
       {
         property: "og:description",
         content:
@@ -63,19 +30,34 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const [accessModeId, setAccessModeId] = useState<AccessModeId>("keys");
+  const [publicId, setPublicId] = useState("");
   const [copied, setCopied] = useState(false);
-  const selectedAccessMode =
-    ACCESS_MODES.find((mode) => mode.id === accessModeId) ?? ACCESS_MODES[0];
+  const normalizedPublicId = publicId.trim().replace(/\.lua$/i, "");
+  const loaderPath = normalizedPublicId
+    ? `/scripts/hosted/${encodeURIComponent(normalizedPublicId)}.lua`
+    : "/scripts/hosted/<your-public-id>.lua";
+  const loaderUrl =
+    normalizedPublicId && typeof window !== "undefined"
+      ? `${window.location.origin}${loaderPath}`
+      : loaderPath;
+  const loaderCode = normalizedPublicId
+    ? `local loader = game:HttpGet("${loaderUrl}")\nloadstring(loader)()`
+    : `-- Add a public ID from Dashboard → Scripts\nlocal loader = game:HttpGet("${loaderPath}")\nloadstring(loader)()`;
 
   const handleCopy = async () => {
+    if (!normalizedPublicId) return;
     try {
-      await navigator.clipboard.writeText(selectedAccessMode.code);
+      await navigator.clipboard.writeText(loaderCode);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       setCopied(false);
     }
+  };
+
+  const handleOpen = () => {
+    if (!normalizedPublicId) return;
+    window.open(loaderUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -90,17 +72,18 @@ function HomePage() {
             <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div className="text-left">
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-3 py-1.5 text-[11px] font-bold text-primary backdrop-blur">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                    aria-hidden="true"
+                  />
                   Free forever · no card required
                 </span>
                 <h1 className="mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-                  Control who can run your{" "}
-                  <span className="text-gradient">Lua scripts.</span>
+                  Control who can run your <span className="text-gradient">Lua scripts.</span>
                 </h1>
                 <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-base">
-                  Add a script, choose how access works — keys, Discord, ad links, or
-                  keyless — then copy the loader. Everything is free, everything lives in
-                  one dashboard.
+                  Add a script, choose how access works — keys, Discord, ad links, or keyless — then
+                  copy the loader. Everything is free, everything lives in one dashboard.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
@@ -121,132 +104,100 @@ function HomePage() {
                 </p>
               </div>
 
-              {/* Interactive loader preview */}
-              <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+              {/* Real loader URL builder */}
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
                 <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex gap-1.5" aria-hidden="true">
-                      <i className="h-2.5 w-2.5 rounded-full bg-red-400 block" />
-                      <i className="h-2.5 w-2.5 rounded-full bg-yellow-400 block" />
-                      <i className="h-2.5 w-2.5 rounded-full bg-green-400 block" />
-                    </span>
-                    <span className="ml-2 font-mono text-xs font-bold text-muted-foreground">
-                      loader.lua
-                    </span>
+                  <div>
+                    <p className="font-mono text-xs font-bold text-foreground">loader builder</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                      Uses your actual public script ID
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleCopy}
+                    disabled={!normalizedPublicId}
                     aria-label={copied ? "Loader copied" : "Copy loader"}
                     title={copied ? "Copied" : "Copy loader"}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-bold hover:border-primary/40 hover:text-primary transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-bold transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/20 px-4 py-3">
-                  <div role="tablist" aria-label="Loader access mode" className="flex flex-wrap gap-1.5">
-                    {ACCESS_MODES.map((mode) => {
-                      const active = mode.id === accessModeId;
-                      return (
-                        <button
-                          key={mode.id}
-                          type="button"
-                          role="tab"
-                          aria-selected={active}
-                          onClick={() => {
-                            setAccessModeId(mode.id);
-                            setCopied(false);
-                          }}
-                          className={`rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
-                            active
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          }`}
-                        >
-                          {mode.label}
-                        </button>
-                      );
-                    })}
+                <div className="border-b border-border bg-muted/20 px-4 py-4">
+                  <label htmlFor="public-script-id" className="eyebrow">
+                    Public script ID
+                  </label>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      id="public-script-id"
+                      value={publicId}
+                      onChange={(event) => {
+                        setPublicId(event.target.value);
+                        setCopied(false);
+                      }}
+                      className="input-blue min-w-0 font-mono text-xs"
+                      placeholder="Paste the ID from Dashboard → Scripts"
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleOpen}
+                      disabled={!normalizedPublicId}
+                      className="btn-outline shrink-0 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Open
+                    </button>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    try an access mode
-                  </span>
+                  <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                    No sample IDs or keys are inserted. A loader is only valid after you create a
+                    script in your workspace.
+                  </p>
                 </div>
 
                 <pre
-                  className="min-h-[164px] overflow-x-auto bg-[#0a0f00] p-5 font-mono text-[13px] leading-6 text-lime-200"
-                  aria-label={`${selectedAccessMode.label} loader example`}
+                  className="min-h-[140px] overflow-x-auto bg-[#0a0f00] p-5 font-mono text-[13px] leading-6 text-lime-200"
+                  aria-label="Generated Lua loader"
                 >
-                  <code>{selectedAccessMode.code}</code>
+                  <code>{loaderCode}</code>
                 </pre>
-                <div className="flex flex-wrap gap-2 border-t border-border bg-muted/30 px-4 py-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
-                    {selectedAccessMode.badge}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border bg-muted/30 px-4 py-3">
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    GET {loaderPath}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
-                    signed load marker
-                  </span>
+                  <Link to="/register" className="text-xs font-bold text-primary hover:underline">
+                    Create a script first →
+                  </Link>
                 </div>
-                <p className="border-t border-border/70 bg-muted/20 px-4 py-2.5 text-[11px] leading-5 text-muted-foreground">
-                  {selectedAccessMode.description}
-                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Live keys strip — from html */}
+        {/* Truthful signed-out state */}
         <section className="mx-auto max-w-6xl px-6 py-6">
-          <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className="flex gap-1.5" aria-hidden="true">
-                  <i className="h-2.5 w-2.5 rounded-full bg-red-400 block" />
-                  <i className="h-2.5 w-2.5 rounded-full bg-yellow-400 block" />
-                  <i className="h-2.5 w-2.5 rounded-full bg-green-400 block" />
-                </span>
-                <span className="font-mono text-xs font-bold text-muted-foreground">
-                  keys · live from your dashboard
-                </span>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="eyebrow text-primary">Your workspace stays private</div>
+                <h2 className="mt-2 text-2xl font-extrabold tracking-tight">
+                  Real scripts and keys live in your dashboard.
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  We do not show invented keys, run counts, or latency numbers here. Sign in to
+                  manage the records that your loaders actually use.
+                </p>
               </div>
-              <Link
-                to="/keys"
-                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
-              >
-                Key system <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="grid gap-2 p-4 sm:grid-cols-2 sm:gap-x-6">
-              {[
-                { k: "LM-A7X2-9KQM-4RPL", s: "active" },
-                { k: "LM-B3N8-2WXT-7HJD", s: "used" },
-                { k: "LM-C9P1-5LMQ-8VZK", s: "active" },
-                { k: "LM-D4R6-1YHN-3QWB", s: "expired" },
-              ].map((r) => (
-                <div
-                  key={r.k}
-                  className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5"
-                >
-                  <span className="font-mono text-xs font-bold tracking-widest text-foreground">
-                    {r.k}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest border ${
-                      r.s === "active"
-                        ? "bg-primary/15 text-primary border-primary/20"
-                        : r.s === "used"
-                          ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
-                          : "bg-red-500/15 text-red-600 border-red-500/20"
-                    }`}
-                  >
-                    {r.s}
-                  </span>
-                </div>
-              ))}
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Link to="/login" className="btn-outline text-xs">
+                  Sign in
+                </Link>
+                <Link to="/register" className="btn-primary text-xs">
+                  Create account
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -254,8 +205,12 @@ function HomePage() {
         {/* Four tools — from html #what */}
         <section id="what" className="mx-auto max-w-6xl px-6 py-12">
           <div className="text-center">
-            <div className="eyebrow text-primary font-bold tracking-widest text-xs">The parts you actually use</div>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Four tools. One free dashboard.</h2>
+            <div className="eyebrow text-primary font-bold tracking-widest text-xs">
+              The parts you actually use
+            </div>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Four tools. One free dashboard.
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -301,16 +256,37 @@ function HomePage() {
         <section id="how" className="mx-auto max-w-6xl px-6 py-8">
           <div className="text-center">
             <div className="eyebrow text-primary font-bold tracking-widest text-xs">Setup</div>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight">Four steps, then you are done</h2>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight">
+              Four steps, then you are done
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { n: "01", t: "Create a project", d: "Add the script you want to deliver." },
-              { n: "02", t: "Choose access", d: "Use keys, Discord, an ad link, or keyless mode." },
-              { n: "03", t: "Copy the loader", d: "Paste the loader where your users can find it." },
-              { n: "04", t: "Check activity", d: "See runs, errors, and active devices." },
+              {
+                n: "01",
+                t: "Create a project",
+                d: "Add the script you want to deliver.",
+              },
+              {
+                n: "02",
+                t: "Choose access",
+                d: "Use keys, Discord, an ad link, or keyless mode.",
+              },
+              {
+                n: "03",
+                t: "Copy the loader",
+                d: "Paste the loader where your users can find it.",
+              },
+              {
+                n: "04",
+                t: "Check activity",
+                d: "See runs, errors, and active devices.",
+              },
             ].map((s) => (
-              <div key={s.n} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <div
+                key={s.n}
+                className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-black text-sm">
                   {s.n}
                 </div>
@@ -333,9 +309,8 @@ function HomePage() {
                   There is no pricing. Everything is free.
                 </h2>
                 <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
-                  No tiers, no card on file, no “trial ends soon”. Unlimited projects,
-                  scripts, keys, obfuscations, and every loading preset — for everyone,
-                  forever.
+                  No tiers, no card on file, no “trial ends soon”. Unlimited projects, scripts,
+                  keys, obfuscations, and every loading preset — for everyone, forever.
                 </p>
                 <Link
                   to="/register"
@@ -393,8 +368,8 @@ function HomePage() {
           © 2026 LuaMore · More Power, More Security, More Lua —{" "}
           <span className="font-mono text-primary">lime green</span> edition ·{" "}
           <span className="inline-flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" /> Protected By LuaMore
-            Obfuscator
+            <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" /> Protected By
+            LuaMore Obfuscator
           </span>
         </div>
       </main>

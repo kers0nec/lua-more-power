@@ -115,10 +115,10 @@ function HowPage() {
         </div>
       </div>
 
-      {/* Loader example */}
+      {/* Loader template */}
       <div className="mt-14">
         <div className="flex items-center gap-4">
-          <h2 className="eyebrow shrink-0">Loader example</h2>
+          <h2 className="eyebrow shrink-0">Loader template</h2>
           <div className="hairline" />
         </div>
         <div
@@ -131,26 +131,26 @@ function HowPage() {
           >
             <span className="font-mono text-xs">loader.lua</span>
             <span className="font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-              encrypted route · 42ms
+              Hosted route · uses your public ID
             </span>
           </div>
           <pre
             className="overflow-x-auto p-5 text-xs leading-relaxed"
             style={{ fontFamily: "var(--font-mono)", background: "var(--input)" }}
           >
-            <code>{`-- Set the key variable for LuaMore authentication
-_G.script_key = "LM-A7X2-9KQM-4RPL"
+            <code>{`-- Paste the real values from Dashboard → Scripts and License Keys
+_G.script_key = "<license-key>"
 
--- Fetch and execute the encrypted payload
+-- Fetch and execute the protected payload
 local loader = game:HttpGet(
-  "https://luamore.app/api/public/r/YOUR_PUBLIC_ID", true
+  "/scripts/hosted/<public-id>.lua"
 )
 loadstring(loader)()`}</code>
           </pre>
         </div>
         <p className="mt-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
-          Keys stay in the loader URL from your dashboard — this is not a key-entry box. Copy the
-          loader URL from Dashboard → Scripts → your project.
+          The placeholders above are not credentials. Copy the loader URL from Dashboard → Scripts →
+          your project after you create a real script.
         </p>
       </div>
 
