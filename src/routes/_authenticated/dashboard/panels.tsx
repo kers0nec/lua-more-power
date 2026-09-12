@@ -289,7 +289,7 @@ function Page() {
             <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
               {/* Bot author row */}
               <div className="flex items-center gap-2.5 mb-2.5">
-                <img src="/brand/logo.png" alt="LuaMore" className="h-8 w-8 rounded-full shrink-0 border border-[#84cc16]/40" />
+                <img src="/brand/logo-text.png" alt="LuaMore" className="h-8 w-8 rounded-full shrink-0 border border-[#84cc16]/40" />
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className="font-semibold text-white hover:underline cursor-pointer">
                     LuaMore
