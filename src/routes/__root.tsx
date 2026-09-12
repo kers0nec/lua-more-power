@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://luamore.app/brand/logo-text.png" },
+      { property: "og:image", content: "https://luamore.app/favicon.png" },
       { name: "twitter:title", content: "LuaMore — Protect lua scripts" },
       {
         name: "twitter:description",
@@ -115,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/brand/logo-text.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
 

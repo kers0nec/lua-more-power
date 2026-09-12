@@ -104,9 +104,9 @@ export function LuaTerminalSandbox({
                 className="flex items-center gap-1.5 px-2 py-0.5 rounded"
                 style={{
                   background: result.success
-                    ? "rgba(16, 185, 129, 0.15)"
+                    ? "rgba(14, 165, 233, 0.15)"
                     : "rgba(239, 68, 68, 0.15)",
-                  color: result.success ? "#10b981" : "#ef4444",
+                  color: result.success ? "#0ea5e9" : "#ef4444",
                 }}
               >
                 {result.success ? <ShieldCheck size={13} /> : <AlertCircle size={13} />}
@@ -195,9 +195,9 @@ export function LuaTerminalSandbox({
                 badgeBg = "rgba(239, 68, 68, 0.2)";
                 badgeColor = "#ef4444";
               } else if (log.type === "info") {
-                color = "#34d399";
-                badgeBg = "rgba(16, 185, 129, 0.2)";
-                badgeColor = "#10b981";
+                color = "#22d3ee";
+                badgeBg = "rgba(34, 211, 238, 0.2)";
+                badgeColor = "#0ea5e9";
               }
 
               return (

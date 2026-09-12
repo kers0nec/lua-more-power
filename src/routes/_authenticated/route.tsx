@@ -128,7 +128,7 @@ function Layout() {
             <span className="flex items-center gap-1.5 text-primary font-semibold">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               Engine Online
             </span>
@@ -183,8 +183,8 @@ function Layout() {
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
                             item.badge === "LIVE"
-                              ? "bg-lime-950/80 text-lime-400 border-lime-800"
-                              : "bg-lime-950/80 text-lime-300 border-lime-800"
+                              ? "bg-primary/20 text-primary border-primary/30"
+                              : "bg-primary/20 text-primary border-primary/30"
                           }`}
                         >
                           {item.badge}
@@ -202,7 +202,7 @@ function Layout() {
       {/* User Card & Logout */}
       <div className="border-t border-border/80 p-3 bg-card/40">
         <div className="flex items-center gap-2.5 p-2 rounded-lg bg-input/80 border border-border">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-lime-300 text-black font-bold text-xs shadow-sm">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary text-black font-bold text-xs shadow-sm">
             {userInitial}
           </div>
           <div className="min-w-0 flex-1">

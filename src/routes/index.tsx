@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
         content:
           "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
       },
-      { property: "og:image", content: "https://luamore.app/brand/logo-text.png" },
+      { property: "og:image", content: "https://luamore.app/favicon.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -65,7 +65,7 @@ function HomePage() {
       <SiteNav />
 
       <main className="flex-1">
-        {/* HERO — copied from uploaded index.html, now lime-themed */}
+        {/* HERO — copied from uploaded index.html, now light blue themed */}
         <section className="relative overflow-hidden border-b border-border/60">
           <div className="absolute inset-0 bg-gradient-hero" aria-hidden="true" />
           <div className="relative mx-auto max-w-6xl px-6 py-16 sm:py-20">
@@ -158,7 +158,7 @@ function HomePage() {
                 </div>
 
                 <pre
-                  className="min-h-[140px] overflow-x-auto bg-[#0a0f00] p-5 font-mono text-[13px] leading-6 text-lime-200"
+                  className="min-h-[140px] overflow-x-auto bg-[#0a0f1a] p-5 font-mono text-[13px] leading-6 text-blue-200"
                   aria-label="Generated Lua loader"
                 >
                   <code>{loaderCode}</code>
@@ -363,7 +363,7 @@ function HomePage() {
           </div>
         </section>
 
-        {/* Small lime footer highlight like html footer */}
+        {/* Small light blue footer highlight like html footer */}
         <div className="mx-auto max-w-6xl px-6 pb-4 text-center text-xs text-muted-foreground">
           © 2026 LuaMore · More Power, More Security, More Lua —{" "}
           <span className="font-mono text-primary">light blue</span> edition ·{" "}

@@ -165,12 +165,12 @@ function ChangelogPage() {
                 {rel.changes.map((c, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
                     {c.type === "security" && (
-                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-lime-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-lime-400 border border-lime-800/40">
+                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary border border-primary/30">
                         <Lock size={10} /> Security
                       </span>
                     )}
                     {c.type === "feature" && (
-                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-lime-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-lime-400 border border-lime-800/40">
+                      <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary border border-primary/30">
                         <Zap size={10} /> New
                       </span>
                     )}

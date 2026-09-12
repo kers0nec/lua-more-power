@@ -121,8 +121,8 @@ function FaqPage() {
                 onClick={() => setSelectedCat(cat.id)}
                 className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-medium transition-all ${
                   active
-                    ? "bg-[color:var(--primary)] text-white shadow-md shadow-lime-500/20"
-                    : "bg-[color:var(--card)] text-[color:var(--muted-foreground)] border border-[color:var(--border)] hover:border-[color:var(--primary)] hover:text-white"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "bg-card text-muted-foreground border border-border hover:border-primary hover:text-foreground"
                 }`}
               >
                 <Icon size={14} />
