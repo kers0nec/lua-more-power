@@ -28,19 +28,14 @@ export function buildPanelEmbed({
     description?.trim() ||
     `Whitelist panel. Use the buttons below to get a key, view the loader, check your stats, or reset your device lock.\n\nFree key: disabled`;
 
-  const LOGO = "https://luamore.app/luamore-glow.webp";
   return {
     title,
     description: body,
     color: PANEL_ACCENT,
-    author: {
-      name: "LuaMore",
-      icon_url: LOGO,
-    },
-    thumbnail: { url: LOGO },
+    author: { name: "LuaMore" },
     footer: {
       text: sentBy ? `Sent by ${sentBy}` : "LuaMore",
-      icon_url: avatarUrl || LOGO,
+      ...(avatarUrl ? { icon_url: avatarUrl } : {}),
     },
     timestamp: new Date().toISOString(),
   };
