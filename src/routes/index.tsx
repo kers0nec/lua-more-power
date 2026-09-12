@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
         content:
           "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
       },
-      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://luamore.app/brand/logo-text.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -87,7 +87,7 @@ function HomePage() {
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
-                    to="/register"
+                    to="/auth"
                     className="btn-primary inline-flex h-11 items-center justify-center gap-2 rounded-md px-8 text-sm font-extrabold"
                   >
                     Create account <ArrowRight className="h-4 w-4" />
@@ -167,7 +167,7 @@ function HomePage() {
                   <span className="font-mono text-[10px] text-muted-foreground">
                     GET {loaderPath}
                   </span>
-                  <Link to="/register" className="text-xs font-bold text-primary hover:underline">
+                  <Link to="/auth" className="text-xs font-bold text-primary hover:underline">
                     Create a script first →
                   </Link>
                 </div>
@@ -191,10 +191,10 @@ function HomePage() {
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap gap-2">
-                <Link to="/login" className="btn-outline text-xs">
+                <Link to="/auth" className="btn-outline text-xs">
                   Sign in
                 </Link>
-                <Link to="/register" className="btn-primary text-xs">
+                <Link to="/auth" className="btn-primary text-xs">
                   Create account
                 </Link>
               </div>
@@ -313,7 +313,7 @@ function HomePage() {
                   keys, obfuscations, and every loading preset — for everyone, forever.
                 </p>
                 <Link
-                  to="/register"
+                  to="/auth"
                   className="btn-primary mt-6 inline-flex h-11 items-center justify-center rounded-md px-8 font-extrabold"
                 >
                   Get started — it’s free
@@ -348,7 +348,7 @@ function HomePage() {
             <p className="mt-2 text-muted-foreground">It costs nothing, and it takes two minutes.</p>
             <div className="mt-6 flex justify-center gap-3">
               <Link
-                to="/register"
+                to="/auth"
                 className="btn-primary inline-flex h-11 items-center justify-center rounded-md px-8 font-extrabold"
               >
                 Create account
@@ -366,7 +366,7 @@ function HomePage() {
         {/* Small lime footer highlight like html footer */}
         <div className="mx-auto max-w-6xl px-6 pb-4 text-center text-xs text-muted-foreground">
           © 2026 LuaMore · More Power, More Security, More Lua —{" "}
-          <span className="font-mono text-primary">lime green</span> edition ·{" "}
+          <span className="font-mono text-primary">light blue</span> edition ·{" "}
           <span className="inline-flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" /> Protected By
             LuaMore Obfuscator

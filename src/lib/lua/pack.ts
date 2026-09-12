@@ -359,3 +359,14 @@ function payloadLiteral(text: string, width: number): string {
   if (parts.length === 1) return parts[0];
   return `table.concat({\n    ${parts.join(",\n    ")}\n  })`;
 }
+
+export function createLocalNameGenerator(rng: RNG): () => string {
+  let n = 0;
+  return () => {
+    n++;
+    const chars = ["l", "I", "1", "L", "O", "0"];
+    let out = "";
+    for (let i = 0; i < 6; i++) out += rng.pick(chars);
+    return `_${out}${n.toString(36)}`;
+  };
+}

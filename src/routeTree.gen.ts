@@ -24,8 +24,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ObfuscatorsRouteImport } from './routes/obfuscators'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TosRouteImport } from './routes/tos'
@@ -132,16 +130,6 @@ const PricingRoute = PricingRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -345,8 +333,6 @@ export interface FileRoutesByFullPath {
   '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
@@ -395,8 +381,6 @@ export interface FileRoutesByTo {
   '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
@@ -448,8 +432,6 @@ export interface FileRoutesById {
   '/obfuscators': typeof ObfuscatorsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/tos': typeof TosRoute
@@ -501,8 +483,6 @@ export interface FileRouteTypes {
     | '/obfuscators'
     | '/pricing'
     | '/privacy'
-    | '/register'
-    | '/reset-password'
     | '/settings'
     | '/terms'
     | '/tos'
@@ -551,8 +531,6 @@ export interface FileRouteTypes {
     | '/obfuscators'
     | '/pricing'
     | '/privacy'
-    | '/register'
-    | '/reset-password'
     | '/settings'
     | '/terms'
     | '/tos'
@@ -603,8 +581,6 @@ export interface FileRouteTypes {
     | '/obfuscators'
     | '/pricing'
     | '/privacy'
-    | '/register'
-    | '/reset-password'
     | '/settings'
     | '/terms'
     | '/tos'
@@ -656,8 +632,6 @@ export interface RootRouteChildren {
   ObfuscatorsRoute: typeof ObfuscatorsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  RegisterRoute: typeof RegisterRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   TosRoute: typeof TosRoute
@@ -783,20 +757,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -1107,8 +1067,6 @@ const rootRouteChildren: RootRouteChildren = {
   ObfuscatorsRoute: ObfuscatorsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  RegisterRoute: RegisterRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   TosRoute: TosRoute,

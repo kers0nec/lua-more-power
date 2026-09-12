@@ -16,10 +16,11 @@ import { createRng, hashString, type RNG } from "./rng.ts";
 import { injectJunk, obfuscateNumbers, hexifyNumbers, renameLocals } from "./transforms.ts";
 import { encryptStrings } from "./strings.ts";
 import { flattenControlFlow } from "./flatten.ts";
-import { packLuaSource } from "./pack.ts";
+import { packLuaSource, createLocalNameGenerator } from "./pack.ts";
 import { buildShieldPrelude } from "./shields.ts";
 import { ENGINE_NAME } from "./version.ts";
 import type { Chunk } from "./ast.ts";
+import { compileToVMBytecode, generateVMInterpreter, createVMOptions, wrapWithVM } from "./vm.ts";
 
 export type LuaTarget = "auto" | "lua51" | "lua53" | "luau";
 
@@ -35,13 +36,19 @@ export interface ObfuscationOptions {
   injectJunk?: boolean;
   controlFlowFlattening?: boolean;
   /**
-   * Reserved. Bytecode virtualization (a register/stack VM interpreter) is NOT
-   * implemented — the option is kept so the API and stored presets stay stable,
-   * and requesting it adds a warning to the build output rather than silently
-   * pretending it happened. The loader chain (`loaderVMDepth`) provides bounded
-   * VM-style nesting instead.
+   * Bytecode virtualization (register/stack VM interpreter).
+   * When enabled, compiles source to polymorphic VM bytecode executed by
+   * a generated interpreter. Provides strongest protection.
    */
   virtualize?: boolean;
+  /** VM layers (nested VMs) when virtualize is enabled */
+  vmLayers?: number;
+  /** Enable polymorphic VM instruction encoding */
+  vmPolymorphic?: boolean;
+  /** Enable VM anti-debug traps */
+  vmAntiDebug?: boolean;
+  /** Enable VM integrity checks */
+  vmIntegrityCheck?: boolean;
   pack?: boolean;
   packLayers?: number;
   integrityCheck?: boolean;
@@ -138,6 +145,10 @@ interface ResolvedOptions {
   injectJunk: boolean;
   controlFlowFlattening: boolean;
   virtualize: boolean;
+  vmLayers: number;
+  vmPolymorphic: boolean;
+  vmAntiDebug: boolean;
+  vmIntegrityCheck: boolean;
   pack: boolean;
   packLayers: number;
   integrityCheck: boolean;
@@ -160,6 +171,10 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       injectJunk: false,
       controlFlowFlattening: false,
       virtualize: false,
+      vmLayers: 1,
+      vmPolymorphic: false,
+      vmAntiDebug: false,
+      vmIntegrityCheck: false,
       pack: true,
       packLayers: 1,
       antiTamper: false,
@@ -173,6 +188,10 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       injectJunk: true,
       controlFlowFlattening: true,
       virtualize: false,
+      vmLayers: 1,
+      vmPolymorphic: false,
+      vmAntiDebug: false,
+      vmIntegrityCheck: false,
       pack: true,
       packLayers: 1,
       antiTamper: true,
@@ -185,7 +204,11 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       encryptStrings: true,
       injectJunk: true,
       controlFlowFlattening: true,
-      virtualize: false,
+      virtualize: true,
+      vmLayers: 2,
+      vmPolymorphic: true,
+      vmAntiDebug: true,
+      vmIntegrityCheck: true,
       pack: true,
       packLayers: 1,
       antiTamper: true,
@@ -198,7 +221,11 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       encryptStrings: true,
       injectJunk: true,
       controlFlowFlattening: true,
-      virtualize: false,
+      virtualize: true,
+      vmLayers: 3,
+      vmPolymorphic: true,
+      vmAntiDebug: true,
+      vmIntegrityCheck: true,
       pack: true,
       packLayers: 2,
       integrityCheck: true,
@@ -243,7 +270,11 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
     encryptStrings: bool(options.encryptStrings, [], d.encryptStrings!),
     injectJunk: bool(options.injectJunk, [], d.injectJunk!),
     controlFlowFlattening: bool(options.controlFlowFlattening, [], d.controlFlowFlattening!),
-    virtualize: bool(options.virtualize, [], d.virtualize!),
+    virtualize: bool(options.virtualize, [options.polymorphicVM, options.dualVm], d.virtualize!),
+    vmLayers: options.vmLayers ?? options.vmDepth ?? d.vmLayers!,
+    vmPolymorphic: bool(options.vmPolymorphic, [options.polymorphicVM], d.vmPolymorphic!),
+    vmAntiDebug: bool(options.vmAntiDebug, [], d.vmAntiDebug!),
+    vmIntegrityCheck: bool(options.vmIntegrityCheck, [], d.vmIntegrityCheck!),
     pack: bool(options.pack, [options.chunkedLoader], d.pack!),
     packLayers: options.packLayers ?? legacyLayers ?? d.packLayers!,
     integrityCheck: bool(
@@ -306,13 +337,82 @@ export function obfuscateLuaDetailed(
   if (source.trim().length === 0) return finish(source, true);
 
   const resolved = resolveOptions(options, source);
-  if (resolved.virtualize) {
-    warnings.push(
-      "virtualize was requested but bytecode virtualization is not implemented yet — the build ran without it",
-    );
-  }
   const rng = createRng(resolved.seed);
 
+  // If virtualize is enabled, compile to VM bytecode and wrap with interpreter
+  if (resolved.virtualize) {
+    const vmOptions = createVMOptions(
+      resolved.seed,
+      options.preset ?? "strong",
+      resolved.target === "luau" ? "luau" : resolved.target === "lua53" ? "lua53" : "lua51",
+    );
+    vmOptions.layers = resolved.vmLayers;
+    vmOptions.polymorphic = resolved.vmPolymorphic;
+    vmOptions.antiDebug = resolved.vmAntiDebug;
+    vmOptions.integrityCheck = resolved.vmIntegrityCheck;
+
+    // Apply source transforms first (rename, flatten, etc.) then VM wrap
+    let chunk: Chunk;
+    try {
+      chunk = parse(source);
+    } catch (error) {
+      const detail =
+        error instanceof ParseError || error instanceof LexError ? error.message : String(error);
+      warnings.push(`source could not be parsed — returned unchanged (${detail})`);
+      return finish(source, true);
+    }
+
+    const resolution = resolveScopes(chunk);
+
+    if (resolved.renameLocals) {
+      stats.renamed = renameLocals(chunk, resolution, rng);
+    }
+    if (resolved.controlFlowFlattening) {
+      stats.flattenedBlocks = flattenControlFlow(chunk, resolution, rng, {
+        density: 0.9,
+        junkStates: true,
+      }).flattened;
+    }
+    if (resolved.obfuscateNumbers) {
+      stats.numbersRewritten = obfuscateNumbers(chunk, rng, {
+        modernOps: hasModernOps(resolved.target),
+      });
+      stats.numbersRewritten += hexifyNumbers(chunk, rng, 0.4);
+    }
+    if (resolved.injectJunk) {
+      stats.junkBlocks = injectJunk(chunk, rng, 0.3);
+    }
+    if (resolved.encryptStrings) {
+      const decoderName = `_${pickNameChars(rng)}`;
+      const result = encryptStrings(chunk, rng, decoderName);
+      stats.stringsEncrypted = result.replaced;
+      stats.uniqueStrings = result.unique;
+    }
+
+    let code = emit(chunk, { compact: resolved.compact });
+
+    // Runtime integrity shields
+    const built = buildShieldPrelude({
+      antiTamper: resolved.antiTamper,
+      antiHook: resolved.antiHook,
+      antiLogger: resolved.antiLogger,
+      hasSetfenvPlatform: resolved.target === "lua51",
+      rng,
+    });
+    if (built.code) {
+      code = built.code + "\n" + code;
+      stats.runtimeShields = built.active;
+    }
+
+    // Wrap with VM protection
+    code = wrapWithVM(code, vmOptions);
+    stats.virtualizedBlocks = 1;
+    stats.layers = resolved.vmLayers;
+
+    return finish(code, false);
+  }
+
+  // Non-VM path (original obfuscation pipeline)
   let chunk: Chunk;
   try {
     chunk = parse(source);
@@ -330,8 +430,6 @@ export function obfuscateLuaDetailed(
       stats.renamed = renameLocals(chunk, resolution, rng);
     }
     if (resolved.controlFlowFlattening) {
-      // must run before junk injection: the hoisting map comes from the scope
-      // resolution above, which knows nothing about statements added later
       stats.flattenedBlocks = flattenControlFlow(chunk, resolution, rng, {
         density: 0.9,
         junkStates: true,
@@ -402,14 +500,6 @@ function pickNameChars(rng: RNG): string {
   return out;
 }
 
-function createLocalNameGenerator(rng: RNG): () => string {
-  let n = 0;
-  return () => {
-    n++;
-    return `_${pickNameChars(rng)}${n.toString(36)}`;
-  };
-}
-
 export function obfuscateLua(source: string): string {
   return obfuscateLuaDetailed(source, { preset: "strong" }).code;
 }
@@ -455,6 +545,10 @@ const KNOWN_SETTING_KEYS = new Set<string>([
   "injectJunk",
   "controlFlowFlattening",
   "virtualize",
+  "vmLayers",
+  "vmPolymorphic",
+  "vmAntiDebug",
+  "vmIntegrityCheck",
   "pack",
   "packLayers",
   "integrityCheck",
@@ -485,6 +579,9 @@ const BOOLEAN_SETTING_KEYS = [
   "injectJunk",
   "controlFlowFlattening",
   "virtualize",
+  "vmPolymorphic",
+  "vmAntiDebug",
+  "vmIntegrityCheck",
   "pack",
   "integrityCheck",
   "compact",
@@ -562,6 +659,13 @@ export function validateSettings(source: string, options: ObfuscationOptions): v
     if (!Number.isInteger(options.packLayers) || options.packLayers < 1 || options.packLayers > 8) {
       throw new Error(
         `invalid setting "packLayers": expected an integer from 1 to 8, got ${options.packLayers}`,
+      );
+    }
+  }
+  if (options.vmLayers !== undefined) {
+    if (!Number.isInteger(options.vmLayers) || options.vmLayers < 1 || options.vmLayers > 5) {
+      throw new Error(
+        `invalid setting "vmLayers": expected an integer from 1 to 5, got ${options.vmLayers}`,
       );
     }
   }
