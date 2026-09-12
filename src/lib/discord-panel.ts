@@ -11,7 +11,7 @@ export type PanelEmbedInput = {
   scriptName?: string | null;
 };
 
-export const PANEL_ACCENT = 0x84cc16;
+export const PANEL_ACCENT = 0x0ea5e9;
 
 export function buildPanelEmbed({
   id,

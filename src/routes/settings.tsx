@@ -45,9 +45,9 @@ function SettingsPage() {
   const [status, setStatus] = useState("");
   const [accentColor, setAccentColor] = useState(() => {
     try {
-      return localStorage.getItem("lm_accent") || "lime";
+      return localStorage.getItem("lm_accent") || "blue";
     } catch {
-      return "lime";
+      return "blue";
     }
   });
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -428,7 +428,7 @@ function SettingsPage() {
                 <h2 className="font-display text-2xl">Theme & Accent</h2>
                 <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                   LuaMore is built on a high-contrast obsidian dark theme featuring our signature
-                  electric Lime Green palette.
+                  electric Light Blue palette.
                 </p>
               </div>
             </div>
@@ -438,22 +438,22 @@ function SettingsPage() {
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {[
                   {
-                    id: "obsidian",
-                    label: "Obsidian Lime",
-                    desc: "Deep pitch dark with lime green highlights",
-                    color: "#0a0e08",
+                    id: "midnight",
+                    label: "Midnight Blue",
+                    desc: "Deep navy with electric blue highlights",
+                    color: "#070a12",
                   },
                   {
-                    id: "matrix",
-                    label: "Matrix Void",
+                    id: "obsidian",
+                    label: "Obsidian Void",
                     desc: "Pure OLED black with electric accents",
                     color: "#000000",
                   },
                   {
-                    id: "forest",
-                    label: "Forest Stealth",
-                    desc: "Deep olive and dark camo tones",
-                    color: "#0f160c",
+                    id: "slate",
+                    label: "Slate Stealth",
+                    desc: "Deep slate and dark camo tones",
+                    color: "#0f172a",
                   },
                 ].map((t) => (
                   <button
@@ -469,7 +469,7 @@ function SettingsPage() {
                       className="h-8 w-8 rounded-lg mb-3 flex items-center justify-center"
                       style={{ background: t.color, border: "1px solid var(--border)" }}
                     >
-                      <span className="h-2 w-2 rounded-full bg-[#84cc16]" />
+                      <span className="h-2 w-2 rounded-full bg-primary" />
                     </div>
                     <div className="font-medium text-sm">{t.label}</div>
                     <div className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
@@ -484,7 +484,7 @@ function SettingsPage() {
               <label className="eyebrow">Accent Color</label>
               <div className="mt-3 flex flex-wrap gap-3">
                 {[
-                  { id: "lime", color: "#84cc16", label: "Lime Green (Default)" },
+                  { id: "blue", color: "#0ea5e9", label: "Light Blue (Default)" },
                   { id: "emerald", color: "#10b981", label: "Emerald" },
                   { id: "cyan", color: "#22d3ee", label: "Cyan" },
                   { id: "violet", color: "#8b5cf6", label: "Violet" },

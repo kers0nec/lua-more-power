@@ -139,7 +139,7 @@ function Page() {
             <button
               onClick={() => syncMut.mutate()}
               disabled={syncMut.isPending}
-              className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-lime-500/50 hover:border-lime-400"
+              className="btn-outline text-xs px-3.5 py-2 shrink-0 self-start md:self-auto flex items-center gap-2 border-primary/50 hover:border-primary"
             >
               <span>{syncMut.isPending ? "Syncing..." : "Sync Slash Commands (Owner)"}</span>
             </button>
@@ -151,10 +151,10 @@ function Page() {
       {isOwner && (
         <div
           className="card-blue p-4 mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
-          style={{ borderColor: "rgba(163, 230, 53, 0.3)", background: "rgba(6, 14, 10, 0.8)" }}
+          style={{ borderColor: "rgba(14, 165, 233, 0.3)", background: "rgba(7, 10, 18, 0.8)" }}
         >
           <div className="flex items-center gap-2.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-lime-400 animate-pulse" />
+            <span className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
             <span className="font-semibold text-white">Slash Commands Auto-Registered:</span>
             <span className="font-mono" style={{ color: "var(--primary)" }}>
               /help, /login, /setup, /whitelist, /resethwid
@@ -289,7 +289,9 @@ function Page() {
             <div className="mt-4 rounded-lg bg-[#313338] p-4 text-white font-sans border border-[#3f4147]">
               {/* Bot author row */}
               <div className="flex items-center gap-2.5 mb-2.5">
-                <img src="/brand/logo-text.png" alt="LuaMore" className="h-8 w-8 rounded-full shrink-0 border border-[#84cc16]/40" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white font-bold text-xs">
+                  LM
+                </div>
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className="font-semibold text-white hover:underline cursor-pointer">
                     LuaMore
@@ -302,8 +304,8 @@ function Page() {
               </div>
 
               {/* Embed body matching IMG_7322 */}
-              <div className="ml-10 rounded bg-[#1e1f22] border-l-4 border-[#84cc16] overflow-hidden">
-                <img src="/brand/panel-banner.png" alt="Panel banner" className="w-full h-32 object-cover opacity-90" />
+              <div className="ml-10 rounded bg-[#1e1f22] border-l-4 border-primary overflow-hidden">
+                <div className="h-32 bg-gradient-to-br from-primary/30 to-primary/10" />
                 <div className="p-3 text-xs space-y-2">
                   <h4 className="text-sm font-bold text-white">
                     LuaMore —{" "}

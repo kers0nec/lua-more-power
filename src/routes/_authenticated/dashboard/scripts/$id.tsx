@@ -215,7 +215,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
           <div className="flex items-center gap-3">
             <div className="eyebrow">Script workspace</div>
             {script.public_id && (
-              <span className="font-mono font-semibold tracking-widest text-lime-300 bg-[#0f1a0f] border border-lime-500/30 px-3 py-0.5 rounded-full text-xs select-all shadow-inner">
+              <span className="font-mono font-semibold tracking-widest text-primary bg-primary/10 border border-primary/30 px-3 py-0.5 rounded-full text-xs select-all shadow-inner">
                 {script.public_id}
               </span>
             )}
@@ -233,8 +233,8 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
             onClick={toggleKeySystemMode}
             className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-md transition-all shadow-sm ${
               !ffa
-                ? "bg-lime-500/20 text-lime-300 border border-lime-500/40 hover:bg-lime-500/30"
-                : "bg-lime-500/20 text-lime-300 border border-lime-500/40 hover:bg-lime-500/30"
+                ? "bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30"
+                : "bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30"
             }`}
             title={!ffa ? "Key System is currently ACTIVE" : "Public FFA Mode active"}
           >
@@ -250,7 +250,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
           </Link>
           <button
             type="button"
-              className="btn-outline border-lime-500/40 text-lime-300 hover:bg-lime-500/10 flex items-center gap-1.5"
+              className="btn-outline border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5"
             onClick={() => protectMutation.mutate()}
             disabled={protectMutation.isPending || !code.trim()}
             title="Auto-obfuscate source code with multi-layer bytecode VM"
@@ -312,14 +312,14 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                 onClick={() => setEditorView("obfuscated")}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   editorView === "obfuscated"
-                    ? "bg-lime-500/20 text-lime-300 border border-lime-500/30 font-semibold"
+                    ? "bg-primary/20 text-primary border border-primary/30 font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                   <ShieldCheck size={13} className="text-primary" />
                 <span>obfuscated.lua</span>
                 {script?.obfuscated_code && (
-                    <span className="text-[10px] px-1 py-0.2 rounded bg-lime-500/20 text-lime-300">
+                    <span className="text-[10px] px-1 py-0.2 rounded bg-primary/20 text-primary">
                     VM
                   </span>
                 )}
@@ -370,7 +370,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
               }}
             />
           ) : (
-            <div className="min-h-[560px] w-full bg-black/80 p-5 font-mono text-xs leading-5 text-lime-300/90 overflow-auto select-all border-b border-border/30">
+            <div className="min-h-[560px] w-full bg-black/80 p-5 font-mono text-xs leading-5 text-primary/90 overflow-auto select-all border-b border-border/30">
               {script?.obfuscated_code ? (
                 <pre className="whitespace-pre-wrap break-all">
                   {script.obfuscated_code as string}
@@ -429,7 +429,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                 <Code2 size={16} className="text-primary" />
                 <h2 className="font-display text-lg">Execution & Loader</h2>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-lime-950 text-lime-300 border border-lime-800 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono uppercase bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded">
                 Roblox Ready
               </span>
             </div>
@@ -473,7 +473,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
             </div>
 
             {loaderTab === "standalone" && (
-              <div className="mt-2.5 px-2.5 py-1.5 rounded text-[11px] border border-lime-500/30 bg-lime-500/10 text-lime-300 flex items-center gap-1.5">
+              <div className="mt-2.5 px-2.5 py-1.5 rounded text-[11px] border border-primary/30 bg-primary/10 text-primary flex items-center gap-1.5">
                 <Check size={13} className="shrink-0" />
                 <span>100% Offline · Paste directly into Delta, Solara, Wave, Codex, Arceus X</span>
               </div>
@@ -494,7 +494,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
               </div>
             )}
 
-              <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-lime-400 select-all rounded">
+              <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all border border-border bg-input p-3 font-mono text-xs leading-5 text-primary select-all rounded">
               {loader}
             </pre>
 
@@ -538,7 +538,7 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                 <ShieldCheck size={16} className="text-primary" />
                 <h2 className="font-display text-lg">Protection Engine</h2>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-lime-950 text-lime-300 border border-lime-800 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono uppercase bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded">
                 LuaMore VM
               </span>
             </div>
@@ -548,14 +548,14 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
             </p>
 
             {script?.obfuscated_code ? (
-              <div className="mt-3 bg-lime-500/10 border border-lime-500/30 text-lime-300 p-3 rounded-lg text-xs space-y-1">
+              <div className="mt-3 bg-primary/10 border border-primary/30 text-primary p-3 rounded-lg text-xs space-y-1">
                 <div className="flex items-center justify-between font-semibold">
                   <span>Protected build active</span>
                   <span className="font-mono">
                     {(script.obfuscator as string) || "LuaMore VM v7"}
                   </span>
                 </div>
-                <div className="text-[11px] text-lime-200/80 font-mono">
+                <div className="text-[11px] text-primary/80 font-mono">
                   Payload: {(script.obfuscated_code as string).length.toLocaleString()} chars ·
                    3-Layer RLE + XOR + Base85
                 </div>
@@ -589,9 +589,9 @@ loadstring(game:HttpGet("${origin}/scripts/hosted/${publicId}.lua"))()`;
                   Compiling Protected loader…
                 </>
               ) : (
-                <>
-                  <Zap size={15} className="text-lime-300" />  Auto-Obfuscate Source Code
-                </>
+<>
+                    <Zap size={15} className="text-primary" />  Auto-Obfuscate Source Code
+                  </>
               )}
             </button>
           </section>

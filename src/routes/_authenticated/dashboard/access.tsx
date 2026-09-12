@@ -26,7 +26,7 @@ function statusOf(g: AccessGrant): "active" | "expired" | "revoked" {
 }
 
 const STATUS_STYLES: Record<"active" | "expired" | "revoked", { label: string; cls: string }> = {
-  active: { label: "Active", cls: "text-lime-300 bg-lime-950/60 border-lime-700/60" },
+  active: { label: "Active", cls: "text-primary bg-primary/20 border-primary/40" },
   expired: { label: "Expired", cls: "text-amber-300 bg-amber-950/60 border-amber-700/60" },
   revoked: { label: "Revoked", cls: "text-rose-300 bg-rose-950/60 border-rose-700/60" },
 };

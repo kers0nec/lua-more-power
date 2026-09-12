@@ -27,9 +27,9 @@ export function HumanCheck({
     <div
       className="rounded-xl border p-4 space-y-3.5 transition-all"
       style={{
-        borderColor: ok ? "rgba(163, 230, 53, 0.4)" : "var(--border)",
-        background: "linear-gradient(180deg, rgba(10, 20, 10, 0.6) 0%, rgba(6, 14, 10, 0.8) 100%)",
-        boxShadow: ok ? "0 0 15px rgba(163, 230, 53, 0.15)" : "none",
+        borderColor: ok ? "rgba(14, 165, 233, 0.4)" : "var(--border)",
+        background: "linear-gradient(180deg, rgba(10, 20, 26, 0.6) 0%, rgba(6, 14, 18, 0.8) 100%)",
+        boxShadow: ok ? "0 0 15px rgba(14, 165, 233, 0.15)" : "none",
       }}
     >
       <label className="flex items-start gap-3 text-sm cursor-pointer select-none">
@@ -37,13 +37,13 @@ export function HumanCheck({
           type="checkbox"
           checked={checked}
           onChange={(e) => setChecked(e.target.checked)}
-          className="mt-0.5 accent-lime-500 rounded cursor-pointer"
+          className="mt-0.5 accent-primary rounded cursor-pointer"
         />
         <span>
           <span className="font-semibold text-white tracking-tight flex items-center gap-2">
             Human Verification
             {value && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-lime-500/20 text-lime-400 font-normal">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-normal">
                 Passed
               </span>
             )}
@@ -71,7 +71,7 @@ export function HumanCheck({
             disabled={!pair}
           />
           {value && (
-            <span className="text-xs font-semibold text-lime-400 flex items-center gap-1">
+            <span className="text-xs font-semibold text-primary flex items-center gap-1">
               Verified
             </span>
           )}

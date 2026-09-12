@@ -115,7 +115,7 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
           const panelName = panel?.name?.trim() || script!.name || "LuaMore Panel";
           const embed = {
             title: ` Script Executed — ${panelName}`,
-            color: 0x84cc16,
+            color: 0x0ea5e9,
             fields: [
               {
                 name: " Panel",
