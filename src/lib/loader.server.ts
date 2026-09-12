@@ -166,7 +166,6 @@ export async function handleLoaderRequest(params: { publicId: string }, request:
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               username: panelName,
-              avatar_url: "https://luamore.app/luamore-logo.webp",
               embeds: [embed],
             }),
           }).catch((err) => console.warn("[Webhook Log Error]", err));
