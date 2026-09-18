@@ -13,7 +13,7 @@ import {
   KeyRound,
   Layers,
   Ban,
-  PanelsTopLeft,
+  Bot,
   Terminal,
   Shield,
   Settings,
@@ -52,6 +52,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { to: "/dashboard", label: "Overview", icon: LayoutGrid },
       { to: "/dashboard/scripts", label: "Scripts", icon: FileCode2 },
       { to: "/dashboard/obfuscate", label: "Obfuscator", icon: Shield, badge: "PRO" },
+      { to: "/dashboard/bot", label: "Bot Manager", icon: Bot, badge: "NEW" },
     ],
   },
   {
@@ -67,7 +68,6 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Integrations & API",
     items: [
-      { to: "/dashboard/panels", label: "Discord Panels", icon: PanelsTopLeft },
       { to: "/dashboard/api-keys", label: "API Keys", icon: Terminal },
       { to: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
