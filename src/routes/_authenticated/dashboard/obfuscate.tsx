@@ -8,13 +8,13 @@ import { LuaTerminalSandbox } from "@/components/LuaTerminalSandbox";
 export const Route = createFileRoute("/_authenticated/dashboard/obfuscate")({
   head: () => ({
     meta: [
-      { title: "Obfuscator — LuaMore" },
+      { title: "Obfuscator — LuaLune" },
       {
         name: "description",
         content:
-          "Protect Luau source with LuaMore's compiler pipeline, runtime shields and nested loader stages.",
+          "Protect Luau source with LuaLune's compiler pipeline, runtime shields and nested loader stages.",
       },
-      { property: "og:title", content: "LuaMore Obfuscator" },
+      { property: "og:title", content: "LuaLune Obfuscator" },
       {
         property: "og:description",
         content: "Obfuscate Luau source with runtime integrity shields and layered loader transport.",
@@ -240,7 +240,7 @@ function ObfuscatePage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `luamore-protected-${Date.now()}.lua`;
+    a.download = `lualune-protected-${Date.now()}.lua`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -261,7 +261,7 @@ function ObfuscatePage() {
           Obfusc<span style={{ fontStyle: "italic" }}>ator</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm" style={{ color: "var(--muted-foreground)" }}>
-          LuaMore Advanced Luau Obfuscator: a real compiler pipeline (lexer, parser, scope
+          LuaLune Advanced Luau Obfuscator: a real compiler pipeline (lexer, parser, scope
           resolution, transforms) plus runtime anti-tamper, anti-hook and anti env-logger
           shields, wrapped in 1-5 nested loader stages.
         </p>

@@ -14,7 +14,7 @@ import { listScripts } from "@/lib/scripts.functions";
 import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/panels")({
-  head: () => ({ meta: [{ title: "Panels — LuaMore" }] }),
+  head: () => ({ meta: [{ title: "Panels — LuaLune" }] }),
   component: Page,
 });
 

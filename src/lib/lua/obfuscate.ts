@@ -257,7 +257,7 @@ function resolveOptions(options: ObfuscationOptions, source: string): ResolvedOp
       ? ""
       : typeof options.banner === "string"
         ? options.banner
-        : `-- Protected with LuaMore | ${ENGINE_NAME}`;
+        : `-- Protected with LuaLune | ${ENGINE_NAME}`;
 
   return {
     seed: options.seed ?? hashString(source) ^ (Date.now() & 0xffff),

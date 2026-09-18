@@ -54,15 +54,15 @@ function describeMode(options: ObfuscationOptions): string {
   const preset = options.preset ?? "strong";
   switch (preset) {
     case "paranoid":
-      return "Protected By LuaMore Obfuscator · Ultra Shielded (paranoid)";
+      return "Protected By LuaLune Obfuscator · Ultra Shielded (paranoid)";
     case "strong":
-      return "Protected By LuaMore Obfuscator · Shielded Register Pipeline (strong)";
+      return "Protected By LuaLune Obfuscator · Shielded Register Pipeline (strong)";
     case "standard":
-      return "Protected By LuaMore Obfuscator · Standard Pipeline";
+      return "Protected By LuaLune Obfuscator · Standard Pipeline";
     case "fast":
-      return "Protected By LuaMore Obfuscator · Fast Pipeline";
+      return "Protected By LuaLune Obfuscator · Fast Pipeline";
     default:
-      return `Protected By LuaMore Obfuscator · ${preset}`;
+      return `Protected By LuaLune Obfuscator · ${preset}`;
   }
 }
 

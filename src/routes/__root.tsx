@@ -82,13 +82,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LuaMore — Protect lua scripts" },
+      { title: "LuaLune — Protect lua scripts" },
       {
         name: "description",
         content:
           "Create, obfuscate and host Luau scripts with a single loadstring loader URL.",
       },
-      { property: "og:title", content: "LuaMore — Protect lua scripts" },
+      { property: "og:title", content: "LuaLune — Protect lua scripts" },
       {
         property: "og:description",
         content:
@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://luamore.app/brand/logo-text.png" },
-      { name: "twitter:title", content: "LuaMore — Protect lua scripts" },
+      { name: "twitter:title", content: "LuaLune — Protect lua scripts" },
       {
         name: "twitter:description",
         content:

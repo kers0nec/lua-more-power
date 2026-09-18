@@ -24,11 +24,11 @@ let cachedEngine: LocalObfuscator | null = null;
 export const Route = createFileRoute("/obfuscators")({
   head: () => ({
     meta: [
-      { title: "Obfuscators — LuaMore" },
+      { title: "Obfuscators — LuaLune" },
       {
         name: "description",
         content:
-          "Protect Luau in your browser with LuaLamp, our VM-based obfuscator, or use the authenticated API.",
+          "Protect Luau in your browser with LuaLune, our VM-based obfuscator, or use the authenticated API.",
       },
     ],
   }),
@@ -111,7 +111,7 @@ function ObfuscatorsPage() {
   async function runLocal() {
     if (!source.trim() || running) return;
     setRunning(true);
-    setStatus("Building LuaLamp VM…");
+    setStatus("Building LuaLune VM…");
     try {
       let result = "";
       try {
@@ -173,8 +173,8 @@ function ObfuscatorsPage() {
   return (
     <PageShell
       eyebrow="Protection"
-      title="LuaLamp v2 — our VM-based obfuscator."
-      subtitle="Paste your Luau and run it through LuaLamp (our VM-based engine) in your browser, or send it to the authenticated API. Both produce protected code you can copy or download."
+      title="LuaLune Obfuscator — our VM-based engine."
+      subtitle="Paste your Luau and run it through LuaLune (our VM-based engine) in your browser, or send it to the authenticated API. Both produce protected code you can copy or download."
     >
       <div className="card-blue p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -222,7 +222,7 @@ function ObfuscatorsPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="eyebrow">In-browser</div>
-              <h2 className="mt-2 font-display text-2xl">LuaMore Obfuscator</h2>
+              <h2 className="mt-2 font-display text-2xl">LuaLune Obfuscator</h2>
             </div>
             <span className="badge-blue">Anti-Hook Shield</span>
           </div>
@@ -306,7 +306,7 @@ function ObfuscatorsPage() {
                   type="button"
                   className="btn-ghost px-2 py-1 text-xs"
                   disabled={!output}
-                  onClick={() => download("luamore-protected.lua", output)}
+                  onClick={() => download("lualune-protected.lua", output)}
                 >
                   Download
                 </button>
@@ -384,7 +384,7 @@ function ObfuscatorsPage() {
                   type="button"
                   className="btn-ghost px-2 py-1 text-xs"
                   disabled={!apiOutput}
-                  onClick={() => download("luamore-api-protected.lua", apiOutput)}
+                  onClick={() => download("lualune-api-protected.lua", apiOutput)}
                 >
                   Download
                 </button>

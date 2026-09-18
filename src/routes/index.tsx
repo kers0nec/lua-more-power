@@ -7,20 +7,20 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LuaMore — Control who can run your Lua scripts" },
+      { title: "LuaLune — Control who can run your Lua scripts" },
       {
         name: "description",
         content:
-          "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
+          "Free script hosting, license keys, HWID protection, and in-game loading bars. No card, no tiers — everything is free.",
       },
       {
         property: "og:title",
-        content: "LuaMore — Control who can run your Lua scripts",
+        content: "LuaLune — Control who can run your Lua scripts",
       },
       {
         property: "og:description",
         content:
-          "Free script hosting, license keys, HWID protection, Discord panels, and in-game loading bars. No card, no tiers — everything is free.",
+          "Free script hosting, license keys, HWID protection, and in-game loading bars. No card, no tiers — everything is free.",
       },
       { property: "og:image", content: "https://luamore.app/brand/logo-text.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -82,7 +82,7 @@ function HomePage() {
                   Control who can run your <span className="text-gradient">Lua scripts.</span>
                 </h1>
                 <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:text-base">
-                  Add a script, choose how access works — keys, Discord, ad links, or keyless — then
+                  Add a script, choose how access works — keys, HWID, or keyless — then
                   copy the loader. Everything is free, everything lives in one dashboard.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -213,28 +213,28 @@ function HomePage() {
             </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                t: "Scripts",
-                d: "Store a script, choose protection, and copy its loader in seconds.",
-                icon: CodeXml,
-              },
-              {
-                t: "Keys",
-                d: "Create timed or permanent keys and bind them to a device.",
-                icon: KeyRound,
-              },
-              {
-                t: "Discord",
-                d: "Post key panels and manage users with slash commands.",
-                icon: Bot,
-              },
-              {
-                t: "Ad links",
-                d: "Give a key after a visitor completes your chosen link.",
-                icon: Link2,
-              },
-            ].map((c) => {
+{[
+                {
+                  t: "Scripts",
+                  d: "Store a script, choose protection, and copy its loader in seconds.",
+                  icon: CodeXml,
+                },
+                {
+                  t: "Keys",
+                  d: "Create timed or permanent keys and bind them to a device.",
+                  icon: KeyRound,
+                },
+                {
+                  t: "HWID",
+                  d: "Lock scripts to specific devices with hardware ID binding.",
+                  icon: ShieldCheck,
+                },
+                {
+                  t: "Obfuscator",
+                  d: "Protect your Lua code with LuaLune's advanced VM-based engine.",
+                  icon: Bot,
+                },
+              ].map((c) => {
               const I = c.icon;
               return (
                 <div
@@ -326,9 +326,9 @@ function HomePage() {
                 <ul className="mt-4 space-y-2 text-sm">
                   {[
                     "Unlimited projects, scripts & keys",
-                    "Two obfuscation engines — LuaMore VM + 00fuscator",
+                    "LuaLune VM-based obfuscator",
                     "Full key system — HWID, durations, revocation",
-                    "Discord panels & slash commands",
+                    "Hardware ID locking",
                     "Every loading-screen preset",
                   ].map((li) => (
                     <li key={li} className="flex items-center gap-2">
@@ -365,11 +365,11 @@ function HomePage() {
 
         {/* Small lime footer highlight like html footer */}
         <div className="mx-auto max-w-6xl px-6 pb-4 text-center text-xs text-muted-foreground">
-          © 2026 LuaMore · More Power, More Security, More Lua —{" "}
-          <span className="font-mono text-primary">light blue</span> edition ·{" "}
+          © 2026 LuaLune · Protect Your Lua Scripts —{" "}
+          <span className="font-mono text-primary">gold</span> edition ·{" "}
           <span className="inline-flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block" /> Protected By
-            LuaMore Obfuscator
+            LuaLune Obfuscator
           </span>
         </div>
       </main>
